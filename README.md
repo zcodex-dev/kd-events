@@ -58,9 +58,9 @@ cp .env.example .env.local
 ```
 
 ```env
-R2_ACCESS_KEY_ID=your-r2-access-key-id
-R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
-R2_ENDPOINT=https://01962aa70590ca905cb842b1c028d782.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_ENDPOINT=
 R2_BUCKET_NAME=kd-events
 R2_PUBLIC_URL=
 GITHUB_UPLOAD_FOLDER=public-uploads
