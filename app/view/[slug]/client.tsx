@@ -9,15 +9,13 @@ import {
   Maximize2,
   ImageIcon,
   Calendar,
-  FileType2,
-  Ruler,
   Check,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Toaster } from 'sonner';
 import type { UploadedFile } from '@/types';
-import { formatFileSize, formatDate, resolveUrl } from '@/lib/uploads/file-utils';
+import { formatDate, resolveUrl } from '@/lib/uploads/file-utils';
 
 type ViewPageClientProps = {
   file: UploadedFile;
@@ -147,33 +145,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
             </div>
           </div>
 
-          {/* File details */}
-          <div className="mt-6 bg-white border border-neutral-200">
-            <div className="px-4 py-3 border-b border-neutral-200">
-              <h2 className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                File Information
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-neutral-100">
-              <InfoItem
-                icon={FileType2}
-                label="Format"
-                value={file.mimeType.split('/')[1]?.toUpperCase() || 'Unknown'}
-              />
-              <InfoItem
-                icon={Ruler}
-                label="Size"
-                value={formatFileSize(file.size)}
-              />
-              {file.width && file.height && (
-                <InfoItem
-                  icon={Maximize2}
-                  label="Dimensions"
-                  value={`${file.width} × ${file.height} px`}
-                />
-              )}
-            </div>
-          </div>
+
         </motion.main>
       </div>
 
@@ -207,24 +179,4 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
   );
 }
 
-// ─── Info Item ──────────────────────────────────────────────────────────────
 
-function InfoItem({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-3">
-      <Icon className="w-4 h-4 text-neutral-400" strokeWidth={1.75} />
-      <div>
-        <p className="text-xs text-neutral-500">{label}</p>
-        <p className="text-sm text-neutral-900 font-medium">{value}</p>
-      </div>
-    </div>
-  );
-}
