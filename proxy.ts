@@ -10,11 +10,12 @@ export function proxy(request: NextRequest) {
     if (redirect) return redirect;
   }
 
-  // Protect admin API routes (except auth and view-count endpoints)
+  // Protect admin API routes (except auth, view-count, and raw image endpoints)
   if (
     pathname.startsWith('/api/') &&
     !pathname.startsWith('/api/auth/') &&
-    !pathname.startsWith('/api/views/')
+    !pathname.startsWith('/api/views/') &&
+    !pathname.startsWith('/api/raw')
   ) {
     const redirect = requireAuth(request);
     if (redirect) return redirect;
@@ -22,5 +23,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/((?!auth|views).*)'],
+  matcher: ['/dashboard/:path*', '/api/((?!auth|views|raw).*)'],
 };
