@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, X, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import type { FileUploadItem } from '@/types';
-import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '@/lib/validation/schemas';
+import { MAX_FILE_SIZE } from '@/lib/validation/schemas';
 import { formatFileSize } from '@/lib/uploads/file-utils';
 import { nanoid } from 'nanoid';
 import { FilePreviewCard } from '@/components/upload/file-preview-card';
@@ -19,7 +19,23 @@ type DropZoneProps = {
 
 export function DropZone({ files, setFiles, onUpload, isUploading }: DropZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [allowedMimeTypes, setAllowedMimeTypes] = useState<string[]>([
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+  ]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch('/api/config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data?.allowedTypes) {
+          setAllowedMimeTypes(data.data.allowedTypes);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const processFiles = useCallback(
     (fileList: FileList | File[]) => {
@@ -28,7 +44,7 @@ export function DropZone({ files, setFiles, onUpload, isUploading }: DropZonePro
 
       Array.from(fileList).forEach((file) => {
         // Validate type
-        if (!ALLOWED_MIME_TYPES.includes(file.type as typeof ALLOWED_MIME_TYPES[number])) {
+        if (!allowedMimeTypes.includes(file.type)) {
           errors.push(`${file.name}: unsupported format`);
           return;
         }

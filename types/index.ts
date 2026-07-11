@@ -76,8 +76,13 @@ export type GitHubCreateUpdateResponse = {
 
 // ─── Metadata Index ──────────────────────────────────────────────────────────
 
+export type AppConfig = {
+  allowedTypes: string[];
+};
+
 export type MetadataIndex = {
   files: UploadedFile[];
+  config?: AppConfig;
   lastUpdated: string;
 };
 

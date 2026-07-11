@@ -1,4 +1,4 @@
-import type { UploadedFile, MetadataIndex } from '@/types';
+import type { UploadedFile, MetadataIndex, AppConfig } from '@/types';
 import { getFile, uploadFile, R2ApiError } from '@/lib/r2/client';
 
 // ─── Configuration ──────────────────────────────────────────────────────────
@@ -141,3 +141,24 @@ export async function getStats() {
     storageUsed,
   };
 }
+
+/**
+ * Get application configuration.
+ */
+export async function getAppConfig(): Promise<AppConfig> {
+  const index = await readIndex();
+  return index.config || {
+    allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+  };
+}
+
+/**
+ * Update application configuration.
+ */
+export async function updateAppConfig(config: AppConfig): Promise<AppConfig> {
+  const index = await readIndex();
+  index.config = config;
+  await writeIndex(index);
+  return config;
+}
+

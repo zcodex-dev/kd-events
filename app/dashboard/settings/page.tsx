@@ -1,28 +1,84 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { Save, Check, FileCode2 } from 'lucide-react';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { LoadingSpinner } from '@/components/shared/loading';
 
-const envVars = [
-  { key: 'GITHUB_TOKEN', label: 'GitHub Token', sensitive: true },
-  { key: 'GITHUB_OWNER', label: 'GitHub Owner', sensitive: false },
-  { key: 'GITHUB_REPO', label: 'GitHub Repository', sensitive: false },
-  { key: 'GITHUB_BRANCH', label: 'GitHub Branch', sensitive: false },
-  { key: 'GITHUB_UPLOAD_FOLDER', label: 'Upload Folder', sensitive: false },
-  { key: 'NEXT_PUBLIC_APP_URL', label: 'Application URL', sensitive: false },
-  { key: 'ADMIN_PASSWORD', label: 'Admin Password', sensitive: true },
+// Define the available extensions
+const IMAGE_TYPES = [
+  { id: 'image/jpeg', ext: '.jpg, .jpeg', label: 'JPEG / JPG' },
+  { id: 'image/png', ext: '.png', label: 'PNG' },
+  { id: 'image/webp', ext: '.webp', label: 'WebP' },
+  { id: 'image/svg+xml', ext: '.svg', label: 'SVG (Vector)' },
+  { id: 'image/gif', ext: '.gif', label: 'GIF (Animated)' },
 ];
 
 export default function SettingsPage() {
   const { openSidebar } = useDashboard();
+  const [allowedTypes, setAllowedTypes] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Fetch the configuration on mount
+  useEffect(() => {
+    fetch('/api/config')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success && resData.data?.allowedTypes) {
+          setAllowedTypes(resData.data.allowedTypes);
+        } else {
+          toast.error('Failed to load settings');
+        }
+      })
+      .catch(() => {
+        toast.error('Error connecting to settings API');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  const handleToggle = (id: string) => {
+    setAllowedTypes((prev) =>
+      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
+    );
+  };
+
+  const handleSave = async () => {
+    if (allowedTypes.length === 0) {
+      toast.error('You must allow at least one file type.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ allowedTypes }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Upload settings saved successfully');
+      } else {
+        toast.error(data.error || 'Failed to save settings');
+      }
+    } catch {
+      toast.error('Error saving settings');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <>
       <Header
         title="Settings"
-        description="Application configuration"
+        description="Configure application upload controls"
         onMenuClick={openSidebar}
       />
 
@@ -30,81 +86,87 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="p-4 sm:p-6 space-y-6"
+        className="p-4 sm:p-6 max-w-2xl"
       >
-        {/* Environment Variables */}
         <div className="bg-white border border-neutral-200">
-          <div className="px-4 py-3 border-b border-neutral-200">
-            <h2 className="text-sm font-semibold text-neutral-900">
-              Environment Configuration
-            </h2>
-            <p className="text-xs text-neutral-500 mt-0.5">
-              These values are configured via environment variables on your deployment.
-            </p>
+          {/* Section Header */}
+          <div className="px-5 py-4 border-b border-neutral-200 flex items-center gap-2">
+            <FileCode2 className="w-4 h-4 text-blue-600" />
+            <div>
+              <h2 className="text-sm font-semibold text-neutral-900">
+                Allowed File Formats
+              </h2>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Enable or disable specific file extensions for uploads.
+              </p>
+            </div>
           </div>
 
-          <div className="divide-y divide-neutral-100">
-            {envVars.map((v) => {
-              // Check if env var is set (server-side only, so we only check public ones)
-              const isPublic = v.key.startsWith('NEXT_PUBLIC_');
-              const value = isPublic
-                ? process.env[v.key as keyof typeof process.env]
-                : undefined;
+          {/* Form */}
+          {isLoading ? (
+            <div className="p-8 flex flex-col items-center justify-center gap-2">
+              <LoadingSpinner size={24} />
+              <span className="text-xs text-neutral-500">Loading settings...</span>
+            </div>
+          ) : (
+            <div className="p-5 space-y-4">
+              <div className="space-y-2">
+                {IMAGE_TYPES.map((t) => {
+                  const isChecked = allowedTypes.includes(t.id);
+                  return (
+                    <div
+                      key={t.id}
+                      onClick={() => handleToggle(t.id)}
+                      className="flex items-center justify-between p-3 border border-neutral-200 hover:bg-neutral-50 cursor-pointer transition-colors"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-neutral-900">
+                          {t.label}
+                        </span>
+                        <code className="text-xs text-neutral-500 mt-0.5">
+                          {t.ext}
+                        </code>
+                      </div>
 
-              return (
-                <div
-                  key={v.key}
-                  className="flex items-center justify-between px-4 py-3"
+                      {/* Custom Checkbox */}
+                      <div
+                        className={`w-5 h-5 border flex items-center justify-center transition-colors ${
+                          isChecked
+                            ? 'bg-neutral-900 border-neutral-900 text-white'
+                            : 'border-neutral-300 bg-white'
+                        }`}
+                      >
+                        {isChecked && <Check className="w-3.5 h-3.5" />}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Save Button */}
+              <div className="flex justify-end pt-3">
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="px-4 py-2.5 bg-neutral-900 text-white hover:bg-neutral-800 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div>
-                    <p className="text-sm text-neutral-900">{v.label}</p>
-                    <code className="text-xs text-neutral-500">{v.key}</code>
-                  </div>
-                  {isPublic ? (
-                    value ? (
-                      <div className="flex items-center gap-1.5 text-xs text-green-600">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Set
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5 text-xs text-amber-600">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        Not set
-                      </div>
-                    )
+                  {isSaving ? (
+                    <>
+                      <LoadingSpinner size={16} />
+                      Saving...
+                    </>
                   ) : (
-                    <span className="text-xs text-neutral-400">Server-only</span>
+                    <>
+                      <Save className="w-4 h-4" />
+                      Save Settings
+                    </>
                   )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* File Upload Config */}
-        <div className="bg-white border border-neutral-200">
-          <div className="px-4 py-3 border-b border-neutral-200">
-            <h2 className="text-sm font-semibold text-neutral-900">
-              Upload Configuration
-            </h2>
-          </div>
-          <div className="divide-y divide-neutral-100">
-            <SettingRow label="Max File Size" value="10 MB" />
-            <SettingRow label="Accepted Formats" value="JPG, PNG, WebP" />
-            <SettingRow label="Storage" value="GitHub Repository" />
-            <SettingRow label="Metadata" value="JSON Index (data/uploads.json)" />
-          </div>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
     </>
-  );
-}
-
-function SettingRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between px-4 py-3">
-      <span className="text-sm text-neutral-600">{label}</span>
-      <span className="text-sm text-neutral-900 font-medium">{value}</span>
-    </div>
   );
 }

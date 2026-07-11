@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { uploadFile, getPublicUrl } from '@/lib/r2/client';
-import { addFile } from '@/lib/uploads/metadata';
+import { addFile, getAppConfig } from '@/lib/uploads/metadata';
 import {
   generateUniqueFileName,
   generateUploadPath,
@@ -8,8 +8,6 @@ import {
   sanitizeFileName,
 } from '@/lib/uploads/file-utils';
 import {
-  validateFileExtension,
-  validateMimeType,
   validateFileSize,
   MAX_FILE_SIZE,
 } from '@/lib/validation/schemas';
@@ -30,16 +28,17 @@ export async function POST(request: Request) {
 
     // ── Server-side validation ──────────────────────────────────────────
 
-    if (!validateMimeType(file.type)) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Invalid file type. Only JPG, PNG, and WebP are allowed.' },
-        { status: 400 }
-      );
-    }
+    const config = await getAppConfig();
 
-    if (!validateFileExtension(file.name)) {
+    if (!config.allowedTypes.includes(file.type)) {
+      const allowedNames = config.allowedTypes
+        .map((t) => t.split('/')[1]?.toUpperCase() || t)
+        .join(', ');
       return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Invalid file extension.' },
+        {
+          success: false,
+          error: `Invalid file type. Allowed formats: ${allowedNames || 'None'}`,
+        },
         { status: 400 }
       );
     }
