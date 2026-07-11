@@ -57,7 +57,10 @@ export async function POST(request: Request) {
     // ── Process file ────────────────────────────────────────────────────
 
     const uploadFolder = process.env.GITHUB_UPLOAD_FOLDER || 'public-uploads'; // Reuse same layout folder config name or R2 key prefix
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    let appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    if (!appUrl.startsWith('http://') && !appUrl.startsWith('https://')) {
+      appUrl = `https://${appUrl}`;
+    }
 
     const originalName = sanitizeFileName(file.name);
     const storedName = generateUniqueFileName(originalName);

@@ -158,6 +158,9 @@ export function getPublicUrl(key: string): string {
     return `${base}/${key}`;
   }
   
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  let appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  if (!appUrl.startsWith('http://') && !appUrl.startsWith('https://')) {
+    appUrl = `https://${appUrl}`;
+  }
   return `${appUrl}/api/raw?key=${encodeURIComponent(key)}`;
 }
