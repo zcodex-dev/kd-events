@@ -131,3 +131,29 @@ export function isToday(dateString: string): boolean {
     date.getDate() === today.getDate()
   );
 }
+
+// ─── Resolve URL ────────────────────────────────────────────────────────────
+
+/**
+ * Rewrites any localhost image or share URLs dynamically to point to the current host origin.
+ * This acts as a fallback for files uploaded during testing/misconfiguration.
+ */
+export function resolveUrl(urlStr: string): string {
+  if (typeof window === 'undefined') return urlStr;
+  try {
+    const url = new URL(urlStr);
+    if (
+      (url.pathname.startsWith('/api/raw') || url.pathname.startsWith('/view')) &&
+      url.host !== window.location.host
+    ) {
+      url.protocol = window.location.protocol;
+      url.host = window.location.host;
+      return url.toString();
+    }
+  } catch {
+    // Non-critical parsing fallback
+  }
+  return urlStr;
+}
+
+

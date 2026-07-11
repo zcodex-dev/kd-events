@@ -17,7 +17,7 @@ import {
 import { toast } from 'sonner';
 import { Toaster } from 'sonner';
 import type { UploadedFile } from '@/types';
-import { formatFileSize, formatDate } from '@/lib/uploads/file-utils';
+import { formatFileSize, formatDate, resolveUrl } from '@/lib/uploads/file-utils';
 
 type ViewPageClientProps = {
   file: UploadedFile;
@@ -26,23 +26,7 @@ type ViewPageClientProps = {
 export function ViewPageClient({ file }: ViewPageClientProps) {
   const [copied, setCopied] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [resolvedImageUrl, setResolvedImageUrl] = useState(file.imageUrl);
-
-  // Dynamic URL rewrite for API proxy fallback (e.g., from localhost to live domain)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const url = new URL(file.imageUrl);
-        if (url.pathname === '/api/raw' && url.host !== window.location.host) {
-          url.protocol = window.location.protocol;
-          url.host = window.location.host;
-          setResolvedImageUrl(url.toString());
-        }
-      } catch {
-        // Non-critical URL parsing fallback
-      }
-    }
-  }, [file.imageUrl]);
+  const imageUrl = resolveUrl(file.imageUrl);
 
   // Increment view count on mount
   useEffect(() => {
@@ -64,7 +48,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
 
   const downloadFile = () => {
     const link = document.createElement('a');
-    link.href = resolvedImageUrl;
+    link.href = imageUrl;
     link.download = file.originalName;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
@@ -111,7 +95,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
           <div className="bg-white border border-neutral-200 p-2 sm:p-4 mb-6">
             <div className="relative flex items-center justify-center bg-neutral-50 min-h-[200px]">
               <Image
-                src={resolvedImageUrl}
+                src={imageUrl}
                 alt={file.originalName}
                 width={file.width || 800}
                 height={file.height || 600}
@@ -210,7 +194,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
             <X className="w-6 h-6" />
           </button>
           <Image
-            src={resolvedImageUrl}
+            src={imageUrl}
             alt={file.originalName}
             width={file.width || 1920}
             height={file.height || 1080}

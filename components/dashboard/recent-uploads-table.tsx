@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { UploadedFile } from '@/types';
-import { formatFileSize, formatDate } from '@/lib/uploads/file-utils';
+import { formatFileSize, formatDate, resolveUrl } from '@/lib/uploads/file-utils';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { RenameDialog } from '@/components/files/rename-dialog';
@@ -142,7 +142,7 @@ export function RecentUploadsTable({
                   {/* Thumbnail */}
                   <div className="w-10 h-10 bg-neutral-100 overflow-hidden shrink-0">
                     <Image
-                      src={file.imageUrl}
+                      src={resolveUrl(file.imageUrl)}
                       alt={file.originalName}
                       width={40}
                       height={40}
@@ -198,7 +198,7 @@ export function RecentUploadsTable({
                               icon={ExternalLink}
                               label="View"
                               onClick={() => {
-                                window.open(file.shareUrl, '_blank');
+                                window.open(resolveUrl(file.shareUrl), '_blank');
                                 setOpenMenuId(null);
                               }}
                             />
@@ -206,7 +206,7 @@ export function RecentUploadsTable({
                               icon={copiedId === `img-${file.id}` ? Check : Copy}
                               label="Copy Image URL"
                               onClick={() => {
-                                copyToClipboard(file.imageUrl, `img-${file.id}`, 'Image URL');
+                                copyToClipboard(resolveUrl(file.imageUrl), `img-${file.id}`, 'Image URL');
                                 setOpenMenuId(null);
                               }}
                             />
@@ -214,7 +214,7 @@ export function RecentUploadsTable({
                               icon={copiedId === `share-${file.id}` ? Check : Link2}
                               label="Copy Share Link"
                               onClick={() => {
-                                copyToClipboard(file.shareUrl, `share-${file.id}`, 'Share link');
+                                copyToClipboard(resolveUrl(file.shareUrl), `share-${file.id}`, 'Share link');
                                 setOpenMenuId(null);
                               }}
                             />
@@ -263,7 +263,7 @@ export function RecentUploadsTable({
                 <div className="md:hidden flex items-center gap-3 p-4">
                   <div className="w-12 h-12 bg-neutral-100 overflow-hidden shrink-0">
                     <Image
-                      src={file.imageUrl}
+                      src={resolveUrl(file.imageUrl)}
                       alt={file.originalName}
                       width={48}
                       height={48}
@@ -299,9 +299,9 @@ export function RecentUploadsTable({
                             transition={{ duration: 0.1 }}
                             className="absolute right-0 top-10 z-20 w-48 bg-white border border-neutral-200 py-1"
                           >
-                            <ActionMenuItem icon={ExternalLink} label="View" onClick={() => { window.open(file.shareUrl, '_blank'); setOpenMenuId(null); }} />
-                            <ActionMenuItem icon={Copy} label="Copy Image URL" onClick={() => { copyToClipboard(file.imageUrl, `img-${file.id}`, 'Image URL'); setOpenMenuId(null); }} />
-                            <ActionMenuItem icon={Link2} label="Copy Share Link" onClick={() => { copyToClipboard(file.shareUrl, `share-${file.id}`, 'Share link'); setOpenMenuId(null); }} />
+                            <ActionMenuItem icon={ExternalLink} label="View" onClick={() => { window.open(resolveUrl(file.shareUrl), '_blank'); setOpenMenuId(null); }} />
+                            <ActionMenuItem icon={Copy} label="Copy Image URL" onClick={() => { copyToClipboard(resolveUrl(file.imageUrl), `img-${file.id}`, 'Image URL'); setOpenMenuId(null); }} />
+                            <ActionMenuItem icon={Link2} label="Copy Share Link" onClick={() => { copyToClipboard(resolveUrl(file.shareUrl), `share-${file.id}`, 'Share link'); setOpenMenuId(null); }} />
                             <ActionMenuItem icon={QrCode} label="QR Code" onClick={() => { setQrFile(file); setOpenMenuId(null); }} />
                             <ActionMenuItem icon={Download} label="Download" onClick={() => { downloadImage(file); setOpenMenuId(null); }} />
                             <ActionMenuItem icon={Pencil} label="Rename" onClick={() => { setRenameFile(file); setOpenMenuId(null); }} />
@@ -377,7 +377,7 @@ function ActionMenuItem({
 
 function downloadImage(file: UploadedFile) {
   const link = document.createElement('a');
-  link.href = file.imageUrl;
+  link.href = resolveUrl(file.imageUrl);
   link.download = file.originalName;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
