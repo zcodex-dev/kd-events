@@ -113,7 +113,7 @@ export function RecentUploadsTable({
 
   return (
     <>
-      <div className="bg-white border border-neutral-200 overflow-x-auto">
+      <div className="bg-white border border-neutral-200 overflow-x-auto min-h-[350px]">
         <div className="min-w-[640px] md:min-w-0">
           {/* Table header - desktop */}
           <div className="hidden md:grid grid-cols-[auto_1fr_80px_80px_100px_80px_60px] gap-4 items-center px-4 py-3 border-b border-neutral-200 bg-neutral-50 text-xs font-medium text-neutral-500 uppercase tracking-wider">
