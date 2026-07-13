@@ -15,14 +15,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!file) {
     return {
-      title: 'File Not Found — FileUpload',
+      title: 'FILE NOT FOUND — KOMPONG DEWA EVENTS',
     };
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   return {
-    title: `${file.originalName} — FileUpload`,
+    title: `${file.originalName.toUpperCase()} — KOMPONG DEWA EVENTS`,
     description: `View and download ${file.originalName}`,
     openGraph: {
       title: file.originalName,

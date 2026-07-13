@@ -15,7 +15,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "FileUpload — Image Sharing Dashboard",
+  title: "KOMPONG DEWA EVENTS",
   description:
     "Upload images, generate shareable links and QR codes. A minimal file-sharing dashboard.",
 };
