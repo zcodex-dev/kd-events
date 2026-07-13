@@ -58,9 +58,9 @@ function LoginForm() {
         <Image
           src="/logo.png"
           alt="Kompong Dewa Logo"
-          width={200}
-          height={50}
-          className="h-10 w-auto shrink-0 object-contain"
+          width={320}
+          height={80}
+          className="h-16 w-auto shrink-0 object-contain"
           unoptimized
           priority
         />
