@@ -135,14 +135,17 @@ export default function LoginPage() {
       >
         {/* Brand */}
         <div className="flex items-center justify-center gap-3 mb-8">
-          <Image
-            src="/logo.png"
-            alt="Kompong Dewa Logo"
-            width={32}
-            height={32}
-            className="h-8 w-auto shrink-0 object-contain"
-            unoptimized
-          />
+          <div className="logo-container-sweep">
+            <Image
+              src="/logo.png"
+              alt="Kompong Dewa Logo"
+              width={32}
+              height={32}
+              className="h-8 w-auto shrink-0 object-contain"
+              unoptimized
+            />
+            <div className="logo-sweep-overlay" />
+          </div>
           <span className="text-lg font-bold gold-gradient-text tracking-wider uppercase">
             KOMPONG DEWA EVENTS
           </span>

@@ -48,14 +48,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Brand */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-neutral-200">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={24}
-              height={24}
-              className="h-6 w-auto shrink-0 object-contain"
-              unoptimized
-            />
+            <div className="logo-container-sweep">
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={24}
+                height={24}
+                className="h-6 w-auto shrink-0 object-contain"
+                unoptimized
+              />
+              <div className="logo-sweep-overlay" />
+            </div>
             <span className="font-bold text-[13px] gold-gradient-text tracking-wide uppercase">
               KOMPONG DEWA EVENTS
             </span>

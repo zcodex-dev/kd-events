@@ -73,18 +73,18 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
         {/* Navigation / Header */}
         <header className="bg-black border-b border-neutral-900 sticky top-0 z-40">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Kompong Dewa Logo"
-                width={40}
-                height={40}
-                className="h-10 w-auto shrink-0 object-contain"
-                unoptimized
-              />
-              <span className="text-xl sm:text-2xl font-black gold-gradient-text tracking-wider uppercase">
-                KOMPONG DEWA EVENTS
-              </span>
+            <div className="flex items-center">
+              <div className="logo-container-sweep py-1">
+                <Image
+                  src="/logo.png"
+                  alt="Kompong Dewa Logo"
+                  width={220}
+                  height={48}
+                  className="h-12 w-auto shrink-0 object-contain"
+                  unoptimized
+                />
+                <div className="logo-sweep-overlay" />
+              </div>
             </div>
             <div className="flex items-center gap-2 text-xs text-neutral-400 font-medium bg-neutral-900 border border-neutral-800 px-2.5 py-1 rounded-full">
               <Calendar className="w-3.5 h-3.5 text-neutral-500" />
