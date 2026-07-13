@@ -57,26 +57,31 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
       .catch(() => {});
   }, [file]);
 
+  // Sync state helper
+  const syncFileState = (f: UploadedFile) => {
+    const flatList = [
+      {
+        id: 'main',
+        originalName: f.originalName,
+        storedName: f.storedName,
+        githubPath: f.githubPath,
+        imageUrl: f.imageUrl,
+        mimeType: f.mimeType,
+        size: f.size,
+        width: f.width,
+        height: f.height,
+        uploadedAt: f.uploadedAt,
+      },
+      ...(f.additionalImages || []),
+    ];
+    setOrderedImages(flatList);
+    setIsDirty(false);
+  };
+
   // Sync state when file changes
   useEffect(() => {
     if (file) {
-      const flatList = [
-        {
-          id: 'main',
-          originalName: file.originalName,
-          storedName: file.storedName,
-          githubPath: file.githubPath,
-          imageUrl: file.imageUrl,
-          mimeType: file.mimeType,
-          size: file.size,
-          width: file.width,
-          height: file.height,
-          uploadedAt: file.uploadedAt,
-        },
-        ...(file.additionalImages || []),
-      ];
-      setOrderedImages(flatList);
-      setIsDirty(false);
+      syncFileState(file);
     }
   }, [file]);
 
@@ -106,10 +111,10 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
       const data = await res.json();
       if (data.success) {
         toast.success('Gallery order updated successfully');
-        setIsDirty(false);
         onSuccess();
         if (data.data) {
           Object.assign(file, data.data);
+          syncFileState(data.data);
         }
       } else {
         toast.error(data.error || 'Failed to update order');
@@ -190,6 +195,10 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
       if (data.success) {
         toast.success('Main image replaced successfully');
         onSuccess();
+        if (data.data) {
+          Object.assign(file, data.data);
+          syncFileState(data.data);
+        }
         // Update local state preview
         setSelectedMainFile(null);
         setMainPreview(null);
@@ -228,10 +237,9 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
         setSelectedAddFile(null);
         setAddPreview(null);
         setAddDimensions(null);
-        // Refresh local file details by fetching updated record
         if (data.data) {
-          // Temporarily merge file details
           Object.assign(file, data.data);
+          syncFileState(data.data);
         }
       } else {
         toast.error(data.error || 'Failed to add image');
@@ -257,6 +265,7 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
         onSuccess();
         if (data.data) {
           Object.assign(file, data.data);
+          syncFileState(data.data);
         }
       } else {
         toast.error(data.error || 'Failed to delete image');
@@ -487,12 +496,12 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
                         </div>
 
                         {/* Delete Button (Only for secondary gallery items) */}
-                        {img.id !== 'main' && (
+                        {idx !== 0 && (
                           <button
                             onClick={() => handleDeleteImage(img.id)}
-                            disabled={deleteImageId === img.id || isSavingOrder}
-                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0 border border-transparent"
-                            title="Delete additional image"
+                            disabled={deleteImageId === img.id || isSavingOrder || isDirty}
+                            className={`p-1.5 rounded-lg transition-colors shrink-0 border border-transparent ${isDirty ? 'text-neutral-300' : 'text-red-500 hover:bg-red-50 cursor-pointer'}`}
+                            title={isDirty ? "Save order before deleting" : "Delete additional image"}
                           >
                             {deleteImageId === img.id ? (
                               <LoadingSpinner size={14} />
