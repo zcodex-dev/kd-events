@@ -25,6 +25,7 @@ function getS3Client(): S3Client {
     s3ClientInstance = new S3Client({
       region: 'auto',
       endpoint,
+      forcePathStyle: true, // Required for Cloudflare R2 — prevents virtual-hosted style URLs
       credentials: {
         accessKeyId,
         secretAccessKey,
