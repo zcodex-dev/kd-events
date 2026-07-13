@@ -88,15 +88,15 @@ export default function SettingsPage() {
         transition={{ duration: 0.3 }}
         className="p-4 sm:p-6"
       >
-        <div className="bg-white border border-neutral-200 rounded-xl shadow-xs overflow-hidden">
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xs overflow-hidden">
           {/* Section Header */}
-          <div className="px-5 py-4 border-b border-neutral-200 flex items-center gap-2">
-            <FileCode2 className="w-4 h-4 text-blue-600" />
+          <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-2">
+            <FileCode2 className="w-4 h-4 text-blue-600 dark:text-blue-500" />
             <div>
-              <h2 className="text-sm font-semibold text-neutral-900">
+              <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
                 Allowed File Formats
               </h2>
-              <p className="text-xs text-neutral-500 mt-0.5">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                 Enable or disable specific file extensions for uploads.
               </p>
             </div>
@@ -117,13 +117,13 @@ export default function SettingsPage() {
                     <div
                       key={t.id}
                       onClick={() => handleToggle(t.id)}
-                      className="flex items-center justify-between p-3 border border-neutral-200 hover:bg-neutral-50 cursor-pointer transition-colors rounded-lg"
+                      className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors rounded-lg"
                     >
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-neutral-900">
+                        <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                           {t.label}
                         </span>
-                        <code className="text-xs text-neutral-500 mt-0.5">
+                        <code className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                           {t.ext}
                         </code>
                       </div>
@@ -132,8 +132,8 @@ export default function SettingsPage() {
                       <div
                         className={`w-5 h-5 border flex items-center justify-center rounded-md transition-colors ${
                           isChecked
-                            ? 'bg-neutral-900 border-neutral-900 text-white'
-                            : 'border-neutral-300 bg-white'
+                            ? 'bg-neutral-900 border-neutral-900 text-white dark:bg-white dark:border-white dark:text-neutral-900'
+                            : 'border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900'
                         }`}
                       >
                         {isChecked && <Check className="w-3.5 h-3.5" />}

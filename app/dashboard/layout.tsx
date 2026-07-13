@@ -50,9 +50,9 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-50 gap-3">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-neutral-50 dark:bg-neutral-950 gap-3">
         <LoadingSpinner size={32} />
-        <span className="text-sm font-medium text-neutral-500 font-sans">
+        <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400 font-sans">
           Loading events console...
         </span>
       </div>
@@ -60,7 +60,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-neutral-50 font-sans">
+    <div className="flex h-screen bg-neutral-50 dark:bg-neutral-950 font-sans transition-colors">
       <Sidebar 
         isOpen={sidebarOpen} 
         onClose={() => setSidebarOpen(false)} 

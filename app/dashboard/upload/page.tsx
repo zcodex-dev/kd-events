@@ -24,10 +24,10 @@ export default function UploadPage() {
     return (
       <>
         <Header title="Upload Files" onMenuClick={openSidebar} />
-        <div className="max-w-md mx-auto mt-20 p-6 bg-white border border-neutral-200 rounded-2xl shadow-sm text-center font-sans">
+        <div className="max-w-md mx-auto mt-20 p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm text-center font-sans">
           <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-base font-bold text-neutral-900">Access Denied</h2>
-          <p className="text-xs text-neutral-500 mt-2">
+          <h2 className="text-base font-bold text-neutral-900 dark:text-white">Access Denied</h2>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
             You do not have permission to upload new files. Please contact an administrator.
           </p>
         </div>

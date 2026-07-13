@@ -121,9 +121,9 @@ export function RecentUploadsTable({
 
   return (
     <>
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-xs">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xs">
           {/* Table header - desktop */}
-          <div className="hidden md:grid grid-cols-[auto_1fr_80px_80px_100px_80px_60px] gap-4 items-center px-4 py-3 border-b border-neutral-200 bg-neutral-50 text-xs font-medium text-neutral-500 uppercase tracking-wider">
+          <div className="hidden md:grid grid-cols-[auto_1fr_80px_80px_100px_80px_60px] gap-4 items-center px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
           <div className="w-10" />
           <div>Name</div>
           <div>Type</div>
@@ -134,7 +134,7 @@ export function RecentUploadsTable({
         </div>
 
         {/* Table rows */}
-        <div className="divide-y divide-neutral-100">
+        <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
           <AnimatePresence>
             {displayFiles.map((file) => (
               <motion.div
@@ -146,9 +146,9 @@ export function RecentUploadsTable({
                 className="relative group"
               >
                 {/* Desktop row */}
-                <div className="hidden md:grid grid-cols-[auto_1fr_80px_80px_100px_80px_60px] gap-4 items-center px-4 py-3 hover:bg-neutral-50 transition-colors">
+                <div className="hidden md:grid grid-cols-[auto_1fr_80px_80px_100px_80px_60px] gap-4 items-center px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                   {/* Thumbnail */}
-                  <div className="w-10 h-10 bg-neutral-100 overflow-hidden shrink-0 rounded-md border border-neutral-100">
+                  <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 overflow-hidden shrink-0 rounded-md border border-neutral-100 dark:border-neutral-700">
                     <Image
                       src={resolveUrl(file.imageUrl)}
                       alt={file.originalName}
@@ -161,28 +161,28 @@ export function RecentUploadsTable({
 
                   {/* Name */}
                   <div className="min-w-0">
-                    <p className="text-sm text-neutral-900 truncate">{file.originalName}</p>
+                    <p className="text-sm text-neutral-900 dark:text-neutral-100 truncate">{file.originalName}</p>
                   </div>
 
                   {/* Type */}
-                  <div className="text-xs text-neutral-500">
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
                     {file.mimeType.split('/')[1]?.toUpperCase()}
                   </div>
 
                   {/* Size */}
-                  <div className="text-xs text-neutral-500">{formatFileSize(file.size)}</div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">{formatFileSize(file.size)}</div>
 
                   {/* Date */}
-                  <div className="text-xs text-neutral-500">{formatDate(file.uploadedAt)}</div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">{formatDate(file.uploadedAt)}</div>
 
                   {/* Views */}
-                  <div className="text-xs text-neutral-500">{file.viewCount}</div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">{file.viewCount}</div>
 
                   {/* Actions menu */}
                   <div className="relative">
                     <button
                       onClick={() => setOpenMenuId(openMenuId === file.id ? null : file.id)}
-                      className="p-1.5 text-neutral-400 hover:text-neutral-600 transition-colors"
+                      className="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
                       aria-label="Actions"
                     >
                       <MoreHorizontal className="w-4 h-4" />
@@ -200,7 +200,7 @@ export function RecentUploadsTable({
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -4 }}
                             transition={{ duration: 0.1 }}
-                            className="absolute right-0 top-8 z-20 w-48 bg-white border border-neutral-200 py-1 rounded-lg shadow-lg"
+                            className="absolute right-0 top-8 z-20 w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 py-1 rounded-lg shadow-lg"
                           >
                             <ActionMenuItem
                               icon={ExternalLink}
@@ -396,8 +396,8 @@ function ActionMenuItem({
       className={`
         w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors
         ${destructive
-          ? 'text-red-600 hover:bg-red-50'
-          : 'text-neutral-700 hover:bg-neutral-50'
+          ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
+          : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-800'
         }
       `}
     >

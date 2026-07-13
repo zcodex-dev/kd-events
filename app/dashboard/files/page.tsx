@@ -56,14 +56,14 @@ export default function AllFilesPage() {
         {/* Search & Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Search */}
-          <div className="flex-1 flex items-center border border-neutral-200 bg-white">
+          <div className="flex-1 flex items-center border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-md">
             <Search className="w-4 h-4 text-neutral-400 ml-3" />
             <input
               type="text"
               placeholder="Search files..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-3 py-2.5 text-sm text-neutral-900 bg-transparent border-none focus:outline-none"
+              className="flex-1 px-3 py-2.5 text-sm text-neutral-900 dark:text-white bg-transparent border-none focus:outline-none placeholder:text-neutral-500"
               aria-label="Search files"
             />
           </div>
@@ -73,7 +73,7 @@ export default function AllFilesPage() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-3 py-2 text-sm border border-neutral-200 bg-white text-neutral-700 focus:outline-none focus:border-blue-500"
+              className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-blue-500 rounded-md"
               aria-label="Filter by type"
             >
               <option value="">All Types</option>
@@ -85,7 +85,7 @@ export default function AllFilesPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 text-sm border border-neutral-200 bg-white text-neutral-700 focus:outline-none focus:border-blue-500"
+              className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-blue-500 rounded-md"
               aria-label="Sort by"
             >
               <option value="newest">Newest</option>
@@ -99,7 +99,7 @@ export default function AllFilesPage() {
 
         {/* File count */}
         {!isLoading && (
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
             {files.length} file{files.length !== 1 ? 's' : ''}
             {searchQuery && ` matching "${searchQuery}"`}
           </p>

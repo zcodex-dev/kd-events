@@ -48,7 +48,7 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
-            className="bg-white border border-neutral-200 p-5 rounded-xl shadow-xs"
+            className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-5 rounded-xl shadow-xs"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
@@ -56,7 +56,7 @@ export function StatsCards({ stats, isLoading }: StatsCardsProps) {
               </span>
               <Icon className="w-4 h-4 text-neutral-400" strokeWidth={1.75} />
             </div>
-            <div className="text-2xl font-semibold text-neutral-900">
+            <div className="text-2xl font-semibold text-neutral-900 dark:text-white">
               {isLoading ? (
                 <div className="h-8 w-16 bg-neutral-100 animate-pulse" />
               ) : (

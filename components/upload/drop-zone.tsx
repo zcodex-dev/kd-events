@@ -164,8 +164,8 @@ export function DropZone({
           flex flex-col items-center justify-center text-center
           ${
             isDragOver
-              ? 'border-blue-400 bg-blue-50'
-              : 'border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50'
+              ? 'border-blue-400 bg-blue-50 dark:border-blue-500/50 dark:bg-blue-900/20'
+              : 'border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:bg-neutral-800/50'
           }
         `}
         role="button"
@@ -179,10 +179,10 @@ export function DropZone({
           className={`w-8 h-8 mb-3 ${isDragOver ? 'text-blue-500' : 'text-neutral-400'}`}
           strokeWidth={1.5}
         />
-        <p className="text-sm font-medium text-neutral-700 mb-1">
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
           {isDragOver ? 'Drop files here' : 'Click to upload or drag and drop'}
         </p>
-        <p className="text-xs text-neutral-500">
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">
           JPG, PNG, WebP — up to {formatFileSize(MAX_FILE_SIZE)}
         </p>
 
@@ -206,7 +206,7 @@ export function DropZone({
           className="mt-4"
         >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-neutral-700">
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               {files.length} file{files.length !== 1 ? 's' : ''} selected
             </span>
             <button
@@ -230,16 +230,16 @@ export function DropZone({
           </div>
 
           {/* Album Grouping Options */}
-          <div className="mt-4 p-4 bg-neutral-50 border border-neutral-200 rounded-xl space-y-3.5">
+          <div className="mt-4 p-4 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3.5">
             <label className="flex items-center gap-2.5 cursor-pointer">
               <input
                 type="checkbox"
                 checked={groupAsAlbum}
                 onChange={(e) => setGroupAsAlbum(e.target.checked)}
-                className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-700 text-neutral-900 focus:ring-neutral-900"
                 disabled={isUploading}
               />
-              <span className="text-xs font-semibold text-neutral-800">
+              <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                 Group all uploaded files into a single page (Album / Event Gallery)
               </span>
             </label>
@@ -256,7 +256,7 @@ export function DropZone({
                   onChange={(e) => setAlbumTitle(e.target.value)}
                   disabled={isUploading}
                   placeholder="e.g. KD_Poker High Hand Progressive Jackpot"
-                  className="w-full px-3 py-2 text-xs border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 transition-colors"
+                  className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white rounded-lg focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-600 transition-colors"
                 />
               </div>
             )}
@@ -284,7 +284,7 @@ export function DropZone({
             <button
               onClick={clearAll}
               disabled={isUploading}
-              className="px-5 py-2.5 text-sm text-neutral-700 border border-neutral-200 hover:bg-neutral-50 rounded-lg transition-colors disabled:opacity-50"
+              className="px-5 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 rounded-lg transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

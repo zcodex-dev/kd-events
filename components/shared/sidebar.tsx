@@ -54,14 +54,14 @@ export function Sidebar({ isOpen, onClose, session }: SidebarProps) {
 
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-neutral-200
+          fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800
           transform transition-transform duration-200 ease-in-out
           lg:translate-x-0 lg:static lg:z-auto
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
         {/* Brand */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-neutral-200">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-neutral-200 dark:border-neutral-800">
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="logo-container-sweep">
               <Image
@@ -74,13 +74,10 @@ export function Sidebar({ isOpen, onClose, session }: SidebarProps) {
               />
               <div className="logo-sweep-overlay" />
             </div>
-            <span className="font-bold text-[13px] gold-gradient-text tracking-wide uppercase">
-              KOMPONG DEWA EVENTS
-            </span>
           </Link>
           <button
             onClick={onClose}
-            className="lg:hidden p-1 text-neutral-400 hover:text-neutral-600"
+            className="lg:hidden p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5" />
@@ -103,11 +100,11 @@ export function Sidebar({ isOpen, onClose, session }: SidebarProps) {
                     onClick={onClose}
                     className={`
                       flex items-center gap-3 px-3 py-2.5 text-sm font-medium
-                      transition-colors duration-150
+                      transition-colors duration-150 rounded-md
                       ${
                         isActive
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
+                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
                       }
                     `}
                   >

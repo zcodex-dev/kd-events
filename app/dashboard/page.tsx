@@ -71,7 +71,7 @@ export default function DashboardPage() {
         {/* Recent uploads */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-neutral-900">
+            <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
               Recent Uploads
             </h2>
             <Link
