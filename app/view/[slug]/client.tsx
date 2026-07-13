@@ -93,22 +93,20 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6"
+          className="max-w-5xl mx-auto py-6 sm:py-10 space-y-6"
         >
           {/* Main Primary Image */}
-          <div className="bg-white border border-neutral-200 p-2 sm:p-4 rounded-xl shadow-sm">
-            <div className="relative flex items-center justify-center bg-neutral-50 min-h-[200px] rounded-lg overflow-hidden">
-              <Image
-                src={imageUrl}
-                alt={file.originalName}
-                width={file.width || 800}
-                height={file.height || 600}
-                className="max-w-full max-h-[70vh] w-auto h-auto object-contain cursor-pointer transition-transform hover:scale-[1.01]"
-                onClick={() => setFullscreenUrl(imageUrl)}
-                unoptimized
-                priority
-              />
-            </div>
+          <div className="w-full flex justify-center bg-transparent">
+            <Image
+              src={imageUrl}
+              alt={file.originalName}
+              width={file.width || 1200}
+              height={file.height || 900}
+              className="w-full h-auto object-contain cursor-pointer"
+              onClick={() => setFullscreenUrl(imageUrl)}
+              unoptimized
+              priority
+            />
           </div>
 
           {/* Additional Images Stack */}
@@ -119,21 +117,21 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
                 return (
                   <div
                     key={img.id}
-                    className="bg-white border border-neutral-200 p-2 sm:p-4 rounded-xl shadow-sm"
+                    className="w-full space-y-2 bg-transparent"
                   >
-                    <div className="relative flex items-center justify-center bg-neutral-50 min-h-[200px] rounded-lg overflow-hidden">
+                    <div className="w-full flex justify-center">
                       <Image
                         src={resolvedAdditionalUrl}
                         alt={img.originalName}
-                        width={img.width || 800}
-                        height={img.height || 600}
-                        className="max-w-full max-h-[70vh] w-auto h-auto object-contain cursor-pointer transition-transform hover:scale-[1.01]"
+                        width={img.width || 1200}
+                        height={img.height || 900}
+                        className="w-full h-auto object-contain cursor-pointer"
                         onClick={() => setFullscreenUrl(resolvedAdditionalUrl)}
                         unoptimized
                       />
                     </div>
                     {/* Small image descriptor bar for extra context */}
-                    <div className="mt-2.5 px-1.5 flex items-center justify-between text-xs text-neutral-400">
+                    <div className="px-4 sm:px-0 flex items-center justify-between text-xs text-neutral-400">
                       <span className="truncate max-w-[70%] font-medium">
                         Artwork #{idx + 2}: {img.originalName}
                       </span>
@@ -152,7 +150,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
           )}
 
           {/* File info & actions */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pt-2">
+          <div className="px-4 sm:px-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pt-2">
             <div>
               <h1 className="text-lg font-semibold text-neutral-900 break-all">
                 {file.originalName}
