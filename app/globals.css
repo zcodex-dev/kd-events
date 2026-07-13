@@ -106,6 +106,7 @@ body {
 
 .logo-container-sweep {
   position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   -webkit-mask-image: url('/logo.png');

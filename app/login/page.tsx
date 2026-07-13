@@ -53,7 +53,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-2xl shadow-2xl w-full flex flex-col items-center">
+    <div className="bg-neutral-900 border border-neutral-800 p-10 rounded-2xl shadow-2xl w-full flex flex-col items-center">
       <div className="logo-container-sweep mb-8">
         <Image
           src="/logo.png"
@@ -83,7 +83,7 @@ function LoginForm() {
               id="username"
               type="text"
               {...register('username')}
-              className="w-full pl-10 pr-3 py-2.5 text-sm border border-neutral-800 bg-neutral-950 text-white rounded-lg focus:outline-none focus:border-neutral-700 transition-colors placeholder:text-neutral-600"
+              className="w-full pl-10 pr-3 py-3 text-sm border border-neutral-800 bg-neutral-950 text-white rounded-lg focus:outline-none focus:border-neutral-700 transition-colors placeholder:text-neutral-600"
               placeholder="Enter username"
             />
           </div>
@@ -107,7 +107,7 @@ function LoginForm() {
               id="password"
               type={showPassword ? 'text' : 'password'}
               {...register('password')}
-              className="w-full pl-10 pr-10 py-2.5 text-sm border border-neutral-800 bg-neutral-950 text-white rounded-lg focus:outline-none focus:border-neutral-700 transition-colors placeholder:text-neutral-600"
+              className="w-full pl-10 pr-10 py-3 text-sm border border-neutral-800 bg-neutral-950 text-white rounded-lg focus:outline-none focus:border-neutral-700 transition-colors placeholder:text-neutral-600"
               placeholder="Enter password"
               autoFocus
             />
@@ -138,7 +138,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-2.5 text-sm font-medium text-black bg-white hover:bg-neutral-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3 text-sm font-medium text-black bg-white hover:bg-neutral-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             <>
@@ -188,22 +188,27 @@ export default function LoginPage() {
       </div>
 
       {/* Right side 40% - Login Form Panel */}
-      <div className="w-full md:w-[40%] flex flex-col justify-center items-center p-6 sm:p-12 md:p-16 bg-neutral-950 min-h-screen overflow-y-auto">
+      <div className="w-full md:w-[40%] flex flex-col justify-center items-center p-6 sm:p-12 md:p-16 bg-neutral-950 min-h-screen overflow-y-auto relative">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-[400px] flex flex-col gap-8"
+          className="w-full max-w-[440px] flex flex-col gap-8"
         >
           {/* Form wrapped in Suspense for useSearchParams */}
           <Suspense fallback={
-            <div className="bg-neutral-900 border border-neutral-800 p-6 flex justify-center py-12 rounded-2xl shadow-xl">
+            <div className="bg-neutral-900 border border-neutral-800 p-10 flex justify-center py-12 rounded-2xl shadow-xl">
               <LoadingSpinner size={24} />
             </div>
           }>
             <LoginForm />
           </Suspense>
         </motion.div>
+
+        {/* Developer Credit Footer */}
+        <div className="absolute bottom-8 text-xs text-neutral-600">
+          Developer: <a href="https://t.me/sela2k26" target="_blank" rel="noopener noreferrer" className="text-neutral-500 hover:text-white transition-colors font-medium">SeLa</a>
+        </div>
       </div>
     </div>
   );
