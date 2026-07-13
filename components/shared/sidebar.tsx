@@ -67,9 +67,9 @@ export function Sidebar({ isOpen, onClose, session }: SidebarProps) {
               <Image
                 src="/logo.png"
                 alt="Logo"
-                width={24}
-                height={24}
-                className="h-6 w-auto shrink-0 object-contain"
+                width={160}
+                height={40}
+                className="h-10 w-auto shrink-0 object-contain"
                 unoptimized
               />
               <div className="logo-sweep-overlay" />

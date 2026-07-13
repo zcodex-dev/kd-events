@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Save, Check, FileCode2 } from 'lucide-react';
+import { Save, Check, FileCode2, ShieldAlert } from 'lucide-react';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
 import { LoadingSpinner } from '@/components/shared/loading';
@@ -18,13 +18,18 @@ const IMAGE_TYPES = [
 ];
 
 export default function SettingsPage() {
-  const { openSidebar } = useDashboard();
+  const { openSidebar, session } = useDashboard();
   const [allowedTypes, setAllowedTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   // Fetch the configuration on mount
   useEffect(() => {
+    if (session?.role !== 'admin') {
+      setIsLoading(false);
+      return;
+    }
+
     fetch('/api/config')
       .then((res) => res.json())
       .then((resData) => {
@@ -73,6 +78,22 @@ export default function SettingsPage() {
       setIsSaving(false);
     }
   };
+
+  // Unauthorized screen for non-admin
+  if (session?.role !== 'admin') {
+    return (
+      <>
+        <Header title="Settings" onMenuClick={openSidebar} />
+        <div className="max-w-md mx-auto mt-20 p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm text-center font-sans">
+          <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-base font-bold text-neutral-900 dark:text-white">Access Denied</h2>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+            You do not have permission to access the settings dashboard. Please contact a super admin.
+          </p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
