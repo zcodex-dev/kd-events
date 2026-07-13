@@ -14,6 +14,7 @@ import {
   Trash2,
   ImageIcon,
   Check,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { UploadedFile } from '@/types';
@@ -22,6 +23,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { RenameDialog } from '@/components/files/rename-dialog';
 import { QrDialog } from '@/components/files/qr-dialog';
+import { ReplaceDialog } from '@/components/files/replace-dialog';
 
 type RecentUploadsTableProps = {
   files: UploadedFile[];
@@ -40,6 +42,7 @@ export function RecentUploadsTable({
   const [deleteFile, setDeleteFile] = useState<UploadedFile | null>(null);
   const [renameFile, setRenameFile] = useState<UploadedFile | null>(null);
   const [qrFile, setQrFile] = useState<UploadedFile | null>(null);
+  const [replaceFile, setReplaceFile] = useState<UploadedFile | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -242,6 +245,14 @@ export function RecentUploadsTable({
                                 setOpenMenuId(null);
                               }}
                             />
+                            <ActionMenuItem
+                              icon={RefreshCw}
+                              label="Replace Image"
+                              onClick={() => {
+                                setReplaceFile(file);
+                                setOpenMenuId(null);
+                              }}
+                            />
                             <div className="border-t border-neutral-100 my-1" />
                             <ActionMenuItem
                               icon={Trash2}
@@ -305,6 +316,7 @@ export function RecentUploadsTable({
                             <ActionMenuItem icon={QrCode} label="QR Code" onClick={() => { setQrFile(file); setOpenMenuId(null); }} />
                             <ActionMenuItem icon={Download} label="Download" onClick={() => { downloadImage(file); setOpenMenuId(null); }} />
                             <ActionMenuItem icon={Pencil} label="Rename" onClick={() => { setRenameFile(file); setOpenMenuId(null); }} />
+                            <ActionMenuItem icon={RefreshCw} label="Replace Image" onClick={() => { setReplaceFile(file); setOpenMenuId(null); }} />
                             <div className="border-t border-neutral-100 my-1" />
                             <ActionMenuItem icon={Trash2} label="Delete" destructive onClick={() => { setDeleteFile(file); setOpenMenuId(null); }} />
                           </motion.div>
@@ -338,6 +350,12 @@ export function RecentUploadsTable({
       <QrDialog
         file={qrFile}
         onClose={() => setQrFile(null)}
+      />
+
+      <ReplaceDialog
+        file={replaceFile}
+        onClose={() => setReplaceFile(null)}
+        onSuccess={onRefresh}
       />
     </>
   );
