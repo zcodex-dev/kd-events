@@ -9,12 +9,14 @@ const SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 // ─── Session Encoding ───────────────────────────────────────────────────────
 
 function encodeSession(data: SessionData): string {
-  return Buffer.from(JSON.stringify(data)).toString('base64');
+  // Use btoa instead of Buffer — Edge Runtime compatible
+  return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
 }
 
 function decodeSession(value: string): SessionData | null {
   try {
-    const decoded = Buffer.from(value, 'base64').toString('utf-8');
+    // Use atob instead of Buffer — Edge Runtime compatible
+    const decoded = decodeURIComponent(escape(atob(value)));
     return JSON.parse(decoded) as SessionData;
   } catch {
     return null;
