@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ImageIcon, Lock, Eye, EyeOff } from 'lucide-react';
+import { ImageIcon, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { loginSchema, type LoginFormData } from '@/lib/validation/schemas';
 import { LoadingSpinner } from '@/components/shared/loading';
 
@@ -43,7 +43,7 @@ function LoginForm() {
       if (result.success) {
         router.push(redirect);
       } else {
-        setError(result.error || 'Invalid password');
+        setError(result.error || 'Invalid credentials');
       }
     } catch {
       setError('An error occurred. Please try again.');
@@ -55,13 +55,37 @@ function LoginForm() {
   return (
     <div className="bg-white border border-neutral-200 p-6 rounded-xl shadow-sm">
       <h1 className="text-base font-semibold text-neutral-900 mb-1">
-        Admin Login
+        Staff Sign In
       </h1>
       <p className="text-sm text-neutral-500 mb-6">
-        Enter your password to access the dashboard.
+        Enter your credentials to access the console.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="mb-4">
+          <label
+            htmlFor="username"
+            className="block text-xs font-medium text-neutral-500 mb-1.5"
+          >
+            Username (Optional)
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <User className="w-4 h-4 text-neutral-400" />
+            </div>
+            <input
+              id="username"
+              type="text"
+              {...register('username')}
+              className="w-full pl-10 pr-3 py-2.5 text-sm border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              placeholder="Default: admin"
+            />
+          </div>
+          {errors.username && (
+            <p className="text-xs text-red-600 mt-1">{errors.username.message}</p>
+          )}
+        </div>
+
         <div className="mb-4">
           <label
             htmlFor="password"
@@ -78,7 +102,7 @@ function LoginForm() {
               type={showPassword ? 'text' : 'password'}
               {...register('password')}
               className="w-full pl-10 pr-10 py-2.5 text-sm border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-              placeholder="Enter admin password"
+              placeholder="Enter password"
               autoFocus
             />
             <button

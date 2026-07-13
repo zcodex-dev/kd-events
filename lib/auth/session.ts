@@ -27,9 +27,16 @@ function decodeSession(value: string): SessionData | null {
 /**
  * Create a new authenticated session by setting an HTTP-only cookie.
  */
-export async function createSession(): Promise<void> {
+export async function createSession(
+  username = 'admin',
+  role: 'admin' | 'user' = 'admin',
+  permissions = { canUpload: true, canDelete: true, canReplace: true }
+): Promise<void> {
   const session: SessionData = {
     authenticated: true,
+    username,
+    role,
+    permissions,
     expiresAt: Date.now() + SESSION_DURATION_MS,
   };
 
@@ -41,6 +48,24 @@ export async function createSession(): Promise<void> {
     path: '/',
     maxAge: SESSION_DURATION_MS / 1000,
   });
+}
+
+/**
+ * Get the current session if authenticated.
+ */
+export async function getSession(): Promise<SessionData | null> {
+  const cookieStore = await cookies();
+  const cookie = cookieStore.get(SESSION_COOKIE_NAME);
+
+  if (!cookie) return null;
+
+  const session = decodeSession(cookie.value);
+  if (!session) return null;
+
+  if (!session.authenticated) return null;
+  if (session.expiresAt < Date.now()) return null;
+
+  return session;
 }
 
 /**

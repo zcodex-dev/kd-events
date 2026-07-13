@@ -11,11 +11,20 @@ import {
   validateFileSize,
   MAX_FILE_SIZE,
 } from '@/lib/validation/schemas';
+import { getSession } from '@/lib/auth/session';
 import type { ApiResponse, UploadedFile, UploadResult, AdditionalImage } from '@/types';
 import { nanoid } from 'nanoid';
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session || !session.permissions.canUpload) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Unauthorized. Upload permission required.' },
+        { status: 403 }
+      );
+    }
+
     const formData = await request.formData();
     
     // Support either multiple files ('files') or a single file ('file')

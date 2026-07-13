@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getFileById, updateFileRecord, getAppConfig } from '@/lib/uploads/metadata';
 import { deleteFile as r2Delete, uploadFile, getPublicUrl } from '@/lib/r2/client';
+import { getSession } from '@/lib/auth/session';
 import {
   sanitizeFileName,
   generateUniqueFileName,
@@ -13,6 +14,14 @@ type RouteParams = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: RouteParams) {
   try {
+    const session = await getSession();
+    if (!session || !session.permissions.canReplace) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Unauthorized. Modify permission required.' },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const fileRecord = await getFileById(id);
 

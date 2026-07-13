@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getFileById, updateFileRecord, removeFile } from '@/lib/uploads/metadata';
 import { deleteFile as r2Delete } from '@/lib/r2/client';
+import { getSession } from '@/lib/auth/session';
 import type { ApiResponse, UploadedFile } from '@/types';
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -36,6 +37,14 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
 export async function PATCH(request: Request, { params }: RouteParams) {
   try {
+    const session = await getSession();
+    if (!session || !session.permissions.canReplace) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Unauthorized. Modify permission required.' },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
 
@@ -71,6 +80,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
   try {
+    const session = await getSession();
+    if (!session || !session.permissions.canDelete) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Unauthorized. Delete permission required.' },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const file = await getFileById(id);
 

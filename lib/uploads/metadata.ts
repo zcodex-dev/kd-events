@@ -1,4 +1,4 @@
-import type { UploadedFile, MetadataIndex, AppConfig } from '@/types';
+import type { UploadedFile, MetadataIndex, AppConfig, SubUser } from '@/types';
 import { getFile, uploadFile, R2ApiError } from '@/lib/r2/client';
 
 // ─── Configuration ──────────────────────────────────────────────────────────
@@ -160,5 +160,57 @@ export async function updateAppConfig(config: AppConfig): Promise<AppConfig> {
   index.config = config;
   await writeIndex(index);
   return config;
+}
+
+/**
+ * Get all sub-users.
+ */
+export async function getAllUsers(): Promise<SubUser[]> {
+  const index = await readIndex();
+  return index.users || [];
+}
+
+/**
+ * Find a user by username.
+ */
+export async function getUserByUsername(username: string): Promise<SubUser | null> {
+  const index = await readIndex();
+  return (index.users || []).find((u) => u.username.toLowerCase() === username.toLowerCase()) || null;
+}
+
+/**
+ * Add a new user.
+ */
+export async function addUser(user: SubUser): Promise<void> {
+  const index = await readIndex();
+  if (!index.users) index.users = [];
+  index.users.push(user);
+  await writeIndex(index);
+}
+
+/**
+ * Update an existing user's details/permissions.
+ */
+export async function updateUser(id: string, updates: Partial<SubUser>): Promise<SubUser | null> {
+  const index = await readIndex();
+  if (!index.users) return null;
+  const userIdx = index.users.findIndex((u) => u.id === id);
+  if (userIdx === -1) return null;
+  index.users[userIdx] = { ...index.users[userIdx], ...updates };
+  await writeIndex(index);
+  return index.users[userIdx];
+}
+
+/**
+ * Remove a user by ID.
+ */
+export async function removeUser(id: string): Promise<boolean> {
+  const index = await readIndex();
+  if (!index.users) return false;
+  const initialLength = index.users.length;
+  index.users = index.users.filter((u) => u.id !== id);
+  if (index.users.length === initialLength) return false;
+  await writeIndex(index);
+  return true;
 }
 

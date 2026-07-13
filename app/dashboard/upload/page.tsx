@@ -7,10 +7,11 @@ import { Header } from '@/components/shared/header';
 import { DropZone } from '@/components/upload/drop-zone';
 import { UploadSuccessModal } from '@/components/upload/upload-success-modal';
 import { useDashboard } from '@/app/dashboard/layout';
+import { ShieldAlert } from 'lucide-react';
 import type { FileUploadItem, UploadResult } from '@/types';
 
 export default function UploadPage() {
-  const { openSidebar } = useDashboard();
+  const { openSidebar, session } = useDashboard();
   const [files, setFiles] = useState<FileUploadItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [successResult, setSuccessResult] = useState<UploadResult | null>(null);
@@ -18,6 +19,21 @@ export default function UploadPage() {
   // Album specific states
   const [groupAsAlbum, setGroupAsAlbum] = useState(false);
   const [albumTitle, setAlbumTitle] = useState('');
+
+  if (session && !session.permissions.canUpload) {
+    return (
+      <>
+        <Header title="Upload Files" onMenuClick={openSidebar} />
+        <div className="max-w-md mx-auto mt-20 p-6 bg-white border border-neutral-200 rounded-2xl shadow-sm text-center font-sans">
+          <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-base font-bold text-neutral-900">Access Denied</h2>
+          <p className="text-xs text-neutral-500 mt-2">
+            You do not have permission to upload new files. Please contact an administrator.
+          </p>
+        </div>
+      </>
+    );
+  }
 
   const handleUploadAlbum = useCallback(async (pendingFiles: FileUploadItem[]) => {
     setIsUploading(true);

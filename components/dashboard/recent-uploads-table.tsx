@@ -24,6 +24,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { RenameDialog } from '@/components/files/rename-dialog';
 import { QrDialog } from '@/components/files/qr-dialog';
 import { ReplaceDialog } from '@/components/files/replace-dialog';
+import { useDashboard } from '@/app/dashboard/layout';
 
 type RecentUploadsTableProps = {
   files: UploadedFile[];
@@ -38,6 +39,10 @@ export function RecentUploadsTable({
   onRefresh,
   limit,
 }: RecentUploadsTableProps) {
+  const { session } = useDashboard();
+  const canDelete = session?.permissions.canDelete ?? true;
+  const canReplace = session?.permissions.canReplace ?? true;
+
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deleteFile, setDeleteFile] = useState<UploadedFile | null>(null);
   const [renameFile, setRenameFile] = useState<UploadedFile | null>(null);
@@ -237,32 +242,40 @@ export function RecentUploadsTable({
                                 setOpenMenuId(null);
                               }}
                             />
-                            <ActionMenuItem
-                              icon={Pencil}
-                              label="Rename"
-                              onClick={() => {
-                                setRenameFile(file);
-                                setOpenMenuId(null);
-                              }}
-                            />
-                            <ActionMenuItem
-                              icon={RefreshCw}
-                              label="Manage Images"
-                              onClick={() => {
-                                setReplaceFile(file);
-                                setOpenMenuId(null);
-                              }}
-                            />
-                            <div className="border-t border-neutral-100 my-1" />
-                            <ActionMenuItem
-                              icon={Trash2}
-                              label="Delete"
-                              destructive
-                              onClick={() => {
-                                setDeleteFile(file);
-                                setOpenMenuId(null);
-                              }}
-                            />
+                            {canReplace && (
+                              <ActionMenuItem
+                                icon={Pencil}
+                                label="Rename"
+                                onClick={() => {
+                                  setRenameFile(file);
+                                  setOpenMenuId(null);
+                                }}
+                              />
+                            )}
+                            {canReplace && (
+                              <ActionMenuItem
+                                icon={RefreshCw}
+                                label="Manage Images"
+                                onClick={() => {
+                                  setReplaceFile(file);
+                                  setOpenMenuId(null);
+                                }}
+                              />
+                            )}
+                            {canDelete && (
+                              <>
+                                <div className="border-t border-neutral-100 my-1" />
+                                <ActionMenuItem
+                                  icon={Trash2}
+                                  label="Delete"
+                                  destructive
+                                  onClick={() => {
+                                    setDeleteFile(file);
+                                    setOpenMenuId(null);
+                                  }}
+                                />
+                              </>
+                            )}
                           </motion.div>
                         </>
                       )}
@@ -314,10 +327,14 @@ export function RecentUploadsTable({
                             <ActionMenuItem icon={Link2} label="Copy Share Link" onClick={() => { copyToClipboard(resolveUrl(file.shareUrl), `share-${file.id}`, 'Share link'); setOpenMenuId(null); }} />
                             <ActionMenuItem icon={QrCode} label="QR Code" onClick={() => { setQrFile(file); setOpenMenuId(null); }} />
                             <ActionMenuItem icon={Download} label="Download" onClick={() => { downloadImage(file); setOpenMenuId(null); }} />
-                            <ActionMenuItem icon={Pencil} label="Rename" onClick={() => { setRenameFile(file); setOpenMenuId(null); }} />
-                            <ActionMenuItem icon={RefreshCw} label="Manage Images" onClick={() => { setReplaceFile(file); setOpenMenuId(null); }} />
-                            <div className="border-t border-neutral-100 my-1" />
-                            <ActionMenuItem icon={Trash2} label="Delete" destructive onClick={() => { setDeleteFile(file); setOpenMenuId(null); }} />
+                            {canReplace && <ActionMenuItem icon={Pencil} label="Rename" onClick={() => { setRenameFile(file); setOpenMenuId(null); }} />}
+                            {canReplace && <ActionMenuItem icon={RefreshCw} label="Manage Images" onClick={() => { setReplaceFile(file); setOpenMenuId(null); }} />}
+                            {canDelete && (
+                              <>
+                                <div className="border-t border-neutral-100 my-1" />
+                                <ActionMenuItem icon={Trash2} label="Delete" destructive onClick={() => { setDeleteFile(file); setOpenMenuId(null); }} />
+                              </>
+                            )}
                           </motion.div>
                         </>
                       )}

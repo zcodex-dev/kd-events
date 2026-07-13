@@ -92,9 +92,27 @@ export type AppConfig = {
   allowedTypes: string[];
 };
 
+export type UserRole = 'admin' | 'user';
+
+export type UserPermissions = {
+  canUpload: boolean;
+  canDelete: boolean;
+  canReplace: boolean;
+};
+
+export type SubUser = {
+  id: string;
+  username: string;
+  password: string;
+  role: UserRole;
+  permissions: UserPermissions;
+  createdAt: string;
+};
+
 export type MetadataIndex = {
   files: UploadedFile[];
   config?: AppConfig;
+  users?: SubUser[];
   lastUpdated: string;
 };
 
@@ -110,10 +128,14 @@ export type DashboardStats = {
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 export type LoginCredentials = {
+  username?: string;
   password: string;
 };
 
 export type SessionData = {
   authenticated: boolean;
+  username: string;
+  role: UserRole;
+  permissions: UserPermissions;
   expiresAt: number;
 };

@@ -8,24 +8,39 @@ import {
   Upload,
   FolderOpen,
   Settings,
+  Users as UsersIcon,
   ImageIcon,
   X,
 } from 'lucide-react';
+import type { SessionData } from '@/types';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Upload Files', href: '/dashboard/upload', icon: Upload },
+  { label: 'Upload Files', href: '/dashboard/upload', icon: Upload, requiredPermission: 'canUpload' },
   { label: 'All Files', href: '/dashboard/files', icon: FolderOpen },
-  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { label: 'Settings', href: '/dashboard/settings', icon: Settings, adminOnly: true },
+  { label: 'Users', href: '/dashboard/users', icon: UsersIcon, adminOnly: true },
 ];
 
 type SidebarProps = {
   isOpen: boolean;
   onClose: () => void;
+  session: SessionData | null;
 };
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, session }: SidebarProps) {
   const pathname = usePathname();
+
+  const filteredNavItems = navItems.filter((item) => {
+    if (item.adminOnly && session?.role !== 'admin') return false;
+    if (item.requiredPermission && session) {
+      const permissionName = item.requiredPermission as keyof typeof session.permissions;
+      if (!session.permissions[permissionName]) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <>
@@ -75,7 +90,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Navigation */}
         <nav className="px-3 py-4">
           <ul className="space-y-1">
-            {navItems.map((item) => {
+            {filteredNavItems.map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== '/dashboard' && pathname.startsWith(item.href));

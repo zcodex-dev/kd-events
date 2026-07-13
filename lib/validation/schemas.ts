@@ -16,6 +16,7 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 // ─── Login Schema ────────────────────────────────────────────────────────────
 
 export const loginSchema = z.object({
+  username: z.string().optional(),
   password: z
     .string()
     .min(1, 'Password is required')
