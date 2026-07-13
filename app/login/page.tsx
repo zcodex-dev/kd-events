@@ -52,7 +52,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="bg-white border border-neutral-200 p-6">
+    <div className="bg-white border border-neutral-200 p-6 rounded-xl shadow-sm">
       <h1 className="text-base font-semibold text-neutral-900 mb-1">
         Admin Login
       </h1>
@@ -76,7 +76,7 @@ function LoginForm() {
               id="password"
               type={showPassword ? 'text' : 'password'}
               {...register('password')}
-              className="w-full pl-10 pr-10 py-2.5 text-sm border border-neutral-200 bg-white text-neutral-900 focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full pl-10 pr-10 py-2.5 text-sm border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
               placeholder="Enter admin password"
               autoFocus
             />
@@ -99,7 +99,7 @@ function LoginForm() {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-100">
+          <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg">
             <p className="text-xs text-red-600">{error}</p>
           </div>
         )}
@@ -107,7 +107,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-2.5 text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-2.5 text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             <>
@@ -142,7 +142,7 @@ export default function LoginPage() {
 
         {/* Form wrapped in Suspense for useSearchParams */}
         <Suspense fallback={
-          <div className="bg-white border border-neutral-200 p-6 flex justify-center py-12">
+          <div className="bg-white border border-neutral-200 p-6 flex justify-center py-12 rounded-xl shadow-sm">
             <LoadingSpinner size={24} />
           </div>
         }>

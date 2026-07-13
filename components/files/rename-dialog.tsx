@@ -76,7 +76,7 @@ export function RenameDialog({ file, onClose, onSuccess }: RenameDialogProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 8 }}
             transition={{ duration: 0.15 }}
-            className="relative bg-white border border-neutral-200 w-full max-w-md p-6 z-10"
+            className="relative bg-white border border-neutral-200 w-full max-w-md p-6 rounded-xl shadow-xl z-10"
           >
             <button
               onClick={handleClose}
@@ -102,7 +102,7 @@ export function RenameDialog({ file, onClose, onSuccess }: RenameDialogProps) {
                   id="rename-input"
                   type="text"
                   {...register('name')}
-                  className="w-full px-3 py-2 text-sm border border-neutral-200 bg-white text-neutral-900 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-3 py-2 text-sm border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                   autoFocus
                 />
                 {errors.name && (
@@ -115,14 +115,14 @@ export function RenameDialog({ file, onClose, onSuccess }: RenameDialogProps) {
                   type="button"
                   onClick={handleClose}
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm text-neutral-700 border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm text-neutral-700 border border-neutral-200 hover:bg-neutral-50 rounded-lg transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm text-white bg-neutral-900 hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg transition-colors disabled:opacity-50"
                 >
                   {isSubmitting ? 'Saving...' : 'Save'}
                 </button>

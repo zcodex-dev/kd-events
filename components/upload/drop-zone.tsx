@@ -147,7 +147,7 @@ export function DropZone({ files, setFiles, onUpload, isUploading }: DropZonePro
         onDragLeave={handleDragLeave}
         onClick={() => inputRef.current?.click()}
         className={`
-          border-2 border-dashed p-8 sm:p-12 cursor-pointer transition-colors duration-200
+          border-2 border-dashed rounded-xl p-8 sm:p-12 cursor-pointer transition-colors duration-200
           flex flex-col items-center justify-center text-center
           ${
             isDragOver
@@ -218,7 +218,7 @@ export function DropZone({ files, setFiles, onUpload, isUploading }: DropZonePro
 
           {/* Error summary */}
           {files.some((f) => f.status === 'error') && (
-            <div className="flex items-center gap-2 mt-3 p-3 bg-red-50 border border-red-100">
+            <div className="flex items-center gap-2 mt-3 p-3 bg-red-50 border border-red-100 rounded-lg">
               <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
               <p className="text-xs text-red-600">
                 Some files failed to upload. You can retry or remove them.
@@ -231,14 +231,14 @@ export function DropZone({ files, setFiles, onUpload, isUploading }: DropZonePro
             <button
               onClick={onUpload}
               disabled={isUploading || files.every((f) => f.status === 'success')}
-              className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isUploading ? 'Uploading...' : 'Upload'}
             </button>
             <button
               onClick={clearAll}
               disabled={isUploading}
-              className="px-5 py-2.5 text-sm text-neutral-700 border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+              className="px-5 py-2.5 text-sm text-neutral-700 border border-neutral-200 hover:bg-neutral-50 rounded-lg transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

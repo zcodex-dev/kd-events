@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Check, AlertTriangle, RefreshCw } from 'lucide-react';
+import { X, Upload, Check, AlertTriangle, RefreshCw, Trash2, Plus, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import type { UploadedFile } from '@/types';
-import { formatFileSize } from '@/lib/uploads/file-utils';
+import type { UploadedFile, AdditionalImage } from '@/types';
+import { formatFileSize, resolveUrl } from '@/lib/uploads/file-utils';
 import { MAX_FILE_SIZE } from '@/lib/validation/schemas';
 import { LoadingSpinner } from '@/components/shared/loading';
 
@@ -16,19 +16,27 @@ type ReplaceDialogProps = {
 };
 
 export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isDragOver, setIsDragOver] = useState(false);
+  // Main Image replacement state
+  const [selectedMainFile, setSelectedMainFile] = useState<File | null>(null);
+  const [mainPreview, setMainPreview] = useState<string | null>(null);
+  const [mainDimensions, setMainDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [isReplacingMain, setIsReplacingMain] = useState(false);
+
+  // Additional Images states
+  const [selectedAddFile, setSelectedAddFile] = useState<File | null>(null);
+  const [addPreview, setAddPreview] = useState<string | null>(null);
+  const [addDimensions, setAddDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [isAddingImage, setIsAddingImage] = useState(false);
+  const [deleteImageId, setDeleteImageId] = useState<string | null>(null);
+
   const [allowedMimeTypes, setAllowedMimeTypes] = useState<string[]>([
     'image/jpeg',
     'image/png',
     'image/webp',
   ]);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mainFileInputRef = useRef<HTMLInputElement>(null);
+  const addFileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch allowed MIME types configuration
   useEffect(() => {
@@ -44,115 +52,150 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
       .catch(() => {});
   }, [file]);
 
-  const handleFileSelect = (newFile: File) => {
-    // Validate MIME Type
+  const handleMainFileSelect = (newFile: File) => {
     if (!allowedMimeTypes.includes(newFile.type)) {
-      const allowedNames = allowedMimeTypes
-        .map((t) => t.split('/')[1]?.toUpperCase() || t)
-        .join(', ');
+      const allowedNames = allowedMimeTypes.map((t) => t.split('/')[1]?.toUpperCase() || t).join(', ');
       toast.error(`Unsupported format. Allowed formats: ${allowedNames}`);
       return;
     }
-
-    // Validate File Size
     if (newFile.size > MAX_FILE_SIZE) {
       toast.error(`File is too large. Limit is ${formatFileSize(MAX_FILE_SIZE)}`);
       return;
     }
-
-    setSelectedFile(newFile);
-
-    // Create preview
+    setSelectedMainFile(newFile);
     const objectUrl = URL.createObjectURL(newFile);
-    setPreview(objectUrl);
-
-    // Get dimensions
+    setMainPreview(objectUrl);
     const img = new Image();
-    img.onload = () => {
-      setDimensions({ width: img.width, height: img.height });
-    };
+    img.onload = () => setMainDimensions({ width: img.width, height: img.height });
     img.src = objectUrl;
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0]);
+  const handleAddFileSelect = (newFile: File) => {
+    if (!allowedMimeTypes.includes(newFile.type)) {
+      const allowedNames = allowedMimeTypes.map((t) => t.split('/')[1]?.toUpperCase() || t).join(', ');
+      toast.error(`Unsupported format. Allowed formats: ${allowedNames}`);
+      return;
     }
+    if (newFile.size > MAX_FILE_SIZE) {
+      toast.error(`File is too large. Limit is ${formatFileSize(MAX_FILE_SIZE)}`);
+      return;
+    }
+    setSelectedAddFile(newFile);
+    const objectUrl = URL.createObjectURL(newFile);
+    setAddPreview(objectUrl);
+    const img = new Image();
+    img.onload = () => setAddDimensions({ width: img.width, height: img.height });
+    img.src = objectUrl;
   };
 
   const handleClose = () => {
-    setSelectedFile(null);
-    setPreview(null);
-    setDimensions(null);
-    setUploadProgress(0);
+    setSelectedMainFile(null);
+    setMainPreview(null);
+    setMainDimensions(null);
+    setSelectedAddFile(null);
+    setAddPreview(null);
+    setAddDimensions(null);
+    setIsReplacingMain(false);
+    setIsAddingImage(false);
+    setDeleteImageId(null);
     onClose();
   };
 
-  const handleSubmit = async () => {
-    if (!file || !selectedFile) return;
+  const handleReplaceMain = async () => {
+    if (!file || !selectedMainFile) return;
 
-    setIsSubmitting(true);
-    setUploadProgress(0);
-
+    setIsReplacingMain(true);
     const formData = new FormData();
-    formData.append('file', selectedFile);
-    if (dimensions) {
-      formData.append('width', dimensions.width.toString());
-      formData.append('height', dimensions.height.toString());
+    formData.append('file', selectedMainFile);
+    if (mainDimensions) {
+      formData.append('width', mainDimensions.width.toString());
+      formData.append('height', mainDimensions.height.toString());
     }
 
     try {
-      // Use XMLHttpRequest to track progress
-      const xhr = new XMLHttpRequest();
-
-      const uploadPromise = new Promise((resolve, reject) => {
-        xhr.upload.addEventListener('progress', (event) => {
-          if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(percent);
-          }
-        });
-
-        xhr.addEventListener('load', () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(JSON.parse(xhr.responseText));
-          } else {
-            try {
-              const errData = JSON.parse(xhr.responseText);
-              reject(new Error(errData.error || 'Failed to replace image'));
-            } catch {
-              reject(new Error('Failed to replace image'));
-            }
-          }
-        });
-
-        xhr.addEventListener('error', () => {
-          reject(new Error('Network error during replacement'));
-        });
-
-        xhr.open('POST', `/api/files/${file.id}/replace`);
-        xhr.send(formData);
+      const res = await fetch(`/api/files/${file.id}/replace`, {
+        method: 'POST',
+        body: formData,
       });
-
-      await uploadPromise;
-      toast.success('Image replaced successfully');
-      onSuccess();
-      handleClose();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to replace image');
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Main image replaced successfully');
+        onSuccess();
+        // Update local state preview
+        setSelectedMainFile(null);
+        setMainPreview(null);
+        setMainDimensions(null);
+      } else {
+        toast.error(data.error || 'Failed to replace main image');
+      }
+    } catch {
+      toast.error('Network error during replacement');
     } finally {
-      setIsSubmitting(false);
+      setIsReplacingMain(false);
+    }
+  };
+
+  const handleAddImage = async () => {
+    if (!file || !selectedAddFile) return;
+
+    setIsAddingImage(true);
+    const formData = new FormData();
+    formData.append('file', selectedAddFile);
+    if (addDimensions) {
+      formData.append('width', addDimensions.width.toString());
+      formData.append('height', addDimensions.height.toString());
+    }
+
+    try {
+      const res = await fetch(`/api/files/${file.id}/images`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Additional image added successfully');
+        onSuccess();
+        // Clear local inputs
+        setSelectedAddFile(null);
+        setAddPreview(null);
+        setAddDimensions(null);
+        // Refresh local file details by fetching updated record
+        if (data.data) {
+          // Temporarily merge file details
+          Object.assign(file, data.data);
+        }
+      } else {
+        toast.error(data.error || 'Failed to add image');
+      }
+    } catch {
+      toast.error('Network error during upload');
+    } finally {
+      setIsAddingImage(false);
+    }
+  };
+
+  const handleDeleteImage = async (imageId: string) => {
+    if (!file) return;
+
+    setDeleteImageId(imageId);
+    try {
+      const res = await fetch(`/api/files/${file.id}/images?imageId=${imageId}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Image removed from page');
+        onSuccess();
+        if (data.data) {
+          Object.assign(file, data.data);
+        }
+      } else {
+        toast.error(data.error || 'Failed to delete image');
+      }
+    } catch {
+      toast.error('Network error during delete');
+    } finally {
+      setDeleteImageId(null);
     }
   };
 
@@ -164,144 +207,272 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/30"
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs"
             onClick={handleClose}
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: 8 }}
+            initial={{ opacity: 0, scale: 0.98, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: 8 }}
+            exit={{ opacity: 0, scale: 0.98, y: 10 }}
             transition={{ duration: 0.15 }}
-            className="relative bg-white border border-neutral-200 w-full max-w-lg p-6 z-10"
+            className="relative bg-white border border-neutral-200 w-full max-w-2xl p-6 rounded-xl shadow-xl z-10 max-h-[90vh] overflow-y-auto"
           >
+            {/* Header */}
             <button
               onClick={handleClose}
-              disabled={isSubmitting}
-              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 disabled:opacity-50"
+              disabled={isReplacingMain || isAddingImage}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600 rounded-lg p-1 hover:bg-neutral-50 transition-colors disabled:opacity-50"
               aria-label="Close"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <h3 className="text-sm font-semibold text-neutral-900 mb-2">
-              Replace Image / Artwork
+            <h3 className="text-base font-semibold text-neutral-900 mb-1.5 flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-neutral-600" />
+              Manage Page Gallery / Images
             </h3>
             <p className="text-xs text-neutral-500 mb-4">
-              Select a new image. The public URL and QR code will remain exactly the same.
+              Add multiple stacked images to your page, or replace the main image. The URL and QR code will never change.
             </p>
 
-            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs flex gap-2.5 items-start">
+            {/* Warning Alert */}
+            <div className="mb-6 p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-lg flex gap-2.5 items-start">
               <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
               <div>
-                <span className="font-semibold">Important Note:</span> The QR code image and URL will **NOT** change. Anyone scanning your existing printed layouts will automatically see the new image.
+                <span className="font-semibold">Notice:</span> Existing printed layouts and QR codes will automatically render all stacked images on this page immediately once updated.
               </div>
             </div>
 
-            {/* Upload Area */}
-            {!preview ? (
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition-colors ${
-                  isDragOver
-                    ? 'border-blue-500 bg-blue-50/20'
-                    : 'border-neutral-200 hover:border-neutral-300 bg-white'
-                }`}
-              >
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-                  accept={allowedMimeTypes.join(',')}
-                />
-                <Upload className="w-6 h-6 text-neutral-400 mb-3" />
-                <span className="text-sm font-medium text-neutral-800">
-                  Select new image
-                </span>
-                <span className="text-xs text-neutral-500 mt-1">
-                  Drag & drop, or click to browse
-                </span>
-              </div>
-            ) : (
-              <div className="border border-neutral-200 p-3 mb-5">
-                <div className="flex gap-4 items-center">
-                  <div className="w-20 h-20 bg-neutral-50 border border-neutral-100 flex items-center justify-center overflow-hidden shrink-0 relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={preview}
-                      alt="Replacement preview"
-                      className="w-full h-full object-cover"
+            {/* Content Split */}
+            <div className="space-y-6 divide-y divide-neutral-100">
+              
+              {/* SECTION 1: Main Image Replacement */}
+              <div className="space-y-3.5">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                  Primary Main Image
+                </h4>
+
+                {!mainPreview ? (
+                  <div className="flex items-center gap-4 p-3 border border-neutral-200 rounded-lg bg-neutral-50/50">
+                    <div className="w-16 h-16 bg-neutral-100 border border-neutral-200 flex items-center justify-center overflow-hidden shrink-0 rounded-md">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={resolveUrl(file.imageUrl)}
+                        alt="Current Main Artwork"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-neutral-400 font-semibold uppercase tracking-wider">
+                        Current Image
+                      </p>
+                      <p className="text-sm font-semibold text-neutral-900 truncate">
+                        {file.originalName}
+                      </p>
+                      <p className="text-xs text-neutral-500 mt-0.5">
+                        {formatFileSize(file.size)}
+                        {file.width && file.height && ` · ${file.width} × ${file.height} px`}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => mainFileInputRef.current?.click()}
+                      className="px-3 py-1.5 text-xs text-neutral-700 bg-white border border-neutral-200 hover:bg-neutral-50 rounded-lg font-medium transition-colors cursor-pointer"
+                    >
+                      Replace
+                    </button>
+                    <input
+                      type="file"
+                      ref={mainFileInputRef}
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleMainFileSelect(e.target.files[0])}
+                      accept={allowedMimeTypes.join(',')}
                     />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-neutral-800 truncate">
-                      {selectedFile?.name}
-                    </p>
-                    <p className="text-xs text-neutral-500 mt-1">
-                      {selectedFile && formatFileSize(selectedFile.size)}
-                      {dimensions && ` · ${dimensions.width} × ${dimensions.height} px`}
-                    </p>
+                ) : (
+                  <div className="p-3 border border-neutral-200 rounded-lg bg-neutral-50">
+                    <div className="flex gap-4 items-center">
+                      <div className="w-16 h-16 bg-white border border-neutral-200 flex items-center justify-center overflow-hidden shrink-0 rounded-md">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={mainPreview}
+                          alt="Main replacement preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider flex items-center gap-1 animate-pulse">
+                          Ready to Replace
+                        </p>
+                        <p className="text-sm font-semibold text-neutral-900 truncate">
+                          {selectedMainFile?.name}
+                        </p>
+                        <p className="text-xs text-neutral-500 mt-0.5">
+                          {selectedMainFile && formatFileSize(selectedMainFile.size)}
+                          {mainDimensions && ` · ${mainDimensions.width} × ${mainDimensions.height} px`}
+                        </p>
+                      </div>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => {
+                            setSelectedMainFile(null);
+                            setMainPreview(null);
+                            setMainDimensions(null);
+                          }}
+                          disabled={isReplacingMain}
+                          className="p-1.5 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-50"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={handleReplaceMain}
+                          disabled={isReplacingMain}
+                          className="px-3 py-1.5 text-xs text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                        >
+                          {isReplacingMain ? (
+                            <LoadingSpinner size={12} />
+                          ) : (
+                            <RefreshCw className="w-3 h-3" />
+                          )}
+                          Save
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      setSelectedFile(null);
-                      setPreview(null);
-                      setDimensions(null);
-                    }}
-                    disabled={isSubmitting}
-                    className="p-1 text-neutral-400 hover:text-neutral-600 disabled:opacity-50"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+                )}
               </div>
-            )}
 
-            {/* Submission Actions */}
-            {isSubmitting && (
-              <div className="mb-4">
-                <div className="flex justify-between items-center text-xs text-neutral-500 mb-1">
-                  <span>Uploading replacement...</span>
-                  <span>{uploadProgress}%</span>
-                </div>
-                <div className="w-full bg-neutral-100 h-1.5 overflow-hidden">
+              {/* SECTION 2: Additional Images */}
+              <div className="space-y-4 pt-5">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                  Stacked Gallery Images
+                </h4>
+
+                {/* Additional Images list */}
+                {file.additionalImages && file.additionalImages.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {file.additionalImages.map((img) => (
+                      <div
+                        key={img.id}
+                        className="flex items-center gap-3 p-2.5 border border-neutral-200 rounded-lg bg-white shadow-xs group"
+                      >
+                        <div className="w-12 h-12 bg-neutral-50 border border-neutral-100 flex items-center justify-center overflow-hidden shrink-0 rounded-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={resolveUrl(img.imageUrl)}
+                            alt={img.originalName}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-neutral-900 truncate">
+                            {img.originalName}
+                          </p>
+                          <p className="text-[10px] text-neutral-400 mt-0.5">
+                            {formatFileSize(img.size)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteImage(img.id)}
+                          disabled={deleteImageId === img.id}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete additional image"
+                        >
+                          {deleteImageId === img.id ? (
+                            <LoadingSpinner size={14} />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-neutral-400 italic">
+                    No additional images on this page yet.
+                  </p>
+                )}
+
+                {/* Add Image Section */}
+                {!addPreview ? (
                   <div
-                    className="bg-neutral-900 h-full transition-all duration-150"
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
+                    onClick={() => addFileInputRef.current?.click()}
+                    className="border border-dashed border-neutral-200 hover:border-neutral-300 rounded-lg p-4 flex items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-neutral-50/50"
+                  >
+                    <input
+                      type="file"
+                      ref={addFileInputRef}
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleAddFileSelect(e.target.files[0])}
+                      accept={allowedMimeTypes.join(',')}
+                    />
+                    <Plus className="w-4 h-4 text-neutral-400" />
+                    <span className="text-xs font-medium text-neutral-600">
+                      Add additional image to page
+                    </span>
+                  </div>
+                ) : (
+                  <div className="p-3 border border-dashed border-neutral-300 rounded-lg bg-blue-50/10">
+                    <div className="flex gap-4 items-center">
+                      <div className="w-12 h-12 bg-white border border-neutral-200 flex items-center justify-center overflow-hidden shrink-0 rounded-md">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={addPreview}
+                          alt="Addition preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs text-neutral-400 font-semibold uppercase tracking-wider">
+                          Ready to Attach
+                        </p>
+                        <p className="text-xs font-semibold text-neutral-850 truncate">
+                          {selectedAddFile?.name}
+                        </p>
+                        <p className="text-[10px] text-neutral-400 mt-0.5">
+                          {selectedAddFile && formatFileSize(selectedAddFile.size)}
+                          {addDimensions && ` · ${addDimensions.width} × ${addDimensions.height} px`}
+                        </p>
+                      </div>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => {
+                            setSelectedAddFile(null);
+                            setAddPreview(null);
+                            setAddDimensions(null);
+                          }}
+                          disabled={isAddingImage}
+                          className="p-1.5 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={handleAddImage}
+                          disabled={isAddingImage}
+                          className="px-3 py-1.5 text-xs text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                        >
+                          {isAddingImage ? (
+                            <LoadingSpinner size={12} />
+                          ) : (
+                            <Plus className="w-3 h-3" />
+                          )}
+                          Add Image
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
-            <div className="flex justify-end gap-2 mt-4">
+            {/* Modal Footer */}
+            <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-neutral-100">
               <button
                 type="button"
                 onClick={handleClose}
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm text-neutral-700 border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50"
+                disabled={isReplacingMain || isAddingImage}
+                className="px-4 py-2 text-sm text-neutral-700 border border-neutral-200 hover:bg-neutral-50 rounded-lg transition-colors font-medium cursor-pointer"
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting || !selectedFile}
-                className="px-4 py-2 text-sm text-white bg-neutral-900 hover:bg-neutral-800 transition-colors disabled:opacity-50 flex items-center gap-1.5"
-              >
-                {isSubmitting ? (
-                  <>
-                    <LoadingSpinner size={14} />
-                    Replacing...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    Replace Image
-                  </>
-                )}
+                Close Manager
               </button>
             </div>
           </motion.div>

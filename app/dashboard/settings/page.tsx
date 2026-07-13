@@ -88,7 +88,7 @@ export default function SettingsPage() {
         transition={{ duration: 0.3 }}
         className="p-4 sm:p-6"
       >
-        <div className="bg-white border border-neutral-200">
+        <div className="bg-white border border-neutral-200 rounded-xl shadow-xs overflow-hidden">
           {/* Section Header */}
           <div className="px-5 py-4 border-b border-neutral-200 flex items-center gap-2">
             <FileCode2 className="w-4 h-4 text-blue-600" />
@@ -117,7 +117,7 @@ export default function SettingsPage() {
                     <div
                       key={t.id}
                       onClick={() => handleToggle(t.id)}
-                      className="flex items-center justify-between p-3 border border-neutral-200 hover:bg-neutral-50 cursor-pointer transition-colors"
+                      className="flex items-center justify-between p-3 border border-neutral-200 hover:bg-neutral-50 cursor-pointer transition-colors rounded-lg"
                     >
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-neutral-900">
@@ -130,7 +130,7 @@ export default function SettingsPage() {
 
                       {/* Custom Checkbox */}
                       <div
-                        className={`w-5 h-5 border flex items-center justify-center transition-colors ${
+                        className={`w-5 h-5 border flex items-center justify-center rounded-md transition-colors ${
                           isChecked
                             ? 'bg-neutral-900 border-neutral-900 text-white'
                             : 'border-neutral-300 bg-white'
@@ -148,7 +148,7 @@ export default function SettingsPage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="px-4 py-2.5 bg-neutral-900 text-white hover:bg-neutral-800 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2.5 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSaving ? (
                     <>

@@ -76,7 +76,7 @@ export function UploadSuccessModal({ result, onClose, onUploadMore }: UploadSucc
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 12 }}
             transition={{ duration: 0.2 }}
-            className="relative bg-white border border-neutral-200 w-full max-w-lg max-h-[90vh] overflow-y-auto z-10"
+            className="relative bg-white border border-neutral-200 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl shadow-xl z-10"
           >
             <button
               onClick={onClose}
@@ -95,7 +95,7 @@ export function UploadSuccessModal({ result, onClose, onUploadMore }: UploadSucc
               </p>
 
               {/* Thumbnail */}
-              <div className="mb-5 bg-neutral-50 border border-neutral-200 p-2 flex items-center justify-center">
+              <div className="mb-5 bg-neutral-50 border border-neutral-200 p-2 rounded-lg flex items-center justify-center overflow-hidden">
                 <Image
                   src={result.imageUrl}
                   alt={result.file.originalName}
@@ -139,12 +139,12 @@ export function UploadSuccessModal({ result, onClose, onUploadMore }: UploadSucc
                       alt="QR Code"
                       width={96}
                       height={96}
-                      className="w-24 h-24"
+                      className="w-24 h-24 rounded-lg border border-neutral-100"
                       unoptimized
                     />
                     <button
                       onClick={downloadQr}
-                      className="flex items-center gap-2 px-3 py-2 text-xs border border-neutral-200 text-neutral-700 hover:bg-neutral-50 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 text-xs border border-neutral-200 text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Download QR
@@ -157,7 +157,7 @@ export function UploadSuccessModal({ result, onClose, onUploadMore }: UploadSucc
               <div className="flex flex-wrap gap-2 pt-2 border-t border-neutral-100">
                 <button
                   onClick={() => window.open(result.shareUrl, '_blank')}
-                  className="flex items-center gap-2 px-4 py-2 text-sm border border-neutral-200 text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm border border-neutral-200 text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
                 >
                   <ExternalLink className="w-4 h-4" />
                   Open Page
@@ -167,7 +167,7 @@ export function UploadSuccessModal({ result, onClose, onUploadMore }: UploadSucc
                     onClose();
                     onUploadMore();
                   }}
-                  className="flex items-center gap-2 px-4 py-2 text-sm bg-neutral-900 text-white hover:bg-neutral-800 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Upload Another
@@ -199,7 +199,7 @@ function UrlField({
       <label className="block text-xs font-medium text-neutral-500 mb-1.5">
         {label}
       </label>
-      <div className="flex items-center border border-neutral-200">
+      <div className="flex items-center border border-neutral-200 rounded-lg overflow-hidden">
         <input
           type="text"
           value={url}

@@ -116,7 +116,7 @@ export function RecentUploadsTable({
 
   return (
     <>
-      <div className="bg-white border border-neutral-200">
+      <div className="bg-white border border-neutral-200 rounded-xl shadow-xs">
           {/* Table header - desktop */}
           <div className="hidden md:grid grid-cols-[auto_1fr_80px_80px_100px_80px_60px] gap-4 items-center px-4 py-3 border-b border-neutral-200 bg-neutral-50 text-xs font-medium text-neutral-500 uppercase tracking-wider">
           <div className="w-10" />
@@ -143,7 +143,7 @@ export function RecentUploadsTable({
                 {/* Desktop row */}
                 <div className="hidden md:grid grid-cols-[auto_1fr_80px_80px_100px_80px_60px] gap-4 items-center px-4 py-3 hover:bg-neutral-50 transition-colors">
                   {/* Thumbnail */}
-                  <div className="w-10 h-10 bg-neutral-100 overflow-hidden shrink-0">
+                  <div className="w-10 h-10 bg-neutral-100 overflow-hidden shrink-0 rounded-md border border-neutral-100">
                     <Image
                       src={resolveUrl(file.imageUrl)}
                       alt={file.originalName}
@@ -195,7 +195,7 @@ export function RecentUploadsTable({
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -4 }}
                             transition={{ duration: 0.1 }}
-                            className="absolute right-0 top-8 z-20 w-48 bg-white border border-neutral-200 py-1"
+                            className="absolute right-0 top-8 z-20 w-48 bg-white border border-neutral-200 py-1 rounded-lg shadow-lg"
                           >
                             <ActionMenuItem
                               icon={ExternalLink}
@@ -247,7 +247,7 @@ export function RecentUploadsTable({
                             />
                             <ActionMenuItem
                               icon={RefreshCw}
-                              label="Replace Image"
+                              label="Manage Images"
                               onClick={() => {
                                 setReplaceFile(file);
                                 setOpenMenuId(null);
@@ -270,9 +270,8 @@ export function RecentUploadsTable({
                   </div>
                 </div>
 
-                {/* Mobile row */}
                 <div className="md:hidden flex items-center gap-3 p-4">
-                  <div className="w-12 h-12 bg-neutral-100 overflow-hidden shrink-0">
+                  <div className="w-12 h-12 bg-neutral-100 overflow-hidden shrink-0 rounded-lg border border-neutral-100">
                     <Image
                       src={resolveUrl(file.imageUrl)}
                       alt={file.originalName}
@@ -308,7 +307,7 @@ export function RecentUploadsTable({
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -4 }}
                             transition={{ duration: 0.1 }}
-                            className="absolute right-0 top-10 z-20 w-48 bg-white border border-neutral-200 py-1"
+                            className="absolute right-0 top-10 z-20 w-48 bg-white border border-neutral-200 py-1 rounded-lg shadow-lg"
                           >
                             <ActionMenuItem icon={ExternalLink} label="View" onClick={() => { window.open(resolveUrl(file.shareUrl), '_blank'); setOpenMenuId(null); }} />
                             <ActionMenuItem icon={Copy} label="Copy Image URL" onClick={() => { copyToClipboard(resolveUrl(file.imageUrl), `img-${file.id}`, 'Image URL'); setOpenMenuId(null); }} />
@@ -316,7 +315,7 @@ export function RecentUploadsTable({
                             <ActionMenuItem icon={QrCode} label="QR Code" onClick={() => { setQrFile(file); setOpenMenuId(null); }} />
                             <ActionMenuItem icon={Download} label="Download" onClick={() => { downloadImage(file); setOpenMenuId(null); }} />
                             <ActionMenuItem icon={Pencil} label="Rename" onClick={() => { setRenameFile(file); setOpenMenuId(null); }} />
-                            <ActionMenuItem icon={RefreshCw} label="Replace Image" onClick={() => { setReplaceFile(file); setOpenMenuId(null); }} />
+                            <ActionMenuItem icon={RefreshCw} label="Manage Images" onClick={() => { setReplaceFile(file); setOpenMenuId(null); }} />
                             <div className="border-t border-neutral-100 my-1" />
                             <ActionMenuItem icon={Trash2} label="Delete" destructive onClick={() => { setDeleteFile(file); setOpenMenuId(null); }} />
                           </motion.div>

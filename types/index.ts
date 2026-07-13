@@ -1,4 +1,15 @@
-// ─── Upload File Record ──────────────────────────────────────────────────────
+export type AdditionalImage = {
+  id: string;
+  originalName: string;
+  storedName: string;
+  githubPath: string;
+  imageUrl: string;
+  mimeType: string;
+  size: number;
+  width?: number;
+  height?: number;
+  uploadedAt: string;
+};
 
 export type UploadedFile = {
   id: string;
@@ -14,6 +25,7 @@ export type UploadedFile = {
   height?: number;
   uploadedAt: string;
   viewCount: number;
+  additionalImages?: AdditionalImage[];
 };
 
 // ─── API Response ────────────────────────────────────────────────────────────

@@ -84,7 +84,7 @@ export function QrDialog({ file, onClose }: QrDialogProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 8 }}
             transition={{ duration: 0.15 }}
-            className="relative bg-white border border-neutral-200 w-full max-w-sm p-6 z-10"
+            className="relative bg-white border border-neutral-200 w-full max-w-sm p-6 rounded-xl shadow-xl z-10"
           >
             <button
               onClick={onClose}
@@ -105,25 +105,25 @@ export function QrDialog({ file, onClose }: QrDialogProps) {
             {/* QR Code */}
             <div className="flex items-center justify-center mb-5">
               {isLoading ? (
-                <div className="w-48 h-48 bg-neutral-100 animate-pulse" />
+                <div className="w-48 h-48 bg-neutral-100 animate-pulse rounded-lg" />
               ) : qrCode ? (
                 <Image
                   src={qrCode}
                   alt="QR Code"
                   width={192}
                   height={192}
-                  className="w-48 h-48"
+                  className="w-48 h-48 rounded-lg"
                   unoptimized
                 />
               ) : (
-                <div className="w-48 h-48 bg-neutral-100 flex items-center justify-center text-sm text-neutral-400">
+                <div className="w-48 h-48 bg-neutral-100 flex items-center justify-center text-sm text-neutral-400 rounded-lg">
                   Failed to load
                 </div>
               )}
             </div>
 
             {/* Share URL */}
-            <div className="mb-4 p-2 bg-neutral-50 border border-neutral-200">
+            <div className="mb-4 p-2 bg-neutral-50 border border-neutral-200 rounded-lg">
               <p className="text-xs text-neutral-500 truncate">{file.shareUrl}</p>
             </div>
 
@@ -131,7 +131,7 @@ export function QrDialog({ file, onClose }: QrDialogProps) {
             <div className="flex gap-2">
               <button
                 onClick={copyShareLink}
-                className="flex-1 flex items-center justify-center gap-2 py-2 text-sm border border-neutral-200 text-neutral-700 hover:bg-neutral-50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-2 text-sm border border-neutral-200 text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
               >
                 {copied ? (
                   <Check className="w-4 h-4 text-green-600" />
@@ -143,7 +143,7 @@ export function QrDialog({ file, onClose }: QrDialogProps) {
               <button
                 onClick={downloadQr}
                 disabled={!qrCode}
-                className="flex-1 flex items-center justify-center gap-2 py-2 text-sm bg-neutral-900 text-white hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 py-2 text-sm bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors disabled:opacity-50"
               >
                 <Download className="w-4 h-4" />
                 Download

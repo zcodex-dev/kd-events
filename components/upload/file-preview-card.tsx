@@ -18,10 +18,10 @@ export function FilePreviewCard({ item, onRemove, isUploading }: FilePreviewCard
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -4 }}
-      className="flex items-center gap-3 p-3 bg-white border border-neutral-200"
+      className="flex items-center gap-3 p-3 bg-white border border-neutral-200 rounded-lg shadow-xs"
     >
       {/* Thumbnail */}
-      <div className="w-12 h-12 bg-neutral-100 overflow-hidden shrink-0">
+      <div className="w-12 h-12 bg-neutral-100 overflow-hidden shrink-0 rounded-md border border-neutral-100">
         <Image
           src={item.preview}
           alt={item.name}
@@ -47,7 +47,7 @@ export function FilePreviewCard({ item, onRemove, isUploading }: FilePreviewCard
 
         {/* Progress bar */}
         {item.status === 'uploading' && (
-          <div className="mt-1.5 h-1 bg-neutral-100 overflow-hidden">
+          <div className="mt-1.5 h-1 bg-neutral-100 overflow-hidden rounded-full">
             <motion.div
               className="h-full bg-blue-600"
               initial={{ width: 0 }}
