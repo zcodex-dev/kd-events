@@ -77,13 +77,13 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
               <Image
                 src="/logo.png"
                 alt="Kompong Dewa Logo"
-                width={36}
-                height={36}
-                className="h-9 w-auto shrink-0 object-contain"
+                width={40}
+                height={40}
+                className="h-10 w-auto shrink-0 object-contain"
                 unoptimized
               />
-              <span className="text-base font-bold gold-gradient-text tracking-tight">
-                Kompong Dewa Events
+              <span className="text-xl sm:text-2xl font-black gold-gradient-text tracking-wider uppercase">
+                KOMPONG DEWA EVENTS
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs text-neutral-400 font-medium bg-neutral-900 border border-neutral-800 px-2.5 py-1 rounded-full">
@@ -100,31 +100,32 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
           transition={{ duration: 0.3 }}
           className="max-w-5xl mx-auto py-6 sm:py-10 space-y-6"
         >
-          {/* Main Primary Image */}
-          <div className="w-full flex justify-center bg-transparent">
-            <Image
-              src={imageUrl}
-              alt={file.originalName}
-              width={file.width || 1200}
-              height={file.height || 900}
-              className="w-full h-auto object-contain cursor-pointer"
-              onClick={() => setFullscreenUrl(imageUrl)}
-              unoptimized
-              priority
-            />
-          </div>
+          {/* Seamless Vertical Image Stack (Zero Gap) */}
+          <div className="w-full flex flex-col gap-0 bg-transparent">
+            {/* Primary Main Image */}
+            <div className="w-full flex justify-center bg-transparent">
+              <Image
+                src={imageUrl}
+                alt={file.originalName}
+                width={file.width || 1200}
+                height={file.height || 900}
+                className="w-full h-auto object-contain cursor-pointer"
+                onClick={() => setFullscreenUrl(imageUrl)}
+                unoptimized
+                priority
+              />
+            </div>
 
-          {/* Additional Images Stack */}
-          {file.additionalImages && file.additionalImages.length > 0 && (
-            <div className="space-y-6">
-              {file.additionalImages.map((img, idx) => {
-                const resolvedAdditionalUrl = resolveUrl(img.imageUrl);
-                return (
-                  <div
-                    key={img.id}
-                    className="w-full space-y-2 bg-transparent"
-                  >
-                    <div className="w-full flex justify-center">
+            {/* Additional Images Stack */}
+            {file.additionalImages && file.additionalImages.length > 0 && (
+              <>
+                {file.additionalImages.map((img) => {
+                  const resolvedAdditionalUrl = resolveUrl(img.imageUrl);
+                  return (
+                    <div
+                      key={img.id}
+                      className="w-full flex justify-center bg-transparent"
+                    >
                       <Image
                         src={resolvedAdditionalUrl}
                         alt={img.originalName}
@@ -135,24 +136,11 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
                         unoptimized
                       />
                     </div>
-                    {/* Small image descriptor bar for extra context */}
-                    <div className="px-4 sm:px-0 flex items-center justify-between text-xs text-neutral-400">
-                      <span className="truncate max-w-[70%] font-medium">
-                        Artwork #{idx + 2}: {img.originalName}
-                      </span>
-                      <button
-                        onClick={() => downloadFile(resolvedAdditionalUrl, img.originalName)}
-                        className="text-neutral-500 hover:text-neutral-900 transition-colors font-medium flex items-center gap-1"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        Download
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  );
+                })}
+              </>
+            )}
+          </div>
 
           {/* File info & actions */}
           <div className="px-4 sm:px-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pt-2">

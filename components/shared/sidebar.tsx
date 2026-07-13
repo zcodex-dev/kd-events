@@ -56,8 +56,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               className="h-6 w-auto shrink-0 object-contain"
               unoptimized
             />
-            <span className="font-bold text-[14px] gold-gradient-text tracking-tight">
-              Kompong Dewa Events
+            <span className="font-bold text-[13px] gold-gradient-text tracking-wide uppercase">
+              KOMPONG DEWA EVENTS
             </span>
           </Link>
           <button

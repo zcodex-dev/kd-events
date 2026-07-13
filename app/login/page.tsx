@@ -143,8 +143,8 @@ export default function LoginPage() {
             className="h-8 w-auto shrink-0 object-contain"
             unoptimized
           />
-          <span className="text-lg font-bold gold-gradient-text tracking-tight">
-            Kompong Dewa Events
+          <span className="text-lg font-bold gold-gradient-text tracking-wider uppercase">
+            KOMPONG DEWA EVENTS
           </span>
         </div>
 
