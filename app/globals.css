@@ -95,13 +95,10 @@ body {
 /* ─── Logo Sweep Shimmer Animation ────────────────────────────────────────── */
 
 @keyframes logoSweep {
-  0% {
+  0%, 100% {
     transform: translateX(-150%) skewX(-25deg);
   }
-  30% {
-    transform: translateX(150%) skewX(-25deg);
-  }
-  100% {
+  50% {
     transform: translateX(150%) skewX(-25deg);
   }
 }
@@ -134,7 +131,7 @@ body {
     rgba(255, 255, 255, 0) 100%
   );
   transform: translateX(-150%) skewX(-25deg);
-  animation: logoSweep 4.5s ease-in-out infinite;
+  animation: logoSweep 8s ease-in-out infinite;
   pointer-events: none;
 }
 
