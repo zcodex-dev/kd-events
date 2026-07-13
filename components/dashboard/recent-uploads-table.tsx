@@ -86,20 +86,20 @@ export function RecentUploadsTable({
 
   if (isLoading) {
     return (
-      <div className="bg-white border border-neutral-200">
-        <div className="p-4 border-b border-neutral-200">
-          <div className="h-5 w-32 bg-neutral-100 animate-pulse" />
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
+        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="h-5 w-32 bg-neutral-100 dark:bg-neutral-800 animate-pulse rounded" />
         </div>
-        <div className="space-y-0 divide-y divide-neutral-100">
+        <div className="space-y-0 divide-y divide-neutral-100 dark:divide-neutral-800">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-center gap-4 p-4 animate-pulse">
-              <div className="w-10 h-10 bg-neutral-100 shrink-0" />
+              <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 shrink-0 rounded-md" />
               <div className="flex-1 min-w-0 space-y-2">
-                <div className="h-3.5 bg-neutral-100 w-2/5" />
-                <div className="h-3 bg-neutral-50 w-1/4" />
+                <div className="h-3.5 bg-neutral-100 dark:bg-neutral-800 w-2/5 rounded" />
+                <div className="h-3 bg-neutral-50 dark:bg-neutral-800/50 w-1/4 rounded" />
               </div>
-              <div className="h-3 bg-neutral-100 w-14 hidden sm:block" />
-              <div className="h-3 bg-neutral-100 w-16 hidden md:block" />
+              <div className="h-3 bg-neutral-100 dark:bg-neutral-800 w-14 hidden sm:block rounded" />
+              <div className="h-3 bg-neutral-100 dark:bg-neutral-800 w-16 hidden md:block rounded" />
             </div>
           ))}
         </div>
@@ -109,7 +109,7 @@ export function RecentUploadsTable({
 
   if (files.length === 0) {
     return (
-      <div className="bg-white border border-neutral-200">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
         <EmptyState
           icon={ImageIcon}
           title="No files uploaded"
