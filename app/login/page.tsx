@@ -53,62 +53,68 @@ function LoginForm() {
   };
 
   return (
-    <div className="bg-white border border-neutral-200 p-6 rounded-xl shadow-xs w-full">
-      <h1 className="text-base font-semibold text-neutral-900 mb-1">
-        Staff Sign In
-      </h1>
-      <p className="text-sm text-neutral-500 mb-6">
-        Enter your credentials to access the console.
-      </p>
+    <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-2xl shadow-2xl w-full flex flex-col items-center">
+      <div className="logo-container-sweep mb-8">
+        <Image
+          src="/logo.png"
+          alt="Kompong Dewa Logo"
+          width={200}
+          height={50}
+          className="h-10 w-auto shrink-0 object-contain"
+          unoptimized
+          priority
+        />
+        <div className="logo-sweep-overlay" />
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full">
         <div className="mb-4">
           <label
             htmlFor="username"
-            className="block text-xs font-medium text-neutral-500 mb-1.5"
+            className="block text-xs font-medium text-neutral-400 mb-1.5"
           >
             Username
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <User className="w-4 h-4 text-neutral-400" />
+              <User className="w-4 h-4 text-neutral-500" />
             </div>
             <input
               id="username"
               type="text"
               {...register('username')}
-              className="w-full pl-10 pr-3 py-2.5 text-sm border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 transition-colors"
+              className="w-full pl-10 pr-3 py-2.5 text-sm border border-neutral-800 bg-neutral-950 text-white rounded-lg focus:outline-none focus:border-neutral-700 transition-colors placeholder:text-neutral-600"
               placeholder="Enter username"
             />
           </div>
           {errors.username && (
-            <p className="text-xs text-red-600 mt-1">{errors.username.message}</p>
+            <p className="text-xs text-red-500 mt-1">{errors.username.message}</p>
           )}
         </div>
 
-        <div className="mb-4">
+        <div className="mb-6">
           <label
             htmlFor="password"
-            className="block text-xs font-medium text-neutral-500 mb-1.5"
+            className="block text-xs font-medium text-neutral-400 mb-1.5"
           >
             Password
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Lock className="w-4 h-4 text-neutral-400" />
+              <Lock className="w-4 h-4 text-neutral-500" />
             </div>
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
               {...register('password')}
-              className="w-full pl-10 pr-10 py-2.5 text-sm border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 transition-colors"
+              className="w-full pl-10 pr-10 py-2.5 text-sm border border-neutral-800 bg-neutral-950 text-white rounded-lg focus:outline-none focus:border-neutral-700 transition-colors placeholder:text-neutral-600"
               placeholder="Enter password"
               autoFocus
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-600"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-500 hover:text-neutral-300 transition-colors"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (
@@ -119,20 +125,20 @@ function LoginForm() {
             </button>
           </div>
           {errors.password && (
-            <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>
+            <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
           )}
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg">
-            <p className="text-xs text-red-600">{error}</p>
+          <div className="mb-4 p-3 bg-red-950/50 border border-red-900/50 rounded-lg">
+            <p className="text-xs text-red-400 text-center">{error}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-2.5 text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-2.5 text-sm font-medium text-black bg-white hover:bg-neutral-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             <>
@@ -150,7 +156,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex bg-neutral-50">
+    <div className="min-h-screen flex bg-neutral-950">
       {/* Left side 60% - Image Panel */}
       <div className="hidden md:block md:w-[60%] relative overflow-hidden h-screen bg-neutral-950">
         <Image
@@ -182,37 +188,16 @@ export default function LoginPage() {
       </div>
 
       {/* Right side 40% - Login Form Panel */}
-      <div className="w-full md:w-[40%] flex flex-col justify-center items-center p-6 sm:p-12 md:p-16 bg-neutral-50 min-h-screen overflow-y-auto">
+      <div className="w-full md:w-[40%] flex flex-col justify-center items-center p-6 sm:p-12 md:p-16 bg-neutral-950 min-h-screen overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className="w-full max-w-[400px] flex flex-col gap-8"
         >
-          {/* Logo & Header */}
-          <div className="flex flex-col items-center md:items-start gap-4">
-            <div className="logo-container-sweep">
-              <Image
-                src="/logo.png"
-                alt="Kompong Dewa Logo"
-                width={200}
-                height={50}
-                className="h-10 w-auto shrink-0 object-contain"
-                unoptimized
-                priority
-              />
-              <div className="logo-sweep-overlay" />
-            </div>
-            <div className="text-center md:text-left mt-2">
-              <span className="text-xs font-bold gold-gradient-text tracking-wider uppercase block">
-                Events Administration Portal
-              </span>
-            </div>
-          </div>
-
           {/* Form wrapped in Suspense for useSearchParams */}
           <Suspense fallback={
-            <div className="bg-white border border-neutral-200 p-6 flex justify-center py-12 rounded-xl shadow-sm">
+            <div className="bg-neutral-900 border border-neutral-800 p-6 flex justify-center py-12 rounded-2xl shadow-xl">
               <LoadingSpinner size={24} />
             </div>
           }>
