@@ -29,7 +29,9 @@ export async function POST(request: Request) {
       );
     }
 
+    const currentConfig = await getAppConfig();
     const updated = await updateAppConfig({
+      ...currentConfig,
       allowedTypes: body.allowedTypes,
     });
 

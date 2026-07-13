@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Save, Check, FileCode2, ShieldAlert } from 'lucide-react';
+import { Save, Check, FileCode2, ShieldAlert, ImageIcon, UploadCloud } from 'lucide-react';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
 import { LoadingSpinner } from '@/components/shared/loading';
@@ -20,8 +20,10 @@ const IMAGE_TYPES = [
 export default function SettingsPage() {
   const { openSidebar, session } = useDashboard();
   const [allowedTypes, setAllowedTypes] = useState<string[]>([]);
+  const [loginBgUrl, setLoginBgUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingBg, setIsUploadingBg] = useState(false);
 
   // Fetch the configuration on mount
   useEffect(() => {
@@ -33,8 +35,9 @@ export default function SettingsPage() {
     fetch('/api/config')
       .then((res) => res.json())
       .then((resData) => {
-        if (resData.success && resData.data?.allowedTypes) {
-          setAllowedTypes(resData.data.allowedTypes);
+        if (resData.success && resData.data) {
+          if (resData.data.allowedTypes) setAllowedTypes(resData.data.allowedTypes);
+          if (resData.data.loginBgUrl) setLoginBgUrl(resData.data.loginBgUrl);
         } else {
           toast.error('Failed to load settings');
         }
@@ -76,6 +79,38 @@ export default function SettingsPage() {
       toast.error('Error saving settings');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    setIsUploadingBg(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/config/login-bg', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.data?.url) {
+        setLoginBgUrl(data.data.url);
+        toast.success('Login background updated successfully');
+      } else {
+        toast.error(data.error || 'Failed to update background');
+      }
+    } catch {
+      toast.error('Network error during upload');
+    } finally {
+      setIsUploadingBg(false);
     }
   };
 
@@ -186,6 +221,44 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Login Background Upload Section */}
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xs overflow-hidden mt-6">
+          <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-2">
+            <ImageIcon className="w-4 h-4 text-blue-600 dark:text-blue-500" />
+            <div>
+              <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                Login Background Image
+              </h2>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                Upload a custom high-resolution background for the login screen.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-5 space-y-4">
+            {loginBgUrl && (
+              <div className="w-full h-32 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden relative mb-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={loginBgUrl} alt="Current login background" className="w-full h-full object-cover" />
+              </div>
+            )}
+            
+            <label className="flex items-center justify-center w-full h-24 px-4 transition bg-white dark:bg-neutral-950 border-2 border-neutral-300 dark:border-neutral-800 border-dashed rounded-lg appearance-none cursor-pointer hover:border-neutral-400 dark:hover:border-neutral-700 focus:outline-none">
+              <span className="flex flex-col items-center space-y-2">
+                {isUploadingBg ? (
+                  <LoadingSpinner size={20} />
+                ) : (
+                  <UploadCloud className="w-6 h-6 text-neutral-400" />
+                )}
+                <span className="font-medium text-xs text-neutral-600 dark:text-neutral-400">
+                  {isUploadingBg ? 'Uploading...' : 'Click to select image to upload'}
+                </span>
+              </span>
+              <input type="file" name="file_upload" className="hidden" accept="image/*" onChange={handleBgUpload} disabled={isUploadingBg} />
+            </label>
+          </div>
         </div>
       </motion.div>
     </>
