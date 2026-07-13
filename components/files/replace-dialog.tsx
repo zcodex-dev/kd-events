@@ -190,12 +190,10 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
               Select a new image. The public URL and QR code will remain exactly the same.
             </p>
 
-            {/* Warn Warning Box */}
             <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs flex gap-2.5 items-start">
               <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
               <div>
-                <span className="font-semibold">Important Note:</span> Printed layouts, QR codes,
-                and share links will immediately deliver the new design once uploaded.
+                <span className="font-semibold">Important Note:</span> The QR code image and URL will **NOT** change. Anyone scanning your existing printed layouts will automatically see the new image.
               </div>
             </div>
 
