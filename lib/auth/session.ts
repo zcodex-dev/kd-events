@@ -1,4 +1,3 @@
-import { cookies } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import type { SessionData } from '@/types';
 
@@ -40,7 +39,7 @@ export async function createSession(
     expiresAt: Date.now() + SESSION_DURATION_MS,
   };
 
-  const cookieStore = await cookies();
+  const cookieStore = await (await import('next/headers')).cookies();
   cookieStore.set(SESSION_COOKIE_NAME, encodeSession(session), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -54,7 +53,7 @@ export async function createSession(
  * Get the current session if authenticated.
  */
 export async function getSession(): Promise<SessionData | null> {
-  const cookieStore = await cookies();
+  const cookieStore = await (await import('next/headers')).cookies();
   const cookie = cookieStore.get(SESSION_COOKIE_NAME);
 
   if (!cookie) return null;
@@ -72,7 +71,7 @@ export async function getSession(): Promise<SessionData | null> {
  * Destroy the current session.
  */
 export async function destroySession(): Promise<void> {
-  const cookieStore = await cookies();
+  const cookieStore = await (await import('next/headers')).cookies();
   cookieStore.delete(SESSION_COOKIE_NAME);
 }
 
@@ -92,7 +91,7 @@ export function validatePassword(password: string): boolean {
  * Use in server components and API routes.
  */
 export async function isAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies();
+  const cookieStore = await (await import('next/headers')).cookies();
   const cookie = cookieStore.get(SESSION_COOKIE_NAME);
 
   if (!cookie) return false;
