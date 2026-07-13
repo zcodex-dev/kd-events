@@ -127,3 +127,19 @@ body {
   animation: logoSweep 4.5s ease-in-out infinite;
   pointer-events: none;
 }
+
+/* ─── Zoom Animation for Split Login ──────────────────────────────────────── */
+
+@keyframes slowZoom {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.zoom-effect {
+  animation: slowZoom 24s ease-in-out infinite;
+}
+

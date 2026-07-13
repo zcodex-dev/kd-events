@@ -53,7 +53,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="bg-white border border-neutral-200 p-6 rounded-xl shadow-sm">
+    <div className="bg-white border border-neutral-200 p-6 rounded-xl shadow-xs w-full">
       <h1 className="text-base font-semibold text-neutral-900 mb-1">
         Staff Sign In
       </h1>
@@ -67,7 +67,7 @@ function LoginForm() {
             htmlFor="username"
             className="block text-xs font-medium text-neutral-500 mb-1.5"
           >
-            Username (Optional)
+            Username
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -77,8 +77,8 @@ function LoginForm() {
               id="username"
               type="text"
               {...register('username')}
-              className="w-full pl-10 pr-3 py-2.5 text-sm border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-              placeholder="Default: admin"
+              className="w-full pl-10 pr-3 py-2.5 text-sm border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 transition-colors"
+              placeholder="Enter username"
             />
           </div>
           {errors.username && (
@@ -101,7 +101,7 @@ function LoginForm() {
               id="password"
               type={showPassword ? 'text' : 'password'}
               {...register('password')}
-              className="w-full pl-10 pr-10 py-2.5 text-sm border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full pl-10 pr-10 py-2.5 text-sm border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 transition-colors"
               placeholder="Enter password"
               autoFocus
             />
@@ -150,40 +150,76 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="w-full max-w-sm"
-      >
-        {/* Brand */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="logo-container-sweep">
-            <Image
-              src="/logo.png"
-              alt="Kompong Dewa Logo"
-              width={32}
-              height={32}
-              className="h-8 w-auto shrink-0 object-contain"
-              unoptimized
-            />
-            <div className="logo-sweep-overlay" />
-          </div>
-          <span className="text-lg font-bold gold-gradient-text tracking-wider uppercase">
-            KOMPONG DEWA EVENTS
-          </span>
+    <div className="min-h-screen flex bg-neutral-50">
+      {/* Left side 60% - Image Panel */}
+      <div className="hidden md:block md:w-[60%] relative overflow-hidden h-screen bg-neutral-950">
+        <Image
+          src="/kd-picture.webp"
+          alt="Kompong Dewa Events Background"
+          fill
+          sizes="60vw"
+          className="object-cover object-center zoom-effect select-none pointer-events-none"
+          priority
+        />
+        {/* Subtle premium dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-neutral-950/70 via-neutral-950/20 to-transparent" />
+        
+        {/* Decorative branding overlay on the bottom-left */}
+        <div className="absolute bottom-12 left-12 z-10 text-white max-w-lg">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <h2 className="text-2xl font-bold tracking-wide mb-2 gold-gradient-text uppercase">
+              KOMPONG DEWA EVENTS
+            </h2>
+            <p className="text-sm text-neutral-300 font-light leading-relaxed">
+              Managing digital displays, event artworks, and jackpot media registries with precision and speed.
+            </p>
+          </motion.div>
         </div>
+      </div>
 
-        {/* Form wrapped in Suspense for useSearchParams */}
-        <Suspense fallback={
-          <div className="bg-white border border-neutral-200 p-6 flex justify-center py-12 rounded-xl shadow-sm">
-            <LoadingSpinner size={24} />
+      {/* Right side 40% - Login Form Panel */}
+      <div className="w-full md:w-[40%] flex flex-col justify-center items-center p-6 sm:p-12 md:p-16 bg-neutral-50 min-h-screen overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-[400px] flex flex-col gap-8"
+        >
+          {/* Logo & Header */}
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <div className="logo-container-sweep">
+              <Image
+                src="/logo.png"
+                alt="Kompong Dewa Logo"
+                width={200}
+                height={50}
+                className="h-10 w-auto shrink-0 object-contain"
+                unoptimized
+                priority
+              />
+              <div className="logo-sweep-overlay" />
+            </div>
+            <div className="text-center md:text-left mt-2">
+              <span className="text-xs font-bold gold-gradient-text tracking-wider uppercase block">
+                Events Administration Portal
+              </span>
+            </div>
           </div>
-        }>
-          <LoginForm />
-        </Suspense>
-      </motion.div>
+
+          {/* Form wrapped in Suspense for useSearchParams */}
+          <Suspense fallback={
+            <div className="bg-white border border-neutral-200 p-6 flex justify-center py-12 rounded-xl shadow-sm">
+              <LoadingSpinner size={24} />
+            </div>
+          }>
+            <LoginForm />
+          </Suspense>
+        </motion.div>
+      </div>
     </div>
   );
 }
