@@ -15,9 +15,22 @@ type DropZoneProps = {
   setFiles: React.Dispatch<React.SetStateAction<FileUploadItem[]>>;
   onUpload: () => void;
   isUploading: boolean;
+  groupAsAlbum: boolean;
+  setGroupAsAlbum: (val: boolean) => void;
+  albumTitle: string;
+  setAlbumTitle: (val: string) => void;
 };
 
-export function DropZone({ files, setFiles, onUpload, isUploading }: DropZoneProps) {
+export function DropZone({
+  files,
+  setFiles,
+  onUpload,
+  isUploading,
+  groupAsAlbum,
+  setGroupAsAlbum,
+  albumTitle,
+  setAlbumTitle,
+}: DropZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [allowedMimeTypes, setAllowedMimeTypes] = useState<string[]>([
     'image/jpeg',
@@ -214,6 +227,39 @@ export function DropZone({ files, setFiles, onUpload, isUploading }: DropZonePro
                 isUploading={isUploading}
               />
             ))}
+          </div>
+
+          {/* Album Grouping Options */}
+          <div className="mt-4 p-4 bg-neutral-50 border border-neutral-200 rounded-xl space-y-3.5">
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={groupAsAlbum}
+                onChange={(e) => setGroupAsAlbum(e.target.checked)}
+                className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                disabled={isUploading}
+              />
+              <span className="text-xs font-semibold text-neutral-800">
+                Group all uploaded files into a single page (Album / Event Gallery)
+              </span>
+            </label>
+            
+            {groupAsAlbum && (
+              <div className="space-y-1.5 animate-fadeIn">
+                <label htmlFor="album-title" className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+                  Album / Event Title
+                </label>
+                <input
+                  id="album-title"
+                  type="text"
+                  value={albumTitle}
+                  onChange={(e) => setAlbumTitle(e.target.value)}
+                  disabled={isUploading}
+                  placeholder="e.g. KD_Poker High Hand Progressive Jackpot"
+                  className="w-full px-3 py-2 text-xs border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 transition-colors"
+                />
+              </div>
+            )}
           </div>
 
           {/* Error summary */}

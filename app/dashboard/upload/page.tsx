@@ -15,16 +15,90 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [successResult, setSuccessResult] = useState<UploadResult | null>(null);
 
-  const handleUpload = useCallback(async () => {
-    const pendingFiles = files.filter(
-      (f) => f.status === 'pending' || f.status === 'error'
+  // Album specific states
+  const [groupAsAlbum, setGroupAsAlbum] = useState(false);
+  const [albumTitle, setAlbumTitle] = useState('');
+
+  const handleUploadAlbum = useCallback(async (pendingFiles: FileUploadItem[]) => {
+    setIsUploading(true);
+
+    // Mark all files as uploading
+    setFiles((prev) =>
+      prev.map((f) =>
+        pendingFiles.some((pf) => pf.id === f.id)
+          ? { ...f, status: 'uploading' as const, progress: 10 }
+          : f
+      )
     );
 
-    if (pendingFiles.length === 0) {
-      toast.error('No files to upload');
-      return;
-    }
+    try {
+      const formData = new FormData();
+      if (albumTitle.trim()) {
+        formData.append('title', albumTitle.trim());
+      }
 
+      pendingFiles.forEach((item, index) => {
+        formData.append('files', item.file);
+        if (item.width) formData.append(`width_${index}`, item.width.toString());
+        if (item.height) formData.append(`height_${index}`, item.height.toString());
+      });
+
+      // Simulate progress steps
+      const progressInterval = setInterval(() => {
+        setFiles((prev) =>
+          prev.map((f) =>
+            pendingFiles.some((pf) => pf.id === f.id) && f.progress < 95
+              ? { ...f, progress: f.progress + 5 }
+              : f
+          )
+        );
+      }, 300);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      clearInterval(progressInterval);
+
+      const data = await res.json();
+
+      if (data.success) {
+        setFiles((prev) =>
+          prev.map((f) =>
+            pendingFiles.some((pf) => pf.id === f.id)
+              ? { ...f, status: 'success' as const, progress: 100, result: data.data }
+              : f
+          )
+        );
+        setSuccessResult(data.data);
+        setAlbumTitle('');
+        setGroupAsAlbum(false);
+      } else {
+        setFiles((prev) =>
+          prev.map((f) =>
+            pendingFiles.some((pf) => pf.id === f.id)
+              ? { ...f, status: 'error' as const, progress: 0, error: data.error }
+              : f
+          )
+        );
+        toast.error(data.error || 'Upload failed');
+      }
+    } catch {
+      setFiles((prev) =>
+        prev.map((f) =>
+          pendingFiles.some((pf) => pf.id === f.id)
+            ? { ...f, status: 'error' as const, progress: 0, error: 'Network error' }
+            : f
+        )
+      );
+      toast.error('Network error during upload');
+    } finally {
+      setIsUploading(false);
+    }
+  }, [albumTitle]);
+
+  const handleUploadIndividual = useCallback(async (pendingFiles: FileUploadItem[]) => {
     setIsUploading(true);
 
     for (const item of pendingFiles) {
@@ -97,7 +171,24 @@ export default function UploadPage() {
     }
 
     setIsUploading(false);
-  }, [files]);
+  }, []);
+
+  const handleUpload = useCallback(async () => {
+    const pendingFiles = files.filter(
+      (f) => f.status === 'pending' || f.status === 'error'
+    );
+
+    if (pendingFiles.length === 0) {
+      toast.error('No files to upload');
+      return;
+    }
+
+    if (groupAsAlbum) {
+      await handleUploadAlbum(pendingFiles);
+    } else {
+      await handleUploadIndividual(pendingFiles);
+    }
+  }, [files, groupAsAlbum, handleUploadAlbum, handleUploadIndividual]);
 
   const handleUploadMore = () => {
     // Clear successful files, keep errored ones
@@ -124,6 +215,10 @@ export default function UploadPage() {
           setFiles={setFiles}
           onUpload={handleUpload}
           isUploading={isUploading}
+          groupAsAlbum={groupAsAlbum}
+          setGroupAsAlbum={setGroupAsAlbum}
+          albumTitle={albumTitle}
+          setAlbumTitle={setAlbumTitle}
         />
       </motion.div>
 
