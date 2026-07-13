@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -46,10 +47,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         {/* Brand */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-neutral-200">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <ImageIcon className="w-5 h-5 text-blue-600" strokeWidth={2} />
-            <span className="font-semibold text-neutral-900 text-[15px] tracking-tight">
-              FileUpload
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={24}
+              height={24}
+              className="h-6 w-auto shrink-0 object-contain"
+              unoptimized
+            />
+            <span className="font-bold text-[14px] gold-gradient-text tracking-tight">
+              Kompong Dewa Events
             </span>
           </Link>
           <button

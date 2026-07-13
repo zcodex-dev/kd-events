@@ -71,18 +71,23 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
 
       <div className="min-h-screen bg-neutral-50">
         {/* Navigation / Header */}
-        <header className="bg-white border-b border-neutral-200 sticky top-0 z-40">
+        <header className="bg-black border-b border-neutral-900 sticky top-0 z-40">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-neutral-900 rounded-lg flex items-center justify-center shrink-0">
-                <ImageIcon className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-sm font-semibold text-neutral-900 tracking-tight">
-                FileUpload
+            <div className="flex items-center gap-3">
+              <Image
+                src="/logo.png"
+                alt="Kompong Dewa Logo"
+                width={36}
+                height={36}
+                className="h-9 w-auto shrink-0 object-contain"
+                unoptimized
+              />
+              <span className="text-base font-bold gold-gradient-text tracking-tight">
+                Kompong Dewa Events
               </span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-neutral-500 font-medium bg-neutral-100 px-2.5 py-1 rounded-full">
-              <Calendar className="w-3.5 h-3.5 text-neutral-400" />
+            <div className="flex items-center gap-2 text-xs text-neutral-400 font-medium bg-neutral-900 border border-neutral-800 px-2.5 py-1 rounded-full">
+              <Calendar className="w-3.5 h-3.5 text-neutral-500" />
               <span>{formatDate(file.uploadedAt)}</span>
             </div>
           </div>

@@ -65,3 +65,27 @@ body {
     transform: translateY(0);
   }
 }
+
+/* ─── Gold Gradient Text Animation ───────────────────────────────────────── */
+
+@keyframes goldGradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gold-gradient-text {
+  font-family: var(--font-playfair), Georgia, serif;
+  background: linear-gradient(90deg, #9e6821, #f9cc85, #9e6821);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: goldGradientMove 4s linear infinite;
+}

@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -133,10 +134,17 @@ export default function LoginPage() {
         className="w-full max-w-sm"
       >
         {/* Brand */}
-        <div className="flex items-center justify-center gap-2.5 mb-8">
-          <ImageIcon className="w-6 h-6 text-blue-600" strokeWidth={2} />
-          <span className="text-lg font-semibold text-neutral-900 tracking-tight">
-            FileUpload
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <Image
+            src="/logo.png"
+            alt="Kompong Dewa Logo"
+            width={32}
+            height={32}
+            className="h-8 w-auto shrink-0 object-contain"
+            unoptimized
+          />
+          <span className="text-lg font-bold gold-gradient-text tracking-tight">
+            Kompong Dewa Events
           </span>
         </div>
 
