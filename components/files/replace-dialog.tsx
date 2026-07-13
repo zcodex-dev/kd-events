@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Check, AlertTriangle, RefreshCw, Trash2, Plus, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Check, AlertTriangle, RefreshCw, Trash2, Plus, ArrowUp, ArrowDown, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import type { UploadedFile, AdditionalImage } from '@/types';
 import { formatFileSize, resolveUrl } from '@/lib/uploads/file-utils';
@@ -29,6 +29,11 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
   const [isAddingImage, setIsAddingImage] = useState(false);
   const [deleteImageId, setDeleteImageId] = useState<string | null>(null);
 
+  // Reorder states
+  const [orderedImages, setOrderedImages] = useState<any[]>([]);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+
   const [allowedMimeTypes, setAllowedMimeTypes] = useState<string[]>([
     'image/jpeg',
     'image/png',
@@ -51,6 +56,70 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
       })
       .catch(() => {});
   }, [file]);
+
+  // Sync state when file changes
+  useEffect(() => {
+    if (file) {
+      const flatList = [
+        {
+          id: 'main',
+          originalName: file.originalName,
+          storedName: file.storedName,
+          githubPath: file.githubPath,
+          imageUrl: file.imageUrl,
+          mimeType: file.mimeType,
+          size: file.size,
+          width: file.width,
+          height: file.height,
+          uploadedAt: file.uploadedAt,
+        },
+        ...(file.additionalImages || []),
+      ];
+      setOrderedImages(flatList);
+      setIsDirty(false);
+    }
+  }, [file]);
+
+  const moveItem = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= orderedImages.length) return;
+
+    const newImages = [...orderedImages];
+    const temp = newImages[index];
+    newImages[index] = newImages[targetIndex];
+    newImages[targetIndex] = temp;
+    setOrderedImages(newImages);
+    setIsDirty(true);
+  };
+
+  const handleSaveOrder = async () => {
+    if (!file) return;
+
+    setIsSavingOrder(true);
+    try {
+      const orderedIds = orderedImages.map((img) => img.id);
+      const res = await fetch(`/api/files/${file.id}/reorder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderedIds }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Gallery order updated successfully');
+        setIsDirty(false);
+        onSuccess();
+        if (data.data) {
+          Object.assign(file, data.data);
+        }
+      } else {
+        toast.error(data.error || 'Failed to update order');
+      }
+    } catch {
+      toast.error('Network error during reordering');
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
 
   const handleMainFileSelect = (newFile: File) => {
     if (!allowedMimeTypes.includes(newFile.type)) {
@@ -341,19 +410,33 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
                 )}
               </div>
 
-              {/* SECTION 2: Additional Images */}
+              {/* SECTION 2: Stacked Gallery Images & Reordering */}
               <div className="space-y-4 pt-5">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                  Stacked Gallery Images
-                </h4>
+                <div className="flex justify-between items-center">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                    Image Order & Stack Sequence
+                  </h4>
+                  {isDirty && (
+                    <button
+                      onClick={handleSaveOrder}
+                      disabled={isSavingOrder}
+                      className="px-2.5 py-1 text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors rounded-md cursor-pointer flex items-center gap-1"
+                    >
+                      {isSavingOrder ? <LoadingSpinner size={10} /> : <Check className="w-3 h-3" />}
+                      Save Order
+                    </button>
+                  )}
+                </div>
 
-                {/* Additional Images list */}
-                {file.additionalImages && file.additionalImages.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {file.additionalImages.map((img) => (
+                {/* Combined list of all images */}
+                {orderedImages.length > 0 ? (
+                  <div className="space-y-2">
+                    {orderedImages.map((img, idx) => (
                       <div
                         key={img.id}
-                        className="flex items-center gap-3 p-2.5 border border-neutral-200 rounded-lg bg-white shadow-xs group"
+                        className={`flex items-center gap-3 p-2.5 border rounded-lg transition-colors bg-white shadow-xs ${
+                          idx === 0 ? 'border-neutral-300 ring-1 ring-neutral-300' : 'border-neutral-200'
+                        }`}
                       >
                         <div className="w-12 h-12 bg-neutral-50 border border-neutral-100 flex items-center justify-center overflow-hidden shrink-0 rounded-md">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -364,31 +447,66 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
                           />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-medium text-neutral-900 truncate">
-                            {img.originalName}
-                          </p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-xs font-semibold text-neutral-900 truncate max-w-[65%]">
+                              {img.originalName}
+                            </p>
+                            <span
+                              className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide border ${
+                                idx === 0
+                                  ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                  : 'bg-neutral-50 text-neutral-600 border-neutral-200'
+                              }`}
+                            >
+                              {idx === 0 ? 'Primary' : `Artwork #${idx + 1}`}
+                            </span>
+                          </div>
                           <p className="text-[10px] text-neutral-400 mt-0.5">
                             {formatFileSize(img.size)}
                           </p>
                         </div>
-                        <button
-                          onClick={() => handleDeleteImage(img.id)}
-                          disabled={deleteImageId === img.id}
-                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                          title="Delete additional image"
-                        >
-                          {deleteImageId === img.id ? (
-                            <LoadingSpinner size={14} />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                        </button>
+                        
+                        {/* Reorder Arrows */}
+                        <div className="flex gap-1 shrink-0">
+                          <button
+                            onClick={() => moveItem(idx, 'up')}
+                            disabled={idx === 0 || isSavingOrder}
+                            className="p-1.5 text-neutral-500 hover:bg-neutral-100 disabled:opacity-30 rounded-lg cursor-pointer transition-colors"
+                            title="Move Up"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => moveItem(idx, 'down')}
+                            disabled={idx === orderedImages.length - 1 || isSavingOrder}
+                            className="p-1.5 text-neutral-500 hover:bg-neutral-100 disabled:opacity-30 rounded-lg cursor-pointer transition-colors"
+                            title="Move Down"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Delete Button (Only for secondary gallery items) */}
+                        {img.id !== 'main' && (
+                          <button
+                            onClick={() => handleDeleteImage(img.id)}
+                            disabled={deleteImageId === img.id || isSavingOrder}
+                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0 border border-transparent"
+                            title="Delete additional image"
+                          >
+                            {deleteImageId === img.id ? (
+                              <LoadingSpinner size={14} />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>
                 ) : (
                   <p className="text-xs text-neutral-400 italic">
-                    No additional images on this page yet.
+                    No images on this page yet.
                   </p>
                 )}
 
