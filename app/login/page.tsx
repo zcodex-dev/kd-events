@@ -6,7 +6,12 @@ export const dynamic = 'force-dynamic';
 
 export default async function LoginPage() {
   const config = await getAppConfig();
-  const bgImage = config.loginBgUrl || '/kd-picture.webp';
+  let bgImage = config.loginBgUrl || '/kd-picture.webp';
+  
+  // Fix for previously saved absolute localhost URLs
+  if (bgImage.startsWith('http://localhost:3000')) {
+    bgImage = bgImage.replace('http://localhost:3000', '');
+  }
 
   return (
     <div className="min-h-screen flex bg-neutral-950">
@@ -19,6 +24,7 @@ export default async function LoginPage() {
           sizes="60vw"
           className="object-cover object-center zoom-effect select-none pointer-events-none"
           priority
+          unoptimized
         />
         {/* Subtle premium dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-tr from-neutral-950/70 via-neutral-950/20 to-transparent" />

@@ -159,9 +159,6 @@ export function getPublicUrl(key: string): string {
     return `${base}/${key}`;
   }
   
-  let appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  if (!appUrl.startsWith('http://') && !appUrl.startsWith('https://')) {
-    appUrl = `https://${appUrl}`;
-  }
-  return `${appUrl}/api/raw?key=${encodeURIComponent(key)}`;
+  // Use relative path for internal proxy so it works seamlessly on any domain/Vercel
+  return `/api/raw?key=${encodeURIComponent(key)}`;
 }
