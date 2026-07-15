@@ -8,14 +8,13 @@ import {
   Copy,
   Maximize2,
   ImageIcon,
-  Calendar,
   Check,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Toaster } from 'sonner';
 import type { UploadedFile } from '@/types';
-import { formatDate, resolveUrl } from '@/lib/uploads/file-utils';
+import { resolveUrl } from '@/lib/uploads/file-utils';
 
 type ViewPageClientProps = {
   file: UploadedFile;
@@ -71,7 +70,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
 
       <div className="min-h-screen bg-black">
         {/* Navigation / Header */}
-        <header className="bg-black border-b border-[#c6983a]/20 sticky top-0 z-40">
+        <header className="bg-black/40 backdrop-blur-md border-b border-[#c6983a]/20 sticky top-0 z-40">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
             <div className="flex items-center">
               <div className="logo-container-sweep py-1">
@@ -85,10 +84,6 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
                 />
                 <div className="logo-sweep-overlay" />
               </div>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-[#c6983a]/70 font-medium bg-[#c6983a]/10 border border-[#c6983a]/20 px-2.5 py-1 rounded-full">
-              <Calendar className="w-3.5 h-3.5 text-[#c6983a]/70" />
-              <span>{formatDate(file.uploadedAt)}</span>
             </div>
           </div>
         </header>
@@ -143,15 +138,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
           </div>
 
           {/* File info & actions */}
-          <div className="px-4 sm:px-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pt-2">
-            <div>
-              <h1 className="text-lg font-semibold text-[#c6983a] break-all">
-                {file.originalName}
-              </h1>
-              <p className="text-sm text-[#c6983a]/70 mt-1">
-                Shared Page Link
-              </p>
-            </div>
+          <div className="px-4 sm:px-0 flex flex-wrap justify-center gap-4 pt-2 pb-8">
 
             <div className="flex gap-2 shrink-0">
               <button
