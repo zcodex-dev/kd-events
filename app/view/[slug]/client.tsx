@@ -164,7 +164,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
                 className="flex items-center gap-2 px-4 py-2 text-sm text-black bg-[#c6983a] hover:bg-[#b08733] rounded-lg transition-colors font-medium cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                Download Main
+                Download Term
               </button>
             </div>
           </div>
