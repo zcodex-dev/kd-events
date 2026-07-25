@@ -6,9 +6,9 @@ import { toast } from 'sonner';
 import { Save, Image as ImageIcon, Loader2 } from 'lucide-react';
 import type { WebPage } from '@/types';
 import dynamic from 'next/dynamic';
-import 'react-quill/dist/quill.snow.css';
+import 'react-quill-new/dist/quill.snow.css';
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 type PageFormProps = {
   initialData?: WebPage;
