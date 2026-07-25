@@ -93,7 +93,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="max-w-5xl mx-auto py-6 sm:py-10 space-y-6"
+          className="max-w-5xl mx-auto pt-0 pb-6 sm:pb-10 space-y-6"
         >
           {/* Seamless Vertical Image Stack (Zero Gap) */}
           <div className="w-full flex flex-col gap-0 bg-transparent">
