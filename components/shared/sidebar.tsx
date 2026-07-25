@@ -9,6 +9,7 @@ import {
   FolderOpen,
   Settings,
   Users as UsersIcon,
+  FileText,
   ImageIcon,
   X,
 } from 'lucide-react';

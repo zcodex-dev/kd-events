@@ -110,10 +110,25 @@ export type SubUser = {
   createdAt: string;
 };
 
+export type WebPage = {
+  id: string;
+  slug: string;
+  title: string;
+  htmlContent: string;
+  textColor: string;
+  bgColor: string;
+  bgImageUrl?: string;
+  featureIconUrl?: string;
+  createdAt: string;
+  viewCount: number;
+  shareUrl: string;
+};
+
 export type MetadataIndex = {
   files: UploadedFile[];
   config?: AppConfig;
   users?: SubUser[];
+  webPages?: WebPage[];
   lastUpdated: string;
 };
 

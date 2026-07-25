@@ -1,4 +1,4 @@
-import type { UploadedFile, MetadataIndex, AppConfig, SubUser } from '@/types';
+import type { UploadedFile, MetadataIndex, AppConfig, SubUser, WebPage } from '@/types';
 import { getFile, uploadFile, R2ApiError } from '@/lib/r2/client';
 
 // ─── Configuration ──────────────────────────────────────────────────────────
@@ -212,5 +212,59 @@ export async function removeUser(id: string): Promise<boolean> {
   if (index.users.length === initialLength) return false;
   await writeIndex(index);
   return true;
+}
+
+// ─── Web Pages ───────────────────────────────────────────────────────────────
+
+export async function getAllWebPages(): Promise<WebPage[]> {
+  const index = await readIndex();
+  return index.webPages || [];
+}
+
+export async function getWebPageById(id: string): Promise<WebPage | null> {
+  const index = await readIndex();
+  return (index.webPages || []).find((p) => p.id === id) || null;
+}
+
+export async function getWebPageBySlug(slug: string): Promise<WebPage | null> {
+  const index = await readIndex();
+  return (index.webPages || []).find((p) => p.slug === slug) || null;
+}
+
+export async function addWebPage(page: WebPage): Promise<void> {
+  const index = await readIndex();
+  if (!index.webPages) index.webPages = [];
+  index.webPages.unshift(page);
+  await writeIndex(index);
+}
+
+export async function updateWebPage(id: string, updates: Partial<WebPage>): Promise<WebPage | null> {
+  const index = await readIndex();
+  if (!index.webPages) return null;
+  const pageIdx = index.webPages.findIndex((p) => p.id === id);
+  if (pageIdx === -1) return null;
+  index.webPages[pageIdx] = { ...index.webPages[pageIdx], ...updates };
+  await writeIndex(index);
+  return index.webPages[pageIdx];
+}
+
+export async function removeWebPage(id: string): Promise<boolean> {
+  const index = await readIndex();
+  if (!index.webPages) return false;
+  const initialLength = index.webPages.length;
+  index.webPages = index.webPages.filter((p) => p.id !== id);
+  if (index.webPages.length === initialLength) return false;
+  await writeIndex(index);
+  return true;
+}
+
+export async function incrementWebPageViewCount(slug: string): Promise<void> {
+  const index = await readIndex();
+  if (!index.webPages) return;
+  const page = index.webPages.find((p) => p.slug === slug);
+  if (page) {
+    page.viewCount = (page.viewCount || 0) + 1;
+    await writeIndex(index);
+  }
 }
 
