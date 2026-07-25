@@ -73,10 +73,24 @@ export function TermsClient({ page }: { page: WebPage }) {
         />
       </div>
       
-      {/* Global styles for the rich text to inherit the custom color */}
+      {/* Global styles for the rich text to inherit the custom color and fonts */}
       <style dangerouslySetInnerHTML={{__html: `
+        .rich-text-content {
+          font-family: var(--font-roboto), sans-serif;
+        }
         .rich-text-content * {
           color: inherit !important;
+        }
+        .rich-text-content h1, 
+        .rich-text-content h2, 
+        .rich-text-content h3, 
+        .rich-text-content h4, 
+        .rich-text-content h5, 
+        .rich-text-content h6,
+        .rich-text-content strong {
+          font-family: var(--font-playfair), serif;
+          font-weight: 600;
+          letter-spacing: 0.02em;
         }
         .rich-text-content a {
           color: #c6983a !important;
