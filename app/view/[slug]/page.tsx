@@ -44,6 +44,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: `View and download ${file.originalName}`,
       images: [file.imageUrl],
     },
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 

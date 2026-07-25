@@ -25,6 +25,10 @@ export async function generateMetadata(
       title: page.title,
       images: page.bgImageUrl ? [page.bgImageUrl] : [],
     },
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 
