@@ -19,6 +19,7 @@ const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Upload Files', href: '/dashboard/upload', icon: Upload, requiredPermission: 'canUpload' },
   { label: 'All Files', href: '/dashboard/files', icon: FolderOpen },
+  { label: 'Web Pages', href: '/dashboard/pages', icon: FileText, adminOnly: true },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings, adminOnly: true },
   { label: 'Users', href: '/dashboard/users', icon: UsersIcon, adminOnly: true },
 ];
