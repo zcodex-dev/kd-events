@@ -11,6 +11,7 @@ import {
   Users as UsersIcon,
   FileText,
   ImageIcon,
+  Tv,
   X,
 } from 'lucide-react';
 import type { SessionData } from '@/types';
@@ -20,6 +21,7 @@ const navItems = [
   { label: 'Upload Files', href: '/dashboard/upload', icon: Upload, requiredPermission: 'canUpload' },
   { label: 'All Files', href: '/dashboard/files', icon: FolderOpen },
   { label: 'Web Pages', href: '/dashboard/pages', icon: FileText, adminOnly: true },
+  { label: 'TV Displays', href: '/dashboard/screens', icon: Tv, adminOnly: true },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings, adminOnly: true },
   { label: 'Users', href: '/dashboard/users', icon: UsersIcon, adminOnly: true },
 ];

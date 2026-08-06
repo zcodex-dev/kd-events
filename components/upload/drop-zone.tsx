@@ -36,6 +36,11 @@ export function DropZone({
     'image/jpeg',
     'image/png',
     'image/webp',
+    'image/gif',
+    'image/svg+xml',
+    'video/mp4',
+    'video/webm',
+    'video/quicktime',
   ]);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -43,7 +48,7 @@ export function DropZone({
     fetch('/api/config')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.data?.allowedTypes) {
+        if (data.success && data.data?.allowedTypes && data.data.allowedTypes.length > 0) {
           setAllowedMimeTypes(data.data.allowedTypes);
         }
       })
@@ -56,8 +61,12 @@ export function DropZone({
       const errors: string[] = [];
 
       Array.from(fileList).forEach((file) => {
-        // Validate type
-        if (!allowedMimeTypes.includes(file.type)) {
+        // Validate type (fallback to true if extension is valid video/image)
+        const isMimeAllowed = allowedMimeTypes.includes(file.type);
+        const ext = '.' + (file.name.split('.').pop()?.toLowerCase() || '');
+        const isExtAllowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.mp4', '.webm', '.mov'].includes(ext);
+
+        if (!isMimeAllowed && !isExtAllowed) {
           errors.push(`${file.name}: unsupported format`);
           return;
         }
@@ -74,23 +83,38 @@ export function DropZone({
           preview,
           name: file.name,
           size: file.size,
-          type: file.type,
+          type: file.type || (ext === '.mp4' ? 'video/mp4' : 'application/octet-stream'),
           status: 'pending',
           progress: 0,
         };
 
         // Read dimensions
-        const img = new window.Image();
-        img.onload = () => {
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === item.id
-                ? { ...f, width: img.naturalWidth, height: img.naturalHeight }
-                : f
-            )
-          );
-        };
-        img.src = preview;
+        if (file.type.startsWith('video/') || ['.mp4', '.webm', '.mov'].includes(ext)) {
+          const vid = document.createElement('video');
+          vid.preload = 'metadata';
+          vid.onloadedmetadata = () => {
+            setFiles((prev) =>
+              prev.map((f) =>
+                f.id === item.id
+                  ? { ...f, width: vid.videoWidth || 1920, height: vid.videoHeight || 1080 }
+                  : f
+              )
+            );
+          };
+          vid.src = preview;
+        } else {
+          const img = new window.Image();
+          img.onload = () => {
+            setFiles((prev) =>
+              prev.map((f) =>
+                f.id === item.id
+                  ? { ...f, width: img.naturalWidth, height: img.naturalHeight }
+                  : f
+              )
+            );
+          };
+          img.src = preview;
+        }
 
         newItems.push(item);
       });
@@ -103,7 +127,7 @@ export function DropZone({
         setFiles((prev) => [...prev, ...newItems]);
       }
     },
-    [setFiles]
+    [allowedMimeTypes, setFiles]
   );
 
   const handleDrop = useCallback(
@@ -138,8 +162,8 @@ export function DropZone({
   const removeFile = useCallback(
     (id: string) => {
       setFiles((prev) => {
-        const item = prev.find((f) => f.id === id);
-        if (item) URL.revokeObjectURL(item.preview);
+        const file = prev.find((f) => f.id === id);
+        if (file) URL.revokeObjectURL(file.preview);
         return prev.filter((f) => f.id !== id);
       });
     },
@@ -183,13 +207,13 @@ export function DropZone({
           {isDragOver ? 'Drop files here' : 'Click to upload or drag and drop'}
         </p>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          JPG, PNG, WebP — up to {formatFileSize(MAX_FILE_SIZE)}
+          Images (JPG, PNG, WebP, GIF, SVG) & Videos (MP4, WebM, MOV) — up to {formatFileSize(MAX_FILE_SIZE)}
         </p>
 
         <input
           ref={inputRef}
           type="file"
-          accept=".jpg,.jpeg,.png,.webp"
+          accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.mp4,.webm,.mov,video/mp4,video/webm,video/quicktime,image/*"
           multiple
           onChange={handleInputChange}
           className="hidden"

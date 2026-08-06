@@ -1,4 +1,4 @@
-import type { UploadedFile, MetadataIndex, AppConfig, SubUser, WebPage } from '@/types';
+import type { UploadedFile, MetadataIndex, AppConfig, SubUser, WebPage, TvScreen } from '@/types';
 import { getFile, uploadFile, R2ApiError } from '@/lib/r2/client';
 
 // ─── Configuration ──────────────────────────────────────────────────────────
@@ -142,13 +142,29 @@ export async function getStats() {
   };
 }
 
+export const DEFAULT_ALLOWED_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/svg+xml',
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
+];
+
 /**
  * Get application configuration.
  */
 export async function getAppConfig(): Promise<AppConfig> {
   const index = await readIndex();
-  return index.config || {
-    allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+  const allowed = index.config?.allowedTypes && index.config.allowedTypes.length > 0
+    ? index.config.allowedTypes
+    : DEFAULT_ALLOWED_TYPES;
+
+  return {
+    ...index.config,
+    allowedTypes: allowed,
   };
 }
 
@@ -267,4 +283,63 @@ export async function incrementWebPageViewCount(slug: string): Promise<void> {
     await writeIndex(index);
   }
 }
+
+// ─── TV Screens / LCD Displays ───────────────────────────────────────────────
+
+export async function getAllTvScreens(): Promise<TvScreen[]> {
+  const index = await readIndex();
+  return index.screens || [];
+}
+
+export async function getTvScreenById(id: string): Promise<TvScreen | null> {
+  const index = await readIndex();
+  return (index.screens || []).find((s) => s.id === id) || null;
+}
+
+export async function getTvScreenBySlug(slug: string): Promise<TvScreen | null> {
+  const index = await readIndex();
+  return (index.screens || []).find((s) => s.slug === slug) || null;
+}
+
+export async function addTvScreen(screen: TvScreen): Promise<void> {
+  const index = await readIndex();
+  if (!index.screens) index.screens = [];
+  index.screens.unshift(screen);
+  await writeIndex(index);
+}
+
+export async function updateTvScreen(id: string, updates: Partial<TvScreen>): Promise<TvScreen | null> {
+  const index = await readIndex();
+  if (!index.screens) return null;
+  const screenIdx = index.screens.findIndex((s) => s.id === id);
+  if (screenIdx === -1) return null;
+  index.screens[screenIdx] = { 
+    ...index.screens[screenIdx], 
+    ...updates, 
+    updatedAt: new Date().toISOString() 
+  };
+  await writeIndex(index);
+  return index.screens[screenIdx];
+}
+
+export async function removeTvScreen(id: string): Promise<boolean> {
+  const index = await readIndex();
+  if (!index.screens) return false;
+  const initialLength = index.screens.length;
+  index.screens = index.screens.filter((s) => s.id !== id);
+  if (index.screens.length === initialLength) return false;
+  await writeIndex(index);
+  return true;
+}
+
+export async function incrementTvScreenViewCount(slug: string): Promise<void> {
+  const index = await readIndex();
+  if (!index.screens) return;
+  const screen = index.screens.find((s) => s.slug === slug);
+  if (screen) {
+    screen.viewCount = (screen.viewCount || 0) + 1;
+    await writeIndex(index);
+  }
+}
+
 

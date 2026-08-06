@@ -14,7 +14,7 @@ import {
 import { toast } from 'sonner';
 import { Toaster } from 'sonner';
 import type { UploadedFile } from '@/types';
-import { resolveUrl } from '@/lib/uploads/file-utils';
+import { resolveUrl, isVideoFile } from '@/lib/uploads/file-utils';
 
 type ViewPageClientProps = {
   file: UploadedFile;
@@ -24,6 +24,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
   const [copied, setCopied] = useState(false);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
   const imageUrl = resolveUrl(file.imageUrl);
+  const isMainVideo = isVideoFile(file.mimeType || file.originalName || file.imageUrl);
 
   // Increment view count on mount
   useEffect(() => {
@@ -95,41 +96,64 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
           transition={{ duration: 0.3 }}
           className="max-w-5xl mx-auto pt-0 pb-6 sm:pb-10 space-y-6"
         >
-          {/* Seamless Vertical Image Stack (Zero Gap) */}
+          {/* Seamless Vertical Media Stack (Zero Gap) */}
           <div className="w-full flex flex-col gap-0 bg-transparent">
-            {/* Primary Main Image */}
+            {/* Primary Main Media */}
             <div className="w-full flex justify-center bg-transparent">
-              <Image
-                src={imageUrl}
-                alt={file.originalName}
-                width={file.width || 1200}
-                height={file.height || 900}
-                className="w-full h-auto object-contain cursor-pointer"
-                onClick={() => setFullscreenUrl(imageUrl)}
-                unoptimized
-                priority
-              />
+              {isMainVideo ? (
+                <video
+                  src={imageUrl}
+                  controls
+                  autoPlay
+                  loop
+                  playsInline
+                  className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+                />
+              ) : (
+                <Image
+                  src={imageUrl}
+                  alt={file.originalName}
+                  width={file.width || 1200}
+                  height={file.height || 900}
+                  className="w-full h-auto object-contain cursor-pointer"
+                  onClick={() => setFullscreenUrl(imageUrl)}
+                  unoptimized
+                  priority
+                />
+              )}
             </div>
 
-            {/* Additional Images Stack */}
+            {/* Additional Media Stack */}
             {file.additionalImages && file.additionalImages.length > 0 && (
               <>
                 {file.additionalImages.map((img) => {
                   const resolvedAdditionalUrl = resolveUrl(img.imageUrl);
+                  const isAddVideo = isVideoFile(img.mimeType || img.originalName || img.imageUrl);
                   return (
                     <div
                       key={img.id}
                       className="w-full flex justify-center bg-transparent"
                     >
-                      <Image
-                        src={resolvedAdditionalUrl}
-                        alt={img.originalName}
-                        width={img.width || 1200}
-                        height={img.height || 900}
-                        className="w-full h-auto object-contain cursor-pointer"
-                        onClick={() => setFullscreenUrl(resolvedAdditionalUrl)}
-                        unoptimized
-                      />
+                      {isAddVideo ? (
+                        <video
+                          src={resolvedAdditionalUrl}
+                          controls
+                          autoPlay
+                          loop
+                          playsInline
+                          className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+                        />
+                      ) : (
+                        <Image
+                          src={resolvedAdditionalUrl}
+                          alt={img.originalName}
+                          width={img.width || 1200}
+                          height={img.height || 900}
+                          className="w-full h-auto object-contain cursor-pointer"
+                          onClick={() => setFullscreenUrl(resolvedAdditionalUrl)}
+                          unoptimized
+                        />
+                      )}
                     </div>
                   );
                 })}
@@ -139,7 +163,6 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
 
           {/* File info & actions */}
           <div className="px-4 sm:px-0 flex flex-wrap justify-center gap-4 pt-2 pb-8">
-
             <div className="flex gap-2 shrink-0">
               <button
                 onClick={copyLink}
@@ -164,7 +187,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
                 className="flex items-center gap-2 px-4 py-2 text-sm text-black bg-[#c6983a] hover:bg-[#b08733] rounded-lg transition-colors font-medium cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                Download Term
+                Download
               </button>
             </div>
           </div>
@@ -187,12 +210,23 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
           >
             <X className="w-6 h-6" />
           </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={fullscreenUrl}
-            alt="Fullscreen view"
-            className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg"
-          />
+          {isVideoFile(fullscreenUrl) ? (
+            <video
+              src={fullscreenUrl}
+              controls
+              autoPlay
+              playsInline
+              className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={fullscreenUrl}
+              alt="Fullscreen view"
+              className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg"
+            />
+          )}
         </motion.div>
       )}
     </>

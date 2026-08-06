@@ -38,6 +38,11 @@ export function ReplaceDialog({ file, onClose, onSuccess }: ReplaceDialogProps) 
     'image/jpeg',
     'image/png',
     'image/webp',
+    'image/gif',
+    'image/svg+xml',
+    'video/mp4',
+    'video/webm',
+    'video/quicktime',
   ]);
 
   const mainFileInputRef = useRef<HTMLInputElement>(null);

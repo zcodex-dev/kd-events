@@ -13,12 +13,13 @@ import {
   Pencil,
   Trash2,
   ImageIcon,
+  Video,
   Check,
   RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { UploadedFile } from '@/types';
-import { formatFileSize, formatDate, resolveUrl } from '@/lib/uploads/file-utils';
+import { formatFileSize, formatDate, resolveUrl, isVideoFile } from '@/lib/uploads/file-utils';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { RenameDialog } from '@/components/files/rename-dialog';
@@ -148,15 +149,26 @@ export function RecentUploadsTable({
                 {/* Desktop row */}
                 <div className="hidden md:grid grid-cols-[auto_1fr_80px_80px_100px_80px_60px] gap-4 items-center px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                   {/* Thumbnail */}
-                  <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 overflow-hidden shrink-0 rounded-md border border-neutral-100 dark:border-neutral-700">
-                    <Image
-                      src={resolveUrl(file.imageUrl)}
-                      alt={file.originalName}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                    />
+                  <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 overflow-hidden shrink-0 rounded-md border border-neutral-100 dark:border-neutral-700 relative">
+                    {isVideoFile(file.mimeType || file.originalName) ? (
+                      <video
+                        src={resolveUrl(file.imageUrl)}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        autoPlay
+                        loop
+                      />
+                    ) : (
+                      <Image
+                        src={resolveUrl(file.imageUrl)}
+                        alt={file.originalName}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                      />
+                    )}
                   </div>
 
                   {/* Name */}
@@ -284,15 +296,26 @@ export function RecentUploadsTable({
                 </div>
 
                 <div className="md:hidden flex items-center gap-3 p-4">
-                  <div className="w-12 h-12 bg-neutral-100 overflow-hidden shrink-0 rounded-lg border border-neutral-100">
-                    <Image
-                      src={resolveUrl(file.imageUrl)}
-                      alt={file.originalName}
-                      width={48}
-                      height={48}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                    />
+                  <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 overflow-hidden shrink-0 rounded-lg border border-neutral-100 dark:border-neutral-700 relative">
+                    {isVideoFile(file.mimeType || file.originalName) ? (
+                      <video
+                        src={resolveUrl(file.imageUrl)}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        autoPlay
+                        loop
+                      />
+                    ) : (
+                      <Image
+                        src={resolveUrl(file.imageUrl)}
+                        alt={file.originalName}
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                      />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-neutral-900 truncate">{file.originalName}</p>

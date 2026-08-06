@@ -116,8 +116,30 @@ export function mimeToExtension(mimeType: string): string {
     'image/jpg': '.jpg',
     'image/png': '.png',
     'image/webp': '.webp',
+    'image/gif': '.gif',
+    'image/svg+xml': '.svg',
+    'video/mp4': '.mp4',
+    'video/webm': '.webm',
+    'video/quicktime': '.mov',
   };
   return map[mimeType] || '.bin';
+}
+
+// ─── Check if Video File ────────────────────────────────────────────────────
+
+export function isVideoFile(mimeOrUrl?: string | null): boolean {
+  if (!mimeOrUrl) return false;
+  const lower = mimeOrUrl.toLowerCase();
+  return (
+    lower.startsWith('video/') ||
+    lower.endsWith('.mp4') ||
+    lower.endsWith('.webm') ||
+    lower.endsWith('.mov') ||
+    lower.endsWith('.m4v') ||
+    lower.includes('video/mp4') ||
+    lower.includes('video/webm') ||
+    lower.includes('video/quicktime')
+  );
 }
 
 // ─── Check if Today ─────────────────────────────────────────────────────────

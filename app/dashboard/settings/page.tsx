@@ -13,8 +13,11 @@ const IMAGE_TYPES = [
   { id: 'image/jpeg', ext: '.jpg, .jpeg', label: 'JPEG / JPG' },
   { id: 'image/png', ext: '.png', label: 'PNG' },
   { id: 'image/webp', ext: '.webp', label: 'WebP' },
-  { id: 'image/svg+xml', ext: '.svg', label: 'SVG (Vector)' },
   { id: 'image/gif', ext: '.gif', label: 'GIF (Animated)' },
+  { id: 'image/svg+xml', ext: '.svg', label: 'SVG (Vector)' },
+  { id: 'video/mp4', ext: '.mp4', label: 'MP4 Video' },
+  { id: 'video/webm', ext: '.webm', label: 'WebM Video' },
+  { id: 'video/quicktime', ext: '.mov', label: 'QuickTime / MOV Video' },
 ];
 
 export default function SettingsPage() {

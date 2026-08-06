@@ -80,6 +80,10 @@ export default function AllFilesPage() {
               <option value="jpeg">JPEG</option>
               <option value="png">PNG</option>
               <option value="webp">WebP</option>
+              <option value="gif">GIF</option>
+              <option value="mp4">MP4 Video</option>
+              <option value="webm">WebM Video</option>
+              <option value="video">All Videos</option>
             </select>
 
             <select

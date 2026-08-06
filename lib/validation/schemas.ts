@@ -7,11 +7,26 @@ export const ALLOWED_MIME_TYPES = [
   'image/jpg',
   'image/png',
   'image/webp',
+  'image/gif',
+  'image/svg+xml',
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
 ] as const;
 
-export const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'] as const;
+export const ALLOWED_EXTENSIONS = [
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.webp',
+  '.gif',
+  '.svg',
+  '.mp4',
+  '.webm',
+  '.mov',
+] as const;
 
-export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
 
 // ─── Login Schema ────────────────────────────────────────────────────────────
 
@@ -33,7 +48,7 @@ export const uploadFileSchema = z.object({
     .number()
     .max(MAX_FILE_SIZE, `File size must be under ${MAX_FILE_SIZE / 1024 / 1024} MB`),
   type: z.enum(ALLOWED_MIME_TYPES, {
-    message: 'Only JPG, PNG, and WebP images are allowed',
+    message: 'Allowed formats: JPG, PNG, WebP, GIF, SVG, MP4, WebM, MOV',
   }),
 });
 

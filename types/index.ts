@@ -124,11 +124,50 @@ export type WebPage = {
   shareUrl: string;
 };
 
+export type TextOverlayConfig = {
+  enabled: boolean;
+  headline?: string;     // e.g. "EVENT PROMOTIONS" or "POKER JACKPOT"
+  subtext?: string;      // e.g. "USD 300 - Starts at 8:00 PM"
+  position?: 'bottom' | 'center' | 'top' | 'ticker' | 'custom';
+  posX?: number;         // 0 - 100 percentage from left
+  posY?: number;         // 0 - 100 percentage from top
+  stylePreset?: 'gold_jackpot' | 'neon_red' | 'glass_dark' | 'cinema_bar' | 'minimal';
+  fontSize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  textColor?: string;
+  bgColor?: string;
+  showGlow?: boolean;
+};
+
+export type TvScreen = {
+  id: string;
+  slug: string;
+  title: string;
+  enabled: boolean;
+  
+  // Media source (Video, GIF, Image, YouTube, Vimeo)
+  mediaUrl: string;
+  mediaType: 'video' | 'gif' | 'image' | 'youtube' | 'vimeo' | 'auto';
+  mediaFit?: 'cover' | 'contain';
+  bgColor?: string;
+  overlayOpacity?: number; // 0 - 100%
+
+  // Optional Additional Text / Captions on Videos & GIFs
+  overlayText?: TextOverlayConfig;
+
+  // TV Screen Display Settings
+  refreshIntervalSeconds: number; // e.g. 5, 10
+  viewCount?: number;
+  shareUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type MetadataIndex = {
   files: UploadedFile[];
   config?: AppConfig;
   users?: SubUser[];
   webPages?: WebPage[];
+  screens?: TvScreen[];
   lastUpdated: string;
 };
 

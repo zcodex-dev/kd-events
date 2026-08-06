@@ -21,15 +21,27 @@ export function FilePreviewCard({ item, onRemove, isUploading }: FilePreviewCard
       className="flex items-center gap-3 p-3 bg-white border border-neutral-200 rounded-lg shadow-xs"
     >
       {/* Thumbnail */}
-      <div className="w-12 h-12 bg-neutral-100 overflow-hidden shrink-0 rounded-md border border-neutral-100">
-        <Image
-          src={item.preview}
-          alt={item.name}
-          width={48}
-          height={48}
-          className="w-full h-full object-cover"
-          unoptimized
-        />
+      <div className="w-12 h-12 bg-neutral-100 overflow-hidden shrink-0 rounded-md border border-neutral-100 relative">
+        {item.file.type.startsWith('video/') ||
+        ['.mp4', '.webm', '.mov'].some((ext) => item.name.toLowerCase().endsWith(ext)) ? (
+          <video
+            src={item.preview}
+            className="w-full h-full object-cover"
+            muted
+            playsInline
+            autoPlay
+            loop
+          />
+        ) : (
+          <Image
+            src={item.preview}
+            alt={item.name}
+            width={48}
+            height={48}
+            className="w-full h-full object-cover"
+            unoptimized
+          />
+        )}
       </div>
 
       {/* Info */}
