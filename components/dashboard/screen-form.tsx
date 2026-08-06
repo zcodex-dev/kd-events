@@ -662,30 +662,30 @@ export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
                     <div className="space-y-1">
                       <input
                         type="range"
-                        min="14"
-                        max="220"
+                        min="16"
+                        max="360"
                         step="1"
                         value={fontScale}
                         onChange={(e) => setFontScale(Number(e.target.value))}
                         className="w-full h-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
                       />
                       <div className="flex justify-between text-[9px] text-neutral-400 font-mono px-0.5">
-                        <span>14px (Compact)</span>
-                        <span>48px (Standard)</span>
-                        <span>120px (Cinema)</span>
-                        <span>220px+ (Mega TV)</span>
+                        <span>16px (Subtle)</span>
+                        <span>80px (Standard)</span>
+                        <span>180px (Jackpot)</span>
+                        <span>360px+ (Mega TV)</span>
                       </div>
                     </div>
 
                     {/* Quick Preset Buttons */}
                     <div className="grid grid-cols-6 gap-1 pt-1">
                       {[
-                        { label: 'S', px: 24 },
-                        { label: 'M', px: 36 },
-                        { label: 'L', px: 48 },
-                        { label: 'XL', px: 64 },
-                        { label: '2XL', px: 96 },
-                        { label: 'Cinema', px: 130 },
+                        { label: 'S', px: 40 },
+                        { label: 'M', px: 70 },
+                        { label: 'L', px: 110 },
+                        { label: 'XL', px: 160 },
+                        { label: '2XL', px: 220 },
+                        { label: 'Cinema', px: 300 },
                       ].map((preset) => (
                         <button
                           key={preset.label}

@@ -278,12 +278,18 @@ export function TvDisplayCanvas({
   const styleConfig = getPresetStyles();
   const fontFamilyCss = getFontFamilyStyle(overlayText.fontFamily);
 
-  const headlineFontSize = overlayText.fontScale
-    ? `${overlayText.fontScale}px`
-    : undefined;
-  const subtextFontSize = overlayText.fontScale
-    ? `${Math.max(12, Math.round(overlayText.fontScale * 0.46))}px`
-    : undefined;
+  // Base font scale calibrated against standard 1920px Full HD reference TV canvas
+  const baseScale = overlayText.fontScale ?? (
+    overlayText.fontSize === 'sm' ? 36 :
+    overlayText.fontSize === 'md' ? 54 :
+    overlayText.fontSize === 'xl' ? 120 :
+    overlayText.fontSize === '2xl' ? 180 : 80
+  );
+
+  // Proportional font sizing using container query width (100cqw / 1920)
+  // Ensures 100% true WYSIWYG match between editor preview and real TV displays
+  const headlineFontSize = `calc(${baseScale} * 100cqw / 1920)`;
+  const subtextFontSize = `calc(${Math.max(14, Math.round(baseScale * 0.45))} * 100cqw / 1920)`;
 
   return (
     <div
@@ -291,7 +297,10 @@ export function TvDisplayCanvas({
       className={`relative w-full h-full overflow-hidden select-none flex items-center justify-center font-sans ${
         isPreview ? 'rounded-2xl' : ''
       }`}
-      style={{ backgroundColor: bgColor }}
+      style={{
+        backgroundColor: bgColor,
+        containerType: 'inline-size',
+      }}
     >
       {/* ── Media Background Layer (YouTube, Vimeo, Video, GIF, or Image) ── */}
       {mediaInfo.type === 'youtube' && (
@@ -387,7 +396,7 @@ export function TvDisplayCanvas({
           <div
             className={`group relative text-center transition-all ${
               styleConfig.boxClasses
-            } ${styleConfig.glowClass} ${typo.padding} ${
+            } ${styleConfig.glowClass} ${
               isInteractive
                 ? 'hover:ring-2 hover:ring-amber-400/90 hover:ring-offset-2 hover:ring-offset-black/50'
                 : ''
@@ -396,6 +405,8 @@ export function TvDisplayCanvas({
               backgroundColor:
                 preset !== 'minimal' && overlayText.bgColor ? overlayText.bgColor : undefined,
               fontFamily: fontFamilyCss,
+              padding: preset === 'minimal' ? '0' : 'calc(14 * 100cqw / 1920) calc(28 * 100cqw / 1920)',
+              borderRadius: preset === 'cinema_bar' ? '0' : 'calc(18 * 100cqw / 1920)',
             }}
           >
             {/* Position coordinate indicator badge during drag in editor */}
@@ -409,7 +420,7 @@ export function TvDisplayCanvas({
             {/* Headline */}
             {overlayText.headline && (
               <h2
-                className={`${!overlayText.fontScale ? typo.headline : 'font-black tracking-tight leading-tight'} ${styleConfig.headlineClasses}`}
+                className={`font-black tracking-tight leading-tight ${styleConfig.headlineClasses}`}
                 style={{
                   fontSize: headlineFontSize,
                   fontFamily: fontFamilyCss,
@@ -423,12 +434,11 @@ export function TvDisplayCanvas({
             {/* Subtext / Prize / Numbers */}
             {overlayText.subtext && (
               <p
-                className={`${!overlayText.fontScale ? typo.subtext : 'font-bold leading-normal'} ${styleConfig.subtextClasses} ${
-                  overlayText.headline ? 'mt-1' : ''
-                }`}
+                className={`font-bold leading-normal ${styleConfig.subtextClasses}`}
                 style={{
                   fontSize: subtextFontSize,
                   fontFamily: fontFamilyCss,
+                  marginTop: overlayText.headline ? 'calc(6 * 100cqw / 1920)' : '0',
                 }}
               >
                 {overlayText.subtext}
