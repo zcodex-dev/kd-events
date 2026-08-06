@@ -142,9 +142,11 @@ export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
   const [overlayOpacity, setOverlayOpacity] = useState(initialData?.overlayOpacity ?? 0);
 
   // ─── Overlay Text State ───
-  const [textEnabled, setTextEnabled] = useState(initialData?.overlayText?.enabled ?? true);
-  const [headline, setHeadline] = useState(initialData?.overlayText?.headline || 'POKER HIGH HAND JACKPOT');
-  const [subtext, setSubtext] = useState(initialData?.overlayText?.subtext || 'USD 300 • WINNING STARTS AT 8:00 PM');
+  const [textEnabled, setTextEnabled] = useState(
+    initialData?.overlayText?.enabled ?? Boolean(initialData?.overlayText?.headline || initialData?.overlayText?.subtext)
+  );
+  const [headline, setHeadline] = useState(initialData?.overlayText?.headline ?? '');
+  const [subtext, setSubtext] = useState(initialData?.overlayText?.subtext ?? '');
   const [position, setPosition] = useState<NonNullable<TextOverlayConfig['position']>>(
     initialData?.overlayText?.position || 'bottom'
   );
