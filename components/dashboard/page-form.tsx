@@ -10,6 +10,8 @@ import 'react-quill-new/dist/quill.snow.css';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
+import { directUploadSingleFile } from '@/lib/uploads/client-upload';
+
 type PageFormProps = {
   initialData?: WebPage;
   isEdit?: boolean;
@@ -34,25 +36,16 @@ export function PageForm({ initialData, isEdit }: PageFormProps) {
     else setIsUploadingIcon(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      const data = await res.json();
-      if (data.success && data.data) {
-        // Our API returns the shareUrl but the object has imageUrl
-        if (type === 'bg') setBgImageUrl(data.data.imageUrl);
-        else setFeatureIconUrl(data.data.imageUrl);
+      const data = await directUploadSingleFile(file);
+      if (data && data.imageUrl) {
+        if (type === 'bg') setBgImageUrl(data.imageUrl);
+        else setFeatureIconUrl(data.imageUrl);
         toast.success(`${type === 'bg' ? 'Background' : 'Icon'} uploaded successfully`);
       } else {
-        toast.error(data.error || 'Upload failed');
+        toast.error('Upload failed');
       }
-    } catch (err) {
-      toast.error('Network error during upload');
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed');
     } finally {
       if (type === 'bg') setIsUploadingBg(false);
       else setIsUploadingIcon(false);

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import type { TvScreen, TextOverlayConfig } from '@/types';
 import { TvDisplayCanvas } from '@/components/tv/tv-display-canvas';
+import { directUploadSingleFile } from '@/lib/uploads/client-upload';
 
 type ScreenFormProps = {
   initialData?: TvScreen;
@@ -157,17 +158,9 @@ export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
   const handleMediaUpload = async (file: File) => {
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (data.success && data.data) {
-        setMediaUrl(data.data.imageUrl);
+      const data = await directUploadSingleFile(file);
+      if (data && data.imageUrl) {
+        setMediaUrl(data.imageUrl);
         if (file.type.startsWith('video/')) {
           setMediaType('video');
         } else if (file.type === 'image/gif') {
@@ -180,10 +173,10 @@ export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
         }
         toast.success('Media uploaded successfully!');
       } else {
-        toast.error(data.error || 'Upload failed');
+        toast.error('Upload failed');
       }
-    } catch {
-      toast.error('Network error during upload');
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed');
     } finally {
       setIsUploading(false);
     }

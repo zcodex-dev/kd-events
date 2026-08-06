@@ -10,6 +10,8 @@ import { useDashboard } from '@/app/dashboard/layout';
 import { ShieldAlert } from 'lucide-react';
 import type { FileUploadItem, UploadResult } from '@/types';
 
+import { directUploadSingleFile, directUploadAlbum } from '@/lib/uploads/client-upload';
+
 export default function UploadPage() {
   const { openSidebar, session } = useDashboard();
   const [files, setFiles] = useState<FileUploadItem[]>([]);
@@ -48,67 +50,45 @@ export default function UploadPage() {
     );
 
     try {
-      const formData = new FormData();
-      if (albumTitle.trim()) {
-        formData.append('title', albumTitle.trim());
-      }
+      const itemsToUpload = pendingFiles.map((p) => ({
+        file: p.file,
+        width: p.width,
+        height: p.height,
+      }));
 
-      pendingFiles.forEach((item, index) => {
-        formData.append('files', item.file);
-        if (item.width) formData.append(`width_${index}`, item.width.toString());
-        if (item.height) formData.append(`height_${index}`, item.height.toString());
+      const result = await directUploadAlbum(itemsToUpload, {
+        title: albumTitle.trim() || undefined,
+        onProgress: (percent) => {
+          setFiles((prev) =>
+            prev.map((f) =>
+              pendingFiles.some((pf) => pf.id === f.id)
+                ? { ...f, progress: Math.max(f.progress, percent) }
+                : f
+            )
+          );
+        },
       });
 
-      // Simulate progress steps
-      const progressInterval = setInterval(() => {
-        setFiles((prev) =>
-          prev.map((f) =>
-            pendingFiles.some((pf) => pf.id === f.id) && f.progress < 95
-              ? { ...f, progress: f.progress + 5 }
-              : f
-          )
-        );
-      }, 300);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      clearInterval(progressInterval);
-
-      const data = await res.json();
-
-      if (data.success) {
-        setFiles((prev) =>
-          prev.map((f) =>
-            pendingFiles.some((pf) => pf.id === f.id)
-              ? { ...f, status: 'success' as const, progress: 100, result: data.data }
-              : f
-          )
-        );
-        setSuccessResult(data.data);
-        setAlbumTitle('');
-        setGroupAsAlbum(false);
-      } else {
-        setFiles((prev) =>
-          prev.map((f) =>
-            pendingFiles.some((pf) => pf.id === f.id)
-              ? { ...f, status: 'error' as const, progress: 0, error: data.error }
-              : f
-          )
-        );
-        toast.error(data.error || 'Upload failed');
-      }
-    } catch {
       setFiles((prev) =>
         prev.map((f) =>
           pendingFiles.some((pf) => pf.id === f.id)
-            ? { ...f, status: 'error' as const, progress: 0, error: 'Network error' }
+            ? { ...f, status: 'success' as const, progress: 100, result }
             : f
         )
       );
-      toast.error('Network error during upload');
+      setSuccessResult(result);
+      setAlbumTitle('');
+      setGroupAsAlbum(false);
+      toast.success('Album uploaded successfully!');
+    } catch (err: any) {
+      setFiles((prev) =>
+        prev.map((f) =>
+          pendingFiles.some((pf) => pf.id === f.id)
+            ? { ...f, status: 'error' as const, progress: 0, error: err.message || 'Upload failed' }
+            : f
+        )
+      );
+      toast.error(err.message || 'Network error during upload');
     } finally {
       setIsUploading(false);
     }
@@ -126,63 +106,36 @@ export default function UploadPage() {
       );
 
       try {
-        const formData = new FormData();
-        formData.append('file', item.file);
-        if (item.width) formData.append('width', item.width.toString());
-        if (item.height) formData.append('height', item.height.toString());
-
-        // Simulate progress steps
-        const progressInterval = setInterval(() => {
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === item.id && f.progress < 80
-                ? { ...f, progress: f.progress + 10 }
-                : f
-            )
-          );
-        }, 300);
-
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
+        const result = await directUploadSingleFile(item.file, {
+          width: item.width,
+          height: item.height,
+          onProgress: (percent) => {
+            setFiles((prev) =>
+              prev.map((f) => (f.id === item.id ? { ...f, progress: percent } : f))
+            );
+          },
         });
 
-        clearInterval(progressInterval);
-
-        const data = await res.json();
-
-        if (data.success) {
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === item.id
-                ? { ...f, status: 'success' as const, progress: 100, result: data.data }
-                : f
-            )
-          );
-
-          // Show success modal for the last uploaded file (or single upload)
-          if (item === pendingFiles[pendingFiles.length - 1]) {
-            setSuccessResult(data.data);
-          }
-        } else {
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === item.id
-                ? { ...f, status: 'error' as const, progress: 0, error: data.error }
-                : f
-            )
-          );
-          toast.error(data.error || 'Upload failed');
-        }
-      } catch {
         setFiles((prev) =>
           prev.map((f) =>
             f.id === item.id
-              ? { ...f, status: 'error' as const, progress: 0, error: 'Network error' }
+              ? { ...f, status: 'success' as const, progress: 100, result }
               : f
           )
         );
-        toast.error('Network error during upload');
+
+        if (item === pendingFiles[pendingFiles.length - 1]) {
+          setSuccessResult(result);
+        }
+      } catch (err: any) {
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === item.id
+              ? { ...f, status: 'error' as const, progress: 0, error: err.message || 'Upload failed' }
+              : f
+          )
+        );
+        toast.error(err.message || 'Upload failed');
       }
     }
 

@@ -1,4 +1,5 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
@@ -72,6 +73,31 @@ export async function uploadFile(
   } catch (error: any) {
     console.error('R2 upload error:', error);
     throw new R2ApiError(error.message || 'Failed to upload to R2', 500);
+  }
+}
+
+/**
+ * Generate a presigned PUT URL for direct client-to-R2 upload.
+ * Completely bypasses Vercel 4.5MB Serverless body limit!
+ */
+export async function getPresignedUploadUrl(
+  key: string,
+  contentType?: string,
+  expiresInSeconds: number = 3600
+): Promise<string> {
+  const { bucketName } = getConfig();
+  const client = getS3Client();
+
+  try {
+    const command = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+      ContentType: contentType,
+    });
+    return await getSignedUrl(client as any, command, { expiresIn: expiresInSeconds });
+  } catch (error: any) {
+    console.error('R2 presign error:', error);
+    throw new R2ApiError(error.message || 'Failed to generate presigned upload URL', 500);
   }
 }
 
