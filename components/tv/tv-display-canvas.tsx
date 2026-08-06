@@ -205,6 +205,23 @@ export function TvDisplayCanvas({
   const typo = getTypographyClasses();
   const preset = overlayText.stylePreset || 'gold_jackpot';
 
+  const getFontFamilyStyle = (font?: string) => {
+    switch (font) {
+      case 'playfair':
+        return 'var(--font-playfair), "Playfair Display", Georgia, serif';
+      case 'roboto':
+        return 'var(--font-roboto), "Roboto", sans-serif';
+      case 'bebas':
+        return 'var(--font-bebas), "Bebas Neue", sans-serif';
+      case 'outfit':
+        return 'var(--font-outfit), "Outfit", sans-serif';
+      case 'montserrat':
+        return 'var(--font-montserrat), "Montserrat", sans-serif';
+      default:
+        return 'var(--font-roboto), "Roboto", sans-serif';
+    }
+  };
+
   // Style preset configurations (Clean, crisp typography with no text shadow)
   const getPresetStyles = () => {
     switch (preset) {
@@ -259,6 +276,14 @@ export function TvDisplayCanvas({
   };
 
   const styleConfig = getPresetStyles();
+  const fontFamilyCss = getFontFamilyStyle(overlayText.fontFamily);
+
+  const headlineFontSize = overlayText.fontScale
+    ? `${overlayText.fontScale}px`
+    : undefined;
+  const subtextFontSize = overlayText.fontScale
+    ? `${Math.max(12, Math.round(overlayText.fontScale * 0.46))}px`
+    : undefined;
 
   return (
     <div
@@ -353,7 +378,7 @@ export function TvDisplayCanvas({
             left: `${posX}%`,
             top: `${posY}%`,
             transform: 'translate(-50%, -50%)',
-            maxWidth: preset === 'cinema_bar' ? '100%' : '88%',
+            maxWidth: preset === 'cinema_bar' ? '100%' : '90%',
             width: preset === 'cinema_bar' ? '100%' : 'auto',
           }}
           onMouseDown={isInteractive ? handleMouseDown : undefined}
@@ -370,6 +395,7 @@ export function TvDisplayCanvas({
             style={{
               backgroundColor:
                 preset !== 'minimal' && overlayText.bgColor ? overlayText.bgColor : undefined,
+              fontFamily: fontFamilyCss,
             }}
           >
             {/* Position coordinate indicator badge during drag in editor */}
@@ -383,8 +409,12 @@ export function TvDisplayCanvas({
             {/* Headline */}
             {overlayText.headline && (
               <h2
-                className={`${typo.headline} ${styleConfig.headlineClasses}`}
-                style={{ color: overlayText.textColor ? overlayText.textColor : undefined }}
+                className={`${!overlayText.fontScale ? typo.headline : 'font-black tracking-tight leading-tight'} ${styleConfig.headlineClasses}`}
+                style={{
+                  fontSize: headlineFontSize,
+                  fontFamily: fontFamilyCss,
+                  color: overlayText.textColor ? overlayText.textColor : undefined,
+                }}
               >
                 {overlayText.headline}
               </h2>
@@ -393,9 +423,13 @@ export function TvDisplayCanvas({
             {/* Subtext / Prize / Numbers */}
             {overlayText.subtext && (
               <p
-                className={`${typo.subtext} ${styleConfig.subtextClasses} ${
+                className={`${!overlayText.fontScale ? typo.subtext : 'font-bold leading-normal'} ${styleConfig.subtextClasses} ${
                   overlayText.headline ? 'mt-1' : ''
                 }`}
+                style={{
+                  fontSize: subtextFontSize,
+                  fontFamily: fontFamilyCss,
+                }}
               >
                 {overlayText.subtext}
               </p>

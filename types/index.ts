@@ -132,7 +132,9 @@ export type TextOverlayConfig = {
   posX?: number;         // 0 - 100 percentage from left
   posY?: number;         // 0 - 100 percentage from top
   stylePreset?: 'gold_jackpot' | 'neon_red' | 'glass_dark' | 'cinema_bar' | 'minimal';
-  fontSize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  fontSize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | string;
+  fontScale?: number;    // Unlimited custom drag slider scale (12px to 250px+)
+  fontFamily?: 'roboto' | 'playfair' | 'bebas' | 'outfit' | 'montserrat' | 'inter' | string;
   textColor?: string;
   bgColor?: string;
   showGlow?: boolean;

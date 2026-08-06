@@ -18,7 +18,9 @@ import {
   Flame,
   Layers,
   Film,
-  AlignCenter
+  AlignCenter,
+  SlidersHorizontal,
+  CaseSensitive
 } from 'lucide-react';
 import type { TvScreen, TextOverlayConfig } from '@/types';
 import { TvDisplayCanvas } from '@/components/tv/tv-display-canvas';
@@ -85,6 +87,44 @@ const TEXT_STYLES: Array<{
   },
 ];
 
+export const FONT_FAMILIES = [
+  {
+    id: 'roboto',
+    name: 'Roboto',
+    category: 'Clean Modern Sans',
+    fontFamily: 'var(--font-roboto), "Roboto", sans-serif',
+    sample: 'USD 300 JACKPOT',
+  },
+  {
+    id: 'playfair',
+    name: 'Playfair Display',
+    category: 'Luxury Serif (VIP & Jackpot)',
+    fontFamily: 'var(--font-playfair), "Playfair Display", Georgia, serif',
+    sample: 'USD 300 JACKPOT',
+  },
+  {
+    id: 'bebas',
+    name: 'Bebas Neue',
+    category: 'Bold Condensed Display',
+    fontFamily: 'var(--font-bebas), "Bebas Neue", sans-serif',
+    sample: 'USD 300 JACKPOT',
+  },
+  {
+    id: 'outfit',
+    name: 'Outfit',
+    category: 'Contemporary Tech',
+    fontFamily: 'var(--font-outfit), "Outfit", sans-serif',
+    sample: 'USD 300 JACKPOT',
+  },
+  {
+    id: 'montserrat',
+    name: 'Montserrat',
+    category: 'Bold Impact',
+    fontFamily: 'var(--font-montserrat), "Montserrat", sans-serif',
+    sample: 'USD 300 JACKPOT',
+  },
+] as const;
+
 export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
   const router = useRouter();
 
@@ -115,6 +155,13 @@ export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
   );
   const [fontSize, setFontSize] = useState<NonNullable<TextOverlayConfig['fontSize']>>(
     initialData?.overlayText?.fontSize || 'lg'
+  );
+  const [fontScale, setFontScale] = useState<number>(
+    initialData?.overlayText?.fontScale ?? 
+    (initialData?.overlayText?.fontSize === 'sm' ? 24 : initialData?.overlayText?.fontSize === 'md' ? 36 : initialData?.overlayText?.fontSize === 'xl' ? 64 : initialData?.overlayText?.fontSize === '2xl' ? 88 : 48)
+  );
+  const [fontFamily, setFontFamily] = useState<string>(
+    initialData?.overlayText?.fontFamily || 'roboto'
   );
   const [textColor, setTextColor] = useState(initialData?.overlayText?.textColor || '#ffffff');
   const [overlayBgColor, setOverlayBgColor] = useState(initialData?.overlayText?.bgColor || 'rgba(0, 0, 0, 0.75)');
@@ -216,6 +263,8 @@ export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
           posY,
           stylePreset,
           fontSize,
+          fontScale: Number(fontScale) || 48,
+          fontFamily,
           textColor,
           bgColor: overlayBgColor,
           showGlow,
@@ -262,6 +311,8 @@ export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
       posY,
       stylePreset,
       fontSize,
+      fontScale,
+      fontFamily,
       textColor,
       bgColor: overlayBgColor,
       showGlow,
@@ -538,29 +589,115 @@ export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
                     />
                   </div>
 
-                  {/* Font Size Selector */}
-                  <div className="space-y-1.5">
-                    <label className="block text-[11px] font-semibold text-neutral-500">
-                      Font Size
-                    </label>
-                    <div className="grid grid-cols-4 gap-1.5">
+                  {/* Font Family Chooser */}
+                  <div className="space-y-2 pt-1 border-t border-neutral-100 dark:border-neutral-800">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-[11px] font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide flex items-center gap-1.5">
+                        <CaseSensitive className="w-3.5 h-3.5 text-amber-500" />
+                        Font Family
+                      </label>
+                      <span className="text-[10px] text-neutral-500 capitalize">{fontFamily}</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {FONT_FAMILIES.map((font) => {
+                        const isSelected = fontFamily === font.id;
+                        return (
+                          <button
+                            key={font.id}
+                            type="button"
+                            onClick={() => setFontFamily(font.id)}
+                            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
+                              isSelected
+                                ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/30 ring-1 ring-amber-500/50 shadow-xs'
+                                : 'border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/60'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                                {font.name}
+                              </span>
+                              {isSelected && (
+                                <span className="text-[9px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-1.5 py-0.5 rounded-md">
+                                  Selected
+                                </span>
+                              )}
+                            </div>
+                            <div
+                              className="text-xs font-bold truncate text-neutral-700 dark:text-neutral-300"
+                              style={{ fontFamily: font.fontFamily }}
+                            >
+                              {font.sample}
+                            </div>
+                            <span className="text-[9px] text-neutral-400 dark:text-neutral-500">
+                              {font.category}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Font Size Drag Slider & Unlimited Scale */}
+                  <div className="space-y-2.5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide flex items-center gap-1.5">
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-amber-500" />
+                        Font Size & Scale
+                      </label>
+                      <div className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                        <input
+                          type="number"
+                          min="10"
+                          max="400"
+                          value={fontScale}
+                          onChange={(e) => setFontScale(Math.max(10, Number(e.target.value) || 10))}
+                          className="w-12 text-center text-xs font-bold font-mono bg-transparent border-0 focus:outline-none text-amber-600 dark:text-amber-400"
+                        />
+                        <span className="text-[10px] text-neutral-500 font-semibold">px</span>
+                      </div>
+                    </div>
+
+                    {/* Drag Slider */}
+                    <div className="space-y-1">
+                      <input
+                        type="range"
+                        min="14"
+                        max="220"
+                        step="1"
+                        value={fontScale}
+                        onChange={(e) => setFontScale(Number(e.target.value))}
+                        className="w-full h-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                      />
+                      <div className="flex justify-between text-[9px] text-neutral-400 font-mono px-0.5">
+                        <span>14px (Compact)</span>
+                        <span>48px (Standard)</span>
+                        <span>120px (Cinema)</span>
+                        <span>220px+ (Mega TV)</span>
+                      </div>
+                    </div>
+
+                    {/* Quick Preset Buttons */}
+                    <div className="grid grid-cols-6 gap-1 pt-1">
                       {[
-                        { id: 'sm', label: 'Small' },
-                        { id: 'md', label: 'Medium' },
-                        { id: 'lg', label: 'Large' },
-                        { id: 'xl', label: 'X-Large' },
-                      ].map((size) => (
+                        { label: 'S', px: 24 },
+                        { label: 'M', px: 36 },
+                        { label: 'L', px: 48 },
+                        { label: 'XL', px: 64 },
+                        { label: '2XL', px: 96 },
+                        { label: 'Cinema', px: 130 },
+                      ].map((preset) => (
                         <button
-                          key={size.id}
+                          key={preset.label}
                           type="button"
-                          onClick={() => setFontSize(size.id as any)}
-                          className={`py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                            fontSize === size.id
+                          onClick={() => setFontScale(preset.px)}
+                          className={`py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer ${
+                            fontScale === preset.px
                               ? 'bg-amber-500 text-white border-amber-600 shadow-xs'
                               : 'border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
                           }`}
                         >
-                          {size.label}
+                          {preset.label}
                         </button>
                       ))}
                     </div>

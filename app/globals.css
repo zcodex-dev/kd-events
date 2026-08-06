@@ -5,6 +5,11 @@
 @theme inline {
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-roboto: var(--font-roboto), sans-serif;
+  --font-playfair: var(--font-playfair), Georgia, serif;
+  --font-bebas: var(--font-bebas), sans-serif;
+  --font-outfit: var(--font-outfit), sans-serif;
+  --font-montserrat: var(--font-montserrat), sans-serif;
 }
 
 /* ─── Base Styles ────────────────────────────────────────────────────────── */
