@@ -13,6 +13,7 @@ import {
   ImageIcon,
   Tv,
   X,
+  ClipboardList,
 } from 'lucide-react';
 import type { SessionData } from '@/types';
 
@@ -20,6 +21,7 @@ const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Upload Files', href: '/dashboard/upload', icon: Upload, requiredPermission: 'canUpload' },
   { label: 'All Files', href: '/dashboard/files', icon: FolderOpen },
+  { label: 'Event Form', href: '/event/registration', icon: ClipboardList, adminOnly: true },
   { label: 'Web Pages', href: '/dashboard/pages', icon: FileText, adminOnly: true },
   { label: 'TV Displays', href: '/dashboard/screens', icon: Tv, adminOnly: true },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings, adminOnly: true },
