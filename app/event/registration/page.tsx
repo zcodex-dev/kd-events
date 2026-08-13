@@ -295,9 +295,14 @@ export default function EventRegistrationPage() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Single soft scrim, fully clear by 70% up — the text sits on the poster
-              rather than in a band beneath it, so there is no hard edge anywhere. */}
-          <div className="absolute inset-0 z-10 bg-[linear-gradient(to_top,rgba(0,0,0,1)_0%,rgba(0,0,0,0.95)_30%,rgba(0,0,0,0.8)_50%,rgba(0,0,0,0.4)_75%,rgba(0,0,0,0)_100%)]" />
+          {/* Single soft scrim, lower opacity when no events */}
+          <div 
+            className={`absolute inset-0 z-10 ${
+              events.length > 0 
+                ? 'bg-[linear-gradient(to_top,rgba(0,0,0,1)_0%,rgba(0,0,0,0.95)_30%,rgba(0,0,0,0.8)_50%,rgba(0,0,0,0.4)_75%,rgba(0,0,0,0)_100%)]'
+                : 'bg-[linear-gradient(to_top,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.6)_30%,rgba(0,0,0,0.3)_60%,rgba(0,0,0,0)_100%)]'
+            }`} 
+          />
 
           {/* Whole panel links to the detail page; sits under the content layers
               so the dots and badges stay independently clickable. */}
@@ -351,6 +356,12 @@ export default function EventRegistrationPage() {
                       </div>
                     )}
                   </div>
+                  {events.length === 0 && !isLoadingEvents && (
+                    <p className="text-sm md:text-base text-neutral-200 leading-relaxed font-normal max-w-xl pt-2 drop-shadow-md">
+                      A seamless ecosystem of luxury, leisure, and entertainment. 
+                      Experience Sihanoukville’s new standard of a life well-lived. Kompong Dewa is an integrated luxury destination redefining Sihanoukville’s landscape. A bold fusion of high-octane excitement and serene tranquility, we stand as the new pulse of Cambodia’s rising coastal city.
+                    </p>
+                  )}
                 </motion.div>
               </AnimatePresence>
             </div>
