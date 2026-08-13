@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
     if (!parsed.success) {
       return NextResponse.json<ApiResponse>(
-        { success: false, error: parsed.error.errors[0]?.message || 'Invalid credentials' },
+        { success: false, error: parsed.error.issues[0]?.message || 'Invalid credentials' },
         { status: 400 }
       );
     }
