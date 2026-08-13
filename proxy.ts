@@ -1,8 +1,11 @@
+import { NextResponse } from 'next/server';
 import { type NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/auth/session';
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const host = request.headers.get('host') || '';
+  const url = request.nextUrl.clone();
 
   // Protect dashboard routes
   if (pathname.startsWith('/dashboard')) {
@@ -23,8 +26,40 @@ export function proxy(request: NextRequest) {
     const redirect = requireAuth(request);
     if (redirect) return redirect;
   }
+
+  // 1. Handling for register.kompongdewa.win
+  if (host.includes('register.kompongdewa.win') || host.includes('register')) {
+    // Prevent access to /dashboard from the register domain
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/login')) {
+      // Redirect them away to the root, which will serve the registration page
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
+    
+    // Rewrite root to /event/registration so it serves it directly at the root URL
+    if (pathname === '/') {
+      url.pathname = '/event/registration';
+      return NextResponse.rewrite(url);
+    }
+  } 
+  // 2. Handling for kompongdewa.win (and others like localhost)
+  else {
+    // Redirect root to /dashboard
+    if (pathname === '/') {
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
+    
+    // Prevent access to /event from the admin domain
+    if (pathname.startsWith('/event')) {
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
+  }
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/((?!auth|views|raw|register|events$).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|icon.png).*)',
+  ],
 };
