@@ -1,45 +1,101 @@
 import { NextResponse } from 'next/server';
-import { checkMemberStatus, recordRegistration } from '@/lib/google-sheets';
+import { prisma } from '@/lib/prisma';
+import { uploadFile } from '@/lib/r2/client';
+import { generateUniqueFileName, generateUploadPath } from '@/lib/uploads/file-utils';
+import { validateFileSize, MAX_FILE_SIZE } from '@/lib/validation/schemas';
+import { getAppConfig } from '@/lib/uploads/metadata';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { name, contact } = body;
+    const formData = await request.formData();
+    
+    const name = formData.get('name') as string;
+    const contact = formData.get('contact') as string;
+    const phoneNumber = formData.get('phoneNumber') as string;
+    const memberId = formData.get('memberId') as string;
+    const isNonMemberTab = formData.get('isNonMemberTab') === 'true';
 
-    if (!name || name.trim() === '') {
-      return NextResponse.json({ success: false, error: 'Name is required' }, { status: 400 });
+    let status = { isMember: false, memberData: null as any, error: null };
+    let finalName = name;
+    let finalMemberId = memberId;
+
+    if (!isNonMemberTab) {
+      if (!memberId || memberId.trim() === '') {
+        return NextResponse.json({ success: false, error: 'Member ID is required' }, { status: 400 });
+      }
+
+      const member = await prisma.member.findUnique({
+        where: { memberId: memberId.trim() }
+      });
+
+      if (!member) {
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Member ID not found. Please check your spelling or register as a Non-Member.' 
+        }, { status: 404 });
+      }
+
+      status.isMember = true;
+      status.memberData = member;
+      finalName = member.name;
+      finalMemberId = member.memberId;
+    } else {
+      if (!name || name.trim() === '') {
+        return NextResponse.json({ success: false, error: 'Name is required' }, { status: 400 });
+      }
     }
 
-    // 1. Check if the user is a member
-    const status = await checkMemberStatus(name);
+    let passportImageUrl = null;
+    const passportFile = formData.get('passportImage') as File | null;
+    
+    if (passportFile && passportFile.size > 0) {
+      const config = await getAppConfig();
+      if (!config.allowedTypes.includes(passportFile.type)) {
+        return NextResponse.json({ success: false, error: 'Invalid passport image type' }, { status: 400 });
+      }
+      if (!validateFileSize(passportFile.size, MAX_FILE_SIZE)) {
+        return NextResponse.json({ success: false, error: 'Passport image too large' }, { status: 400 });
+      }
 
-    if (status.error) {
-      console.error('Google Sheets Error:', status.error);
-      return NextResponse.json({ success: false, error: 'Server configuration error' }, { status: 500 });
+      const uploadFolder = process.env.GITHUB_UPLOAD_FOLDER || 'public-uploads';
+      const storedName = generateUniqueFileName(passportFile.name);
+      const r2Key = generateUploadPath(uploadFolder, storedName, new Date());
+      
+      const arrayBuffer = await passportFile.arrayBuffer();
+      await uploadFile(r2Key, Buffer.from(arrayBuffer), passportFile.type);
+      
+      let appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      if (!appUrl.startsWith('http://') && !appUrl.startsWith('https://')) {
+        appUrl = `https://${appUrl}`;
+      }
+      passportImageUrl = `${appUrl}/api/raw/${r2Key}`;
     }
 
-    // 2. Record the registration
-    const recorded = await recordRegistration({
-      name,
-      contact: contact || '',
-      isMember: status.isMember,
-      memberId: status.memberId
+    const registration = await prisma.registration.create({
+      data: {
+        name: finalName,
+        contact: contact || null,
+        phoneNumber: phoneNumber || null,
+        passportImageUrl: passportImageUrl,
+        isMember: status.isMember,
+        memberId: finalMemberId || null,
+        memberType: status.isMember ? status.memberData?.memberType : null,
+      }
     });
 
-    if (!recorded) {
+    if (!registration) {
       return NextResponse.json({ success: false, error: 'Failed to record registration' }, { status: 500 });
     }
 
-    // 3. Return response based on member status
     return NextResponse.json({
       success: true,
       isMember: status.isMember,
-      memberId: status.memberId,
-      message: status.isMember ? `Welcome back, Member ${status.memberId}!` : 'Registration recorded successfully.'
+      memberData: status.memberData,
+      message: status.isMember ? `Welcome back, ${finalName}!` : 'Registration recorded successfully.'
     }, { status: 200 });
 
   } catch (error: any) {
     console.error('Registration error:', error);
-    return NextResponse.json({ success: false, error: 'Failed to process registration' }, { status: 500 });
+    return NextResponse.json({ success: false, error: `Failed to process registration: ${error.message || String(error)}` }, { status: 500 });
   }
 }

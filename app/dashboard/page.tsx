@@ -1,61 +1,42 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Upload } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/shared/header';
-import { StatsCards } from '@/components/dashboard/stats-cards';
-import { RecentUploadsTable } from '@/components/dashboard/recent-uploads-table';
 import { useDashboard } from '@/app/dashboard/layout';
-import type { DashboardStats, UploadedFile } from '@/types';
+import { Edit, Ban, Trash2, X, Upload, Loader2, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function DashboardPage() {
   const { openSidebar } = useDashboard();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [files, setFiles] = useState<UploadedFile[]>([]);
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [isLoadingFiles, setIsLoadingFiles] = useState(true);
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchStats = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/files?stats=true');
+      const res = await fetch('/api/admin/registrations');
       const data = await res.json();
-      if (data.success) setStats(data.data);
+      if (data.success) {
+        setStats(data.data.stats);
+      }
     } catch {
-      // Stats are non-critical
+      // Handle error
     } finally {
-      setIsLoadingStats(false);
-    }
-  }, []);
-
-  const fetchFiles = useCallback(async () => {
-    try {
-      const res = await fetch('/api/files');
-      const data = await res.json();
-      if (data.success) setFiles(data.data);
-    } catch {
-      // Will show empty state
-    } finally {
-      setIsLoadingFiles(false);
+      setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchStats();
-    fetchFiles();
-  }, [fetchStats, fetchFiles]);
+    fetchData();
+  }, [fetchData]);
 
-  const handleRefresh = () => {
-    fetchStats();
-    fetchFiles();
-  };
+
 
   return (
     <>
       <Header
-        title="Dashboard"
-        description="Overview of your uploaded files"
+        title="Event Admin Dashboard"
+        description="Manage your event registrations"
         onMenuClick={openSidebar}
       />
 
@@ -66,28 +47,19 @@ export default function DashboardPage() {
         className="p-4 sm:p-6 space-y-6"
       >
         {/* Stats */}
-        <StatsCards stats={stats} isLoading={isLoadingStats} />
-
-        {/* Recent uploads */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
-              Recent Uploads
-            </h2>
-            <Link
-              href="/dashboard/upload"
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              Upload
-            </Link>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl">
+            <h3 className="text-neutral-500 text-sm">Total Registered</h3>
+            <p className="text-3xl font-black mt-2">{stats?.total || 0}</p>
           </div>
-          <RecentUploadsTable
-            files={files}
-            isLoading={isLoadingFiles}
-            onRefresh={handleRefresh}
-            limit={10}
-          />
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl">
+            <h3 className="text-neutral-500 text-sm">KD Members</h3>
+            <p className="text-3xl font-black mt-2 text-[#c3943a]">{stats?.members || 0}</p>
+          </div>
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl">
+            <h3 className="text-neutral-500 text-sm">Non-Members</h3>
+            <p className="text-3xl font-black mt-2">{stats?.nonMembers || 0}</p>
+          </div>
         </div>
       </motion.div>
     </>

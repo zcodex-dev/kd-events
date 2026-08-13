@@ -3,6 +3,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Playfair Display is the primary (display) face, Roboto the secondary (body) face. */
+  --font-display: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-body: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
+
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
   --font-roboto: var(--font-roboto), sans-serif;
@@ -17,9 +21,18 @@
 body {
   background: #fafafa;
   color: #171717;
-  font-family: var(--font-sans);
+  font-family: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Typography ─────────────────────────────────────────────────────────────
+   Playfair Display (primary) carries headings and display text; Roboto
+   (secondary) carries body copy, forms, labels and dense UI. Anything that
+   needs to opt out can use the `font-body` / `font-display` utilities.        */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-playfair), Georgia, serif;
 }
 
 /* ─── Focus Styles ───────────────────────────────────────────────────────── */
@@ -156,3 +169,325 @@ body {
   animation: slowZoom 24s ease-in-out infinite;
 }
 
+
+/* ─── Event Description Editor (Quill) ────────────────────────────────────── */
+
+/* These selectors carry .ql-snow deliberately: Quill's own rules are
+   `.ql-snow.ql-toolbar button` etc., and quill.snow.css loads after
+   globals.css, so an equal-specificity rule here would lose the tie. */
+
+.event-description-editor .ql-toolbar.ql-snow {
+  border: none;
+  border-bottom: 1px solid rgb(212 212 212);
+  /* Single row. Overflow MUST stay visible: `.ql-picker-options` is absolutely
+     positioned inside this element, so any clipping here swallows the heading
+     dropdown. Narrow screens wrap instead (see the media query below). */
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  overflow: visible;
+  padding: 5px 6px;
+}
+
+@media (max-width: 640px) {
+  .event-description-editor .ql-toolbar.ql-snow {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+}
+
+.event-description-editor .ql-toolbar.ql-snow .ql-formats {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 7px;
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+
+.event-description-editor .ql-toolbar.ql-snow .ql-formats:last-child {
+  margin-right: 0;
+}
+
+.event-description-editor .ql-toolbar.ql-snow button {
+  width: 22px;
+  height: 22px;
+  padding: 2px;
+  flex: 0 0 auto;
+}
+
+.event-description-editor .ql-toolbar.ql-snow button svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Heading dropdown — narrower so it earns its place in the row */
+.event-description-editor .ql-toolbar.ql-snow .ql-picker {
+  height: 22px;
+  font-size: 12px;
+}
+
+.event-description-editor .ql-toolbar.ql-snow .ql-picker.ql-header {
+  width: 76px;
+}
+
+.event-description-editor .ql-toolbar.ql-snow .ql-picker-label {
+  padding-left: 4px;
+  padding-right: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.event-description-editor .ql-toolbar.ql-snow .ql-picker-label svg {
+  right: 0;
+  width: 14px;
+}
+
+.event-description-editor .ql-container {
+  border: none;
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+
+.event-description-editor .ql-editor {
+  min-height: 160px;
+}
+
+.dark .event-description-editor .ql-toolbar {
+  border-bottom-color: rgb(38 38 38);
+}
+
+.dark .event-description-editor .ql-toolbar .ql-stroke {
+  stroke: rgb(163 163 163);
+}
+
+.dark .event-description-editor .ql-toolbar .ql-fill {
+  fill: rgb(163 163 163);
+}
+
+.dark .event-description-editor .ql-toolbar .ql-picker-label {
+  color: rgb(163 163 163);
+}
+
+.dark .event-description-editor .ql-editor {
+  color: rgb(245 245 245);
+}
+
+.dark .event-description-editor .ql-editor.ql-blank::before {
+  color: rgb(115 115 115);
+}
+
+/* Quill's dropdowns render on a light surface — keep them readable in dark mode */
+.dark .event-description-editor .ql-picker-options {
+  background-color: rgb(23 23 23);
+  border-color: rgb(64 64 64);
+}
+
+/* ─── Rendered event description (public detail page) ─────────────────────── */
+
+.event-prose h1, .event-prose h2, .event-prose h3 {
+  font-weight: 700;
+  color: #fff;
+  margin: 1.5rem 0 0.5rem;
+  line-height: 1.25;
+}
+
+.event-prose h1 { font-size: 1.5rem; }
+.event-prose h2 { font-size: 1.25rem; }
+.event-prose h3 { font-size: 1.125rem; }
+.event-prose p { margin: 0.75rem 0; }
+.event-prose strong { color: #fff; font-weight: 700; }
+.event-prose em { font-style: italic; }
+.event-prose u { text-decoration: underline; }
+.event-prose s { text-decoration: line-through; }
+
+.event-prose ul, .event-prose ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.event-prose ul { list-style: disc; }
+.event-prose ol { list-style: decimal; }
+.event-prose li { margin: 0.25rem 0; }
+
+.event-prose blockquote {
+  border-left: 3px solid #c3943a;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: rgb(212 212 212);
+}
+
+.event-prose a {
+  color: #e5ac53;
+  text-decoration: underline;
+}
+
+.event-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.event-prose .ql-indent-1 { padding-left: 1.5rem; }
+.event-prose .ql-indent-2 { padding-left: 3rem; }
+.event-prose .ql-indent-3 { padding-left: 4.5rem; }
+
+/* ─── Rich text tables ───────────────────────────────────────────────────────
+   One look shared by the editor (.ql-editor) and the published page
+   (.event-prose). Quill 2 has no header-row concept, so the first row is
+   styled as the header.                                                      */
+
+.ql-editor table,
+.event-prose table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.25rem 0;
+  font-size: 0.875rem;
+  table-layout: auto;
+  border: 1px solid #e7e0d8;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.ql-editor table td,
+.event-prose table td {
+  border-right: 1px solid #e7e0d8;
+  border-bottom: 1px solid #e7e0d8;
+  padding: 0.625rem 0.875rem;
+  vertical-align: middle;
+  color: #3f3a34;
+  min-width: 5rem;
+}
+
+.ql-editor table td:last-child,
+.event-prose table td:last-child {
+  border-right: 0;
+}
+
+.ql-editor table tr:last-child td,
+.event-prose table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Header row */
+.ql-editor table tr:first-child td,
+.event-prose table tr:first-child td {
+  background: #211d1a;
+  color: #e5ac53;
+  font-weight: 700;
+  border-right-color: #3a332c;
+  border-bottom-color: #3a332c;
+}
+
+/* Zebra striping on the body rows (row 1 is the header, handled above) */
+.ql-editor table tr:nth-child(even) td,
+.event-prose table tr:nth-child(even) td {
+  background: #ffffff;
+}
+
+.ql-editor table tr:nth-child(odd):not(:first-child) td,
+.event-prose table tr:nth-child(odd):not(:first-child) td {
+  background: #faf6f2;
+}
+
+/* First column reads as a row label, like the tournament schedule */
+.ql-editor table td:first-child,
+.event-prose table td:first-child {
+  font-weight: 700;
+  color: #2b2723;
+}
+
+.ql-editor table tr:first-child td:first-child,
+.event-prose table tr:first-child td:first-child {
+  color: #e5ac53;
+}
+
+.ql-editor table img,
+.event-prose table img {
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  border-radius: 0.25rem;
+}
+
+/* Tables stay readable on phones by scrolling inside their own wrapper
+   rather than forcing the page to scroll sideways. */
+.event-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.25rem 0;
+}
+
+.event-table-wrap table {
+  margin: 0;
+  min-width: 34rem;
+}
+
+.event-description-editor .ql-editor {
+  overflow-x: auto;
+}
+
+/* ─── Table toolbar icons ────────────────────────────────────────────────────
+   Quill renders these buttons empty (see components/shared/rich-text-editor.tsx
+   for why its icon registry can't be reached), so the glyphs come from CSS.
+   Masks rather than background images, so one shape serves light and dark.    */
+
+.event-description-editor .ql-toolbar.ql-snow button[class*="ql-table-"]::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #444;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.event-description-editor .ql-toolbar.ql-snow button[class*="ql-table-"]:hover::before,
+.event-description-editor .ql-toolbar.ql-snow button[class*="ql-table-"]:focus::before {
+  background-color: #06c;
+}
+
+.dark .event-description-editor .ql-toolbar.ql-snow button[class*="ql-table-"]::before {
+  background-color: rgb(163 163 163);
+}
+
+.dark .event-description-editor .ql-toolbar.ql-snow button[class*="ql-table-"]:hover::before,
+.dark .event-description-editor .ql-toolbar.ql-snow button[class*="ql-table-"]:focus::before {
+  background-color: rgb(96 165 250);
+}
+
+.event-description-editor .ql-toolbar.ql-snow button.ql-table-insert::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'%3E%3Crect x='2.5' y='3.5' width='13' height='11' rx='1'/%3E%3Cpath d='M2.5 7.5h13M7.5 7.5v7'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'%3E%3Crect x='2.5' y='3.5' width='13' height='11' rx='1'/%3E%3Cpath d='M2.5 7.5h13M7.5 7.5v7'/%3E%3C/svg%3E");
+}
+
+.event-description-editor .ql-toolbar.ql-snow button.ql-table-row-add::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='2.5' width='13' height='5' rx='1'/%3E%3Cpath d='M9 10.5v5M6.5 13h5'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='2.5' width='13' height='5' rx='1'/%3E%3Cpath d='M9 10.5v5M6.5 13h5'/%3E%3C/svg%3E");
+}
+
+.event-description-editor .ql-toolbar.ql-snow button.ql-table-row-remove::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='2.5' width='13' height='5' rx='1'/%3E%3Cpath d='M6.5 13h5'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='2.5' width='13' height='5' rx='1'/%3E%3Cpath d='M6.5 13h5'/%3E%3C/svg%3E");
+}
+
+.event-description-editor .ql-toolbar.ql-snow button.ql-table-column-add::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='2.5' width='5' height='13' rx='1'/%3E%3Cpath d='M12.5 6.5v5M10 9h5'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='2.5' width='5' height='13' rx='1'/%3E%3Cpath d='M12.5 6.5v5M10 9h5'/%3E%3C/svg%3E");
+}
+
+.event-description-editor .ql-toolbar.ql-snow button.ql-table-column-remove::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='2.5' width='5' height='13' rx='1'/%3E%3Cpath d='M10 9h5'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='2.5' width='5' height='13' rx='1'/%3E%3Cpath d='M10 9h5'/%3E%3C/svg%3E");
+}
+
+.event-description-editor .ql-toolbar.ql-snow button.ql-table-delete::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='3.5' width='13' height='11' rx='1'/%3E%3Cpath d='M6.5 7l5 4M11.5 7l-5 4'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='3.5' width='13' height='11' rx='1'/%3E%3Cpath d='M6.5 7l5 4M11.5 7l-5 4'/%3E%3C/svg%3E");
+}

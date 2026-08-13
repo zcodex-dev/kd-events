@@ -10,12 +10,15 @@ export function proxy(request: NextRequest) {
     if (redirect) return redirect;
   }
 
-  // Protect admin API routes (except auth, view-count, and raw image endpoints)
+  // Protect admin API routes (except auth, view-count, raw image, register, and
+  // the public events feed used by the visitor-facing registration page)
   if (
     pathname.startsWith('/api/') &&
     !pathname.startsWith('/api/auth/') &&
     !pathname.startsWith('/api/views/') &&
-    !pathname.startsWith('/api/raw')
+    !pathname.startsWith('/api/raw') &&
+    !pathname.startsWith('/api/register') &&
+    pathname !== '/api/events'
   ) {
     const redirect = requireAuth(request);
     if (redirect) return redirect;
@@ -23,5 +26,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/((?!auth|views|raw).*)'],
+  matcher: ['/dashboard/:path*', '/api/((?!auth|views|raw|register|events$).*)'],
 };

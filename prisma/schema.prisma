@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+model Member {
+  id         String    @id @default(cuid())
+  memberId   String    @unique
+  name       String
+  memberType String    @default("Gold") // Gold, Silver, Platinum, Diamond
+  dateJoined DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Registration {
+  id               String   @id @default(cuid())
+  name             String
+  contact          String?
+  phoneNumber      String?
+  passportId       String?
+  passportImageUrl String?
+  isMember         Boolean  @default(false)
+  memberId         String?
+  memberType       String?
+  avatarUrl        String?
+  isBanned         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  /// Up to 3 images, in slot order. `imageUrl` is kept in sync with images[0]
+  /// so rows created before this field still render.
+  images      String[] @default([])
+  imageUrl    String?
+  tag         String?
+  date        String?
+  location    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
