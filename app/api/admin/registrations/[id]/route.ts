@@ -5,13 +5,15 @@ import { generateUniqueFileName, generateUploadPath } from '@/lib/uploads/file-u
 import { validateFileSize, MAX_FILE_SIZE } from '@/lib/validation/schemas';
 import { getAppConfig } from '@/lib/uploads/metadata';
 
+type RouteContext = { params: Promise<{ id: string }> };
+
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: RouteContext
 ) {
   try {
     const formData = await request.formData();
-    const id = params.id;
+    const { id } = await params;
 
     // Extract text fields
     const name = formData.get('name') as string;
@@ -71,10 +73,10 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: RouteContext
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     await prisma.registration.delete({
       where: { id },
     });
