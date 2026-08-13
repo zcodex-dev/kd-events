@@ -167,7 +167,7 @@ export default function EventRegistrationPage() {
               alt="Kompong Dewa Logo"
               width={200}
               height={48}
-              className="h-10 w-auto shrink-0 object-contain filter brightness-0 invert"
+              className="h-10 w-auto shrink-0 object-contain"
               unoptimized
               priority
             />
