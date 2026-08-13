@@ -60,7 +60,7 @@ export default async function EventDetailPage({ params }: PageProps) {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="py-1">
             <Image
-              src="/logo.png"
+              src="/logo-v2.png"
               alt="Kompong Dewa Logo"
               width={200}
               height={48}

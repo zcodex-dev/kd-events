@@ -48,7 +48,7 @@ export default async function LoginPage() {
           <div className="bg-neutral-900 border border-neutral-800 p-10 rounded-2xl shadow-2xl w-full flex flex-col items-center">
             <div className="logo-container-sweep mb-8">
               <Image
-                src="/logo.png"
+                src="/logo-v2.png"
                 alt="Kompong Dewa Logo"
                 width={384}
                 height={96}

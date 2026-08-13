@@ -76,7 +76,7 @@ export function ViewPageClient({ file }: ViewPageClientProps) {
             <div className="flex items-center">
               <div className="logo-container-sweep py-1">
                 <Image
-                  src="/logo.png"
+                  src="/logo-v2.png"
                   alt="Kompong Dewa Logo"
                   width={220}
                   height={48}

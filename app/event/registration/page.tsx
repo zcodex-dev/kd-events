@@ -163,7 +163,7 @@ export default function EventRegistrationPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center">
           <div className="py-1">
             <Image
-              src="/logo.png"
+              src="/logo-v2.png"
               alt="Kompong Dewa Logo"
               width={200}
               height={48}

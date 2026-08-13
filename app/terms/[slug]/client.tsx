@@ -50,7 +50,7 @@ export function TermsClient({ page }: { page: WebPage }) {
           ) : (
              <div className="mb-4">
                 <Image
-                  src="/logo.png"
+                  src="/logo-v2.png"
                   alt="Logo"
                   width={220}
                   height={48}

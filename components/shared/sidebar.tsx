@@ -121,7 +121,7 @@ export function Sidebar({ isOpen, onClose, session }: SidebarProps) {
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="logo-container-sweep">
               <Image
-                src="/logo.png"
+                src="/logo-v2.png"
                 alt="Logo"
                 width={160}
                 height={40}
