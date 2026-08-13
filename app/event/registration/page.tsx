@@ -10,7 +10,7 @@ import Link from 'next/link';
 const defaultEvents = [
   {
     id: 1,
-    title: 'Kompong Dewa',
+    title: 'Kompong Dewa Integrated Resort',
     date: '',
     location: 'Sihanoukville, Cambodia',
     image: 'https://kd-events-zeta.vercel.app/api/raw?key=public-uploads%2F2026%2F07%2FGolden-nQKCqSFDx7.webp',
