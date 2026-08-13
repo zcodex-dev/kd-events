@@ -246,14 +246,14 @@ export default function EventRegistrationPage() {
     <>
       {/* Navigation / Header */}
       <header className="fixed top-0 left-0 w-full bg-black backdrop-blur-md border-b border-white/10 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center">
-          <div className="py-1">
+        <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center">
+          <div className="py-1 md:py-2">
             <Image
               src="/logo-v2.png"
               alt="Kompong Dewa Logo"
-              width={200}
-              height={48}
-              className="h-10 w-auto shrink-0 object-contain"
+              width={300}
+              height={64}
+              className="h-12 md:h-16 w-auto shrink-0 object-contain"
               unoptimized
               priority
             />
