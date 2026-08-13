@@ -1,9 +1,25 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
-import { updateUser, removeUser, getAllUsers } from '@/lib/uploads/metadata';
+import { prisma } from '@/lib/prisma';
 import type { ApiResponse, SubUser } from '@/types';
 
 type RouteParams = { params: Promise<{ id: string }> };
+
+function mapAdminUserToSubUser(user: any): SubUser {
+  const isSuper = user.role.toUpperCase() === 'SUPERADMIN';
+  return {
+    id: user.id,
+    username: user.personnelId,
+    password: user.password,
+    role: isSuper ? 'admin' : 'user',
+    permissions: {
+      canUpload: true,
+      canDelete: isSuper,
+      canReplace: isSuper,
+    },
+    createdAt: user.createdAt.toISOString(),
+  };
+}
 
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
@@ -17,23 +33,31 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const { id } = await params;
     const body = await request.json();
-    const { username, password, role, permissions } = body;
+    const { username, password, role } = body;
 
-    const updates: Partial<SubUser> = {};
+    const updates: any = {};
 
     if (username && username.trim()) {
-      // Check if username collision with another user
-      const users = await getAllUsers();
-      if (
-        users.some((u) => u.id !== id && u.username.toLowerCase() === username.trim().toLowerCase()) ||
-        username.trim().toLowerCase() === 'admin'
-      ) {
+      const personnelId = username.trim().toUpperCase();
+      if (personnelId === 'ADMIN') {
         return NextResponse.json<ApiResponse>(
-          { success: false, error: 'Username already exists' },
+          { success: false, error: 'Cannot use reserved Personnel ID' },
           { status: 400 }
         );
       }
-      updates.username = username.trim();
+      
+      const existing = await prisma.adminUser.findUnique({
+        where: { personnelId }
+      });
+      
+      if (existing && existing.id !== id) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: 'Personnel ID already exists' },
+          { status: 400 }
+        );
+      }
+      updates.personnelId = personnelId;
+      updates.name = personnelId;
     }
 
     if (password && password.trim()) {
@@ -41,30 +65,25 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     if (role) {
-      updates.role = role;
+      updates.role = role === 'admin' ? 'SUPERADMIN' : 'ADMIN';
     }
 
-    if (permissions) {
-      updates.permissions = {
-        canUpload: permissions.canUpload ?? true,
-        canDelete: permissions.canDelete ?? false,
-        canReplace: permissions.canReplace ?? false,
-      };
-    }
+    const updatedAdmin = await prisma.adminUser.update({
+      where: { id },
+      data: updates
+    });
 
-    const updated = await updateUser(id, updates);
-    if (!updated) {
+    return NextResponse.json<ApiResponse<SubUser>>(
+      { success: true, data: mapAdminUserToSubUser(updatedAdmin), message: 'User updated successfully' },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    if (error.code === 'P2025') {
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'User not found' },
         { status: 404 }
       );
     }
-
-    return NextResponse.json<ApiResponse<SubUser>>(
-      { success: true, data: updated, message: 'User updated successfully' },
-      { status: 200 }
-    );
-  } catch (error: any) {
     console.error('Update user error:', error);
     return NextResponse.json<ApiResponse>(
       { success: false, error: error.message || 'Failed to update user' },
@@ -84,20 +103,22 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const deleted = await removeUser(id);
-
-    if (!deleted) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
-    }
+    
+    await prisma.adminUser.delete({
+      where: { id }
+    });
 
     return NextResponse.json<ApiResponse>(
       { success: true, message: 'User deleted successfully' },
       { status: 200 }
     );
   } catch (error: any) {
+    if (error.code === 'P2025') {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      );
+    }
     console.error('Delete user error:', error);
     return NextResponse.json<ApiResponse>(
       { success: false, error: error.message || 'Failed to delete user' },

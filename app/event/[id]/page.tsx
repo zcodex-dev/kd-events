@@ -56,7 +56,7 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full bg-black/80 backdrop-blur-md border-b border-white/10 z-50">
+      <header className="fixed top-0 left-0 w-full bg-black backdrop-blur-md border-b border-white/10 z-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="py-1">
             <Image
@@ -130,7 +130,7 @@ export default async function EventDetailPage({ params }: PageProps) {
               <p className="text-neutral-500">No further details have been published for this event yet.</p>
             ) : /<\/?[a-z][\s\S]*>/i.test(event.description) ? (
               <div
-                className="event-prose"
+                className="event-prose prose prose-sm prose-invert prose-p:text-sm prose-li:text-sm prose-li:marker:text-[#c3943a] max-w-none break-words overflow-hidden"
                 dangerouslySetInnerHTML={{ __html: wrapTables(event.description) }}
               />
             ) : (

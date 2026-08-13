@@ -9,6 +9,14 @@ export async function GET() {
 
     const members = await prisma.member.findMany();
 
+    // Nationality lives on Member; fold it onto each row so the players table
+    // and its edit form can read it without a second request.
+    const nationalityByMemberId = new Map(members.map((m) => [m.memberId, m.nationality]));
+    const rows = registrations.map((r) => ({
+      ...r,
+      nationality: r.memberId ? nationalityByMemberId.get(r.memberId) ?? null : null,
+    }));
+
     const stats = {
       total: registrations.length,
       members: registrations.filter(r => r.isMember).length,
@@ -19,7 +27,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: {
-        registrations,
+        registrations: rows,
         stats,
       },
     });
@@ -34,7 +42,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { name, memberId, memberType } = data;
+    const { name, memberId, memberType, nationality } = data;
 
     if (!name) {
       return NextResponse.json({ success: false, error: 'Name is required' }, { status: 400 });
@@ -58,8 +66,11 @@ export async function POST(request: Request) {
             memberId,
             name,
             memberType: memberType || 'Gold',
+            nationality: nationality || null,
           }
         });
+      } else if (nationality) {
+        await prisma.member.update({ where: { memberId }, data: { nationality } });
       }
     }
 

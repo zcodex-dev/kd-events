@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createSession, validatePassword } from '@/lib/auth/session';
-import { getUserByUsername } from '@/lib/uploads/metadata';
+import { createSession } from '@/lib/auth/session';
+import { prisma } from '@/lib/prisma';
 import { loginSchema } from '@/lib/validation/schemas';
 import type { ApiResponse } from '@/types';
 
@@ -11,43 +11,39 @@ export async function POST(request: Request) {
 
     if (!parsed.success) {
       return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Invalid credentials' },
+        { success: false, error: parsed.error.errors[0]?.message || 'Invalid credentials' },
         { status: 400 }
       );
     }
 
-    const { username, password } = parsed.data;
+    const { personnelId, password } = parsed.data;
 
-    // Check if it is a sub-user login attempt
-    if (username && username.trim().toLowerCase() !== 'admin') {
-      const subUser = await getUserByUsername(username.trim());
-      
-      if (!subUser || subUser.password !== password) {
+    // Default Super Admin fallback login check
+    if (personnelId.toLowerCase() === 'admin') {
+      const adminPassword = process.env.ADMIN_PASSWORD;
+      if (adminPassword && password === adminPassword) {
+        await createSession('admin', 'admin', { canUpload: true, canDelete: true, canReplace: true });
         return NextResponse.json<ApiResponse>(
-          { success: false, error: 'Invalid username or password' },
-          { status: 401 }
+          { success: true, message: 'Logged in successfully' },
+          { status: 200 }
         );
       }
-
-      await createSession(subUser.username, subUser.role, subUser.permissions);
-
-      return NextResponse.json<ApiResponse>(
-        { success: true, message: 'Logged in successfully' },
-        { status: 200 }
-      );
     }
 
-    // Default Super Admin login check
-    const isValid = validatePassword(password);
+    const adminUser = await prisma.adminUser.findUnique({
+      where: { personnelId }
+    });
 
-    if (!isValid) {
+    if (!adminUser || !adminUser.isActive || adminUser.password !== password) {
       return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Invalid password' },
+        { success: false, error: 'Invalid Personnel ID or password' },
         { status: 401 }
       );
     }
 
-    await createSession('admin', 'admin', { canUpload: true, canDelete: true, canReplace: true });
+    const role = adminUser.role.toUpperCase() === 'SUPERADMIN' ? 'admin' : 'user';
+
+    await createSession(adminUser.personnelId, role as 'admin' | 'user', { canUpload: true, canDelete: true, canReplace: true });
 
     return NextResponse.json<ApiResponse>(
       { success: true, message: 'Logged in successfully' },

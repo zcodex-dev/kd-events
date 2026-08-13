@@ -12,8 +12,11 @@ export async function POST(request: Request) {
     const name = formData.get('name') as string;
     const contact = formData.get('contact') as string;
     const phoneNumber = formData.get('phoneNumber') as string;
+    const passportId = formData.get('passportId') as string;
     const memberId = formData.get('memberId') as string;
     const isNonMemberTab = formData.get('isNonMemberTab') === 'true';
+    const eventId = (formData.get('eventId') as string) || null;
+    const eventTitle = (formData.get('eventTitle') as string) || null;
 
     let status = { isMember: false, memberData: null as any, error: null };
     let finalName = name;
@@ -39,6 +42,24 @@ export async function POST(request: Request) {
       status.memberData = member;
       finalName = member.name;
       finalMemberId = member.memberId;
+
+      // Pressing "Register Event" twice for the same event shouldn't stack rows.
+      if (eventId) {
+        const existing = await prisma.registration.findFirst({
+          where: { memberId: member.memberId, eventId },
+          select: { id: true },
+        });
+
+        if (existing) {
+          return NextResponse.json({
+            success: true,
+            alreadyRegistered: true,
+            isMember: true,
+            memberData: member,
+            message: `You are already registered for ${eventTitle || 'this event'}.`,
+          });
+        }
+      }
     } else {
       if (!name || name.trim() === '') {
         return NextResponse.json({ success: false, error: 'Name is required' }, { status: 400 });
@@ -71,15 +92,62 @@ export async function POST(request: Request) {
       passportImageUrl = `${appUrl}/api/raw/${r2Key}`;
     }
 
+    let finalAvatarUrl = status.isMember ? status.memberData?.avatarUrl : null;
+    if (passportImageUrl) {
+      finalAvatarUrl = passportImageUrl;
+    }
+    if (!finalAvatarUrl) {
+      finalAvatarUrl = '/assets/profiles/placeholder.svg';
+    }
+
+    if (!status.isMember) {
+      const nationality = formData.get('nationality') as string || null;
+
+      let eventType = null;
+      if (eventId) {
+        const event = await prisma.event.findUnique({ where: { id: eventId } });
+        eventType = event?.tag;
+      }
+
+      const prefix = eventType === 'Poker' ? 'KBP-' : 'KDB-';
+
+      const lastMember = await prisma.member.findFirst({
+        where: { memberId: { startsWith: prefix } },
+        orderBy: { memberId: 'desc' },
+      });
+      
+      let nextNum = 1;
+      if (lastMember && lastMember.memberId) {
+        const numPart = parseInt(lastMember.memberId.replace(prefix, ''), 10);
+        if (!isNaN(numPart)) {
+          nextNum = numPart + 1;
+        }
+      }
+      finalMemberId = `${prefix}${nextNum.toString().padStart(7, '0')}`;
+
+      await prisma.member.create({
+        data: {
+          memberId: finalMemberId,
+          name: finalName,
+          memberType: 'Silver',
+          nationality: nationality,
+        }
+      });
+    }
+
     const registration = await prisma.registration.create({
       data: {
         name: finalName,
         contact: contact || null,
         phoneNumber: phoneNumber || null,
+        passportId: passportId || null,
         passportImageUrl: passportImageUrl,
         isMember: status.isMember,
         memberId: finalMemberId || null,
-        memberType: status.isMember ? status.memberData?.memberType : null,
+        memberType: status.isMember ? status.memberData?.memberType : 'Silver',
+        avatarUrl: finalAvatarUrl,
+        eventId,
+        eventTitle,
       }
     });
 
@@ -91,7 +159,10 @@ export async function POST(request: Request) {
       success: true,
       isMember: status.isMember,
       memberData: status.memberData,
-      message: status.isMember ? `Welcome back, ${finalName}!` : 'Registration recorded successfully.'
+      registration: { eventId: registration.eventId, eventTitle: registration.eventTitle, createdAt: registration.createdAt },
+      message: status.isMember
+        ? `You're registered${eventTitle ? ` for ${eventTitle}` : ''}, ${finalName}!`
+        : 'Registration recorded successfully.'
     }, { status: 200 });
 
   } catch (error: any) {

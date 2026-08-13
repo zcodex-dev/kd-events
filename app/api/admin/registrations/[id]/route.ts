@@ -21,10 +21,13 @@ export async function PUT(
     const phoneNumber = formData.get('phoneNumber') as string;
     const passportId = formData.get('passportId') as string;
     const memberType = formData.get('memberType') as string;
+    const nationality = formData.get('nationality') as string;
     const isBannedStr = formData.get('isBanned') as string;
+    const memberId = formData.get('memberId') as string;
     
     const updateData: any = {};
     if (name) updateData.name = name;
+    if (memberId !== null) updateData.memberId = memberId;
     if (contact !== null) updateData.contact = contact;
     if (phoneNumber !== null) updateData.phoneNumber = phoneNumber;
     if (passportId !== null) updateData.passportId = passportId;
@@ -60,6 +63,15 @@ export async function PUT(
       where: { id },
       data: updateData,
     });
+
+    // Nationality lives on Member (it's what the registration card reads), so
+    // mirror it across when this registration is tied to a member.
+    if (updated.memberId && nationality !== null) {
+      await prisma.member.updateMany({
+        where: { memberId: updated.memberId },
+        data: { nationality: nationality || null },
+      });
+    }
 
     return NextResponse.json({ success: true, data: updated });
   } catch (error: any) {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
@@ -314,6 +314,14 @@ export default function EventsManagementPage() {
                   </div>
 
                   <div className="flex items-center justify-end gap-2 mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800/50">
+                    <Link
+                      href={`/event/${event.id}`}
+                      target="_blank"
+                      className="p-2 text-neutral-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 rounded-lg transition-colors"
+                      title="View Public Page"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Link>
                     <button
                       onClick={() => handleOpenEditModal(event)}
                       className="p-2 text-neutral-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors"
@@ -401,14 +409,17 @@ export default function EventsManagementPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                        Tag (e.g. Poker, Baccarat)
+                        Event Type (Game)
                       </label>
-                      <input
-                        type="text"
+                      <select
                         value={tag}
                         onChange={(e) => setTag(e.target.value)}
                         className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
-                      />
+                      >
+                        <option value="">Select Type</option>
+                        <option value="Baccarat">Baccarat</option>
+                        <option value="Poker">Poker</option>
+                      </select>
                     </div>
 
                     <div>

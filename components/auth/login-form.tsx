@@ -54,25 +54,25 @@ function LoginFormContent() {
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
       <div className="mb-4">
         <label
-          htmlFor="username"
+          htmlFor="personnelId"
           className="block text-xs font-medium text-neutral-400 mb-1.5"
         >
-          Username
+          Personnel ID / Username
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <User className="w-4 h-4 text-neutral-500" />
           </div>
           <input
-            id="username"
+            id="personnelId"
             type="text"
-            {...register('username')}
-            className="w-full pl-10 pr-3 py-3 text-sm border border-neutral-800 bg-neutral-950 text-white rounded-lg focus:outline-none focus:border-neutral-700 transition-colors placeholder:text-neutral-600"
-            placeholder="Enter username"
+            {...register('personnelId')}
+            className="w-full pl-10 pr-3 py-3 text-sm border border-neutral-800 bg-neutral-950 text-white rounded-lg focus:outline-none focus:border-neutral-700 transition-colors placeholder:text-neutral-600 uppercase"
+            placeholder="Enter ID"
           />
         </div>
-        {errors.username && (
-          <p className="text-xs text-red-500 mt-1">{errors.username.message}</p>
+        {errors.personnelId && (
+          <p className="text-xs text-red-500 mt-1">{errors.personnelId.message}</p>
         )}
       </div>
 

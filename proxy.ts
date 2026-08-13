@@ -50,8 +50,8 @@ export function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
     
-    // Prevent access to /event from the admin domain
-    if (pathname.startsWith('/event')) {
+    // Prevent access to /event from the admin domain (allow localhost for testing)
+    if (pathname.startsWith('/event') && !host.includes('localhost')) {
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }

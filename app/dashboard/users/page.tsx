@@ -34,9 +34,6 @@ export default function UsersPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'admin' | 'user'>('user');
-  const [canUpload, setCanUpload] = useState(true);
-  const [canDelete, setCanDelete] = useState(false);
-  const [canReplace, setCanReplace] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -69,9 +66,6 @@ export default function UsersPage() {
     setUsername('');
     setPassword('');
     setRole('user');
-    setCanUpload(true);
-    setCanDelete(false);
-    setCanReplace(false);
     setShowPassword(false);
     setIsModalOpen(true);
   };
@@ -81,9 +75,6 @@ export default function UsersPage() {
     setUsername(user.username);
     setPassword(user.password);
     setRole(user.role);
-    setCanUpload(user.permissions.canUpload);
-    setCanDelete(user.permissions.canDelete);
-    setCanReplace(user.permissions.canReplace);
     setShowPassword(false);
     setIsModalOpen(true);
   };
@@ -100,11 +91,6 @@ export default function UsersPage() {
       username: username.trim(),
       password: password.trim(),
       role,
-      permissions: {
-        canUpload,
-        canDelete,
-        canReplace,
-      }
     };
 
     try {
@@ -221,7 +207,7 @@ export default function UsersPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-neutral-50 border-b border-neutral-200 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    <th className="px-5 py-3">Username</th>
+                    <th className="px-5 py-3">Personnel ID</th>
                     <th className="px-5 py-3">Role</th>
                     <th className="px-5 py-3 text-center">Uploads</th>
                     <th className="px-5 py-3 text-center">Replace/Edit</th>
@@ -337,10 +323,10 @@ export default function UsersPage() {
               {/* Form */}
               <form onSubmit={handleSubmit}>
                 <div className="p-5 space-y-4">
-                  {/* Username Field */}
+                  {/* Personnel ID Field */}
                   <div className="space-y-1.5">
                     <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-                      Username
+                      Personnel ID
                     </label>
                     <div className="relative">
                       <User className="absolute left-2.5 top-2.5 w-4 h-4 text-neutral-400" />
@@ -348,9 +334,9 @@ export default function UsersPage() {
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        placeholder="e.g. josh_kd"
-                        disabled={!!editingUser} // Prevent editing username directly
-                        className="w-full pl-9 pr-3 py-2 text-xs border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 disabled:bg-neutral-50 disabled:text-neutral-400 transition-colors"
+                        placeholder="e.g. MK-C052"
+                        disabled={!!editingUser} // Prevent editing ID directly
+                        className="w-full pl-9 pr-3 py-2 text-xs border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 disabled:bg-neutral-50 disabled:text-neutral-400 transition-colors uppercase"
                       />
                     </div>
                   </div>
@@ -389,10 +375,6 @@ export default function UsersPage() {
                         type="button"
                         onClick={() => {
                           setRole('user');
-                          // Default regular user permissions
-                          setCanUpload(true);
-                          setCanDelete(false);
-                          setCanReplace(false);
                         }}
                         className={`py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                           role === 'user'
@@ -406,10 +388,6 @@ export default function UsersPage() {
                         type="button"
                         onClick={() => {
                           setRole('admin');
-                          // Default admin permissions (all allowed)
-                          setCanUpload(true);
-                          setCanDelete(true);
-                          setCanReplace(true);
                         }}
                         className={`py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                           role === 'admin'
@@ -428,40 +406,13 @@ export default function UsersPage() {
                       Account Permissions
                     </label>
                     
-                    {/* canUpload Checkbox */}
-                    <label className="flex items-center gap-2.5 cursor-pointer py-1">
-                      <input
-                        type="checkbox"
-                        checked={canUpload}
-                        onChange={(e) => setCanUpload(e.target.checked)}
-                        className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
-                      />
-                      <span className="text-xs text-neutral-700">Allow uploading new event files</span>
-                    </label>
-
-                    {/* canReplace Checkbox */}
-                    <label className="flex items-center gap-2.5 cursor-pointer py-1">
-                      <input
-                        type="checkbox"
-                        checked={canReplace}
-                        onChange={(e) => setCanReplace(e.target.checked)}
-                        className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
-                        disabled={role === 'admin'} // Admins always have it
-                      />
-                      <span className="text-xs text-neutral-700">Allow replacing / reordering artworks</span>
-                    </label>
-
-                    {/* canDelete Checkbox */}
-                    <label className="flex items-center gap-2.5 cursor-pointer py-1">
-                      <input
-                        type="checkbox"
-                        checked={canDelete}
-                        onChange={(e) => setCanDelete(e.target.checked)}
-                        className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
-                        disabled={role === 'admin'} // Admins always have it
-                      />
-                      <span className="text-xs text-neutral-700">Allow deleting files / images from repository</span>
-                    </label>
+                    <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-200 text-xs text-neutral-600">
+                      {role === 'admin' ? (
+                        <p><strong>Co-Admin</strong> has full access to upload, edit, replace, and delete event media files.</p>
+                      ) : (
+                        <p><strong>Normal User</strong> can only upload new files and view existing event media.</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 

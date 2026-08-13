@@ -5,14 +5,17 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
-import { Edit, Ban, Trash2, X, Upload, Loader2, Image as ImageIcon, Calendar, Users } from 'lucide-react';
+import { Edit, Ban, Trash2, X, Upload, Loader2, Image as ImageIcon, Calendar, Users, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 export default function PlayersPage() {
   const { openSidebar } = useDashboard();
   const [stats, setStats] = useState<any>(null);
   const [registrations, setRegistrations] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'All' | 'Members' | 'NonMembers'>('All');
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; reg: any } | null>(null);
@@ -20,14 +23,14 @@ export default function PlayersPage() {
   // Edit Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingReg, setEditingReg] = useState<any>(null);
-  const [editForm, setEditForm] = useState({ name: '', contact: '', phoneNumber: '', passportId: '', memberType: '' });
+  const [editForm, setEditForm] = useState({ name: '', memberId: '', contact: '', phoneNumber: '', passportId: '', memberType: '', nationality: '' });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   // Add Player State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [addForm, setAddForm] = useState({ name: '', memberId: '', memberType: 'Gold' });
+  const [addForm, setAddForm] = useState({ name: '', memberId: '', memberType: 'Gold', nationality: '' });
 
   const fetchData = useCallback(async () => {
     try {
@@ -65,6 +68,36 @@ export default function PlayersPage() {
     });
   };
 
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(filteredRegistrations.map(r => r.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(i => i !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Are you sure you want to completely delete ${selectedIds.length} selected players?`)) return;
+    setIsLoading(true);
+    try {
+      await Promise.all(selectedIds.map(id => fetch(`/api/admin/registrations/${id}`, { method: 'DELETE' })));
+      toast.success(`${selectedIds.length} players deleted successfully`);
+      setSelectedIds([]);
+      fetchData();
+    } catch {
+      toast.error('Failed to delete some players');
+      setIsLoading(false);
+    }
+  };
+
   const handleAction = async (action: 'edit' | 'ban' | 'delete') => {
     if (!contextMenu) return;
     const reg = contextMenu.reg;
@@ -74,10 +107,12 @@ export default function PlayersPage() {
       setEditingReg(reg);
       setEditForm({
         name: reg.name || '',
+        memberId: reg.memberId || '',
         contact: reg.contact || '',
         phoneNumber: reg.phoneNumber || '',
         passportId: reg.passportId || '',
         memberType: reg.memberType || (reg.isMember ? 'Gold' : ''),
+        nationality: reg.nationality || '',
       });
       setAvatarFile(null);
       setAvatarPreview(reg.avatarUrl || null);
@@ -132,10 +167,12 @@ export default function PlayersPage() {
 
     const formData = new FormData();
     formData.append('name', editForm.name);
+    formData.append('memberId', editForm.memberId);
     formData.append('contact', editForm.contact);
     formData.append('phoneNumber', editForm.phoneNumber);
     formData.append('passportId', editForm.passportId);
     formData.append('memberType', editForm.memberType);
+    formData.append('nationality', editForm.nationality);
     
     if (avatarFile) {
       formData.append('avatar', avatarFile);
@@ -163,7 +200,7 @@ export default function PlayersPage() {
 
   const handleOpenAddModal = () => {
     const randomNum = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
-    setAddForm({ name: '', memberId: `KDB-${randomNum}`, memberType: 'Gold' });
+    setAddForm({ name: '', memberId: `KDB-${randomNum}`, memberType: 'Gold', nationality: '' });
     setIsAddModalOpen(true);
   };
 
@@ -200,6 +237,44 @@ export default function PlayersPage() {
       case 'diamond': return 'text-cyan-500 font-bold';
       default: return 'text-neutral-500';
     }
+  };
+
+  const filteredRegistrations = registrations.filter(reg => {
+    if (activeTab === 'All') return true;
+    if (activeTab === 'Members') return reg.isMember;
+    if (activeTab === 'NonMembers') return !reg.isMember;
+    return true;
+  });
+
+  const handleExport = () => {
+    const formatData = (dataList: any[]) => dataList.map((reg, index) => ({
+      '#': dataList.length - index,
+      'Player / Guest Name': reg.name,
+      'Member ID': reg.memberId || '-',
+      'Member Type': reg.memberType || '-',
+      'Registered Event': reg.eventTitle || '-',
+      'Nationality': reg.nationality || '-',
+      'Registered At': new Date(reg.createdAt).toLocaleString(),
+      'Contact': reg.phoneNumber || reg.contact || '-',
+      'Passport / ID': reg.passportId || reg.passportImageUrl || '-',
+      'Status': reg.isBanned ? 'Banned' : 'Active'
+    }));
+
+    const members = registrations.filter(r => r.isMember);
+    const nonMembers = registrations.filter(r => !r.isMember);
+
+    const wb = XLSX.utils.book_new();
+
+    const wsAll = XLSX.utils.json_to_sheet(formatData(registrations));
+    XLSX.utils.book_append_sheet(wb, wsAll, `All Players (${registrations.length})`);
+
+    const wsMembers = XLSX.utils.json_to_sheet(formatData(members));
+    XLSX.utils.book_append_sheet(wb, wsMembers, `Members (${members.length})`);
+
+    const wsNonMembers = XLSX.utils.json_to_sheet(formatData(nonMembers));
+    XLSX.utils.book_append_sheet(wb, wsNonMembers, `Non-Members (${nonMembers.length})`);
+
+    XLSX.writeFile(wb, `Players_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   return (
@@ -256,41 +331,92 @@ export default function PlayersPage() {
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
             <h2 className="text-lg font-bold">Manage Player <span className="text-xs font-normal text-neutral-500 ml-2">(Right-click rows to edit/ban)</span></h2>
-            <button onClick={handleOpenAddModal} className="bg-[#c3943a] hover:bg-[#e5ac53] text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all">
-              + Add Player
+            <div className="flex gap-2">
+              {selectedIds.length > 0 && (
+                <button onClick={handleBulkDelete} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all flex items-center gap-2">
+                  <Trash2 className="w-4 h-4" /> Delete ({selectedIds.length})
+                </button>
+              )}
+              <button onClick={handleExport} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all flex items-center gap-2">
+                <Download className="w-4 h-4" /> Export Excel
+              </button>
+              <button onClick={handleOpenAddModal} className="bg-[#c3943a] hover:bg-[#e5ac53] text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all">
+                + Add Player
+              </button>
+            </div>
+          </div>
+          <div className="px-6 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex gap-2 overflow-x-auto">
+            <button 
+              onClick={() => { setActiveTab('All'); setSelectedIds([]); }}
+              className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors whitespace-nowrap ${activeTab === 'All' ? 'bg-[#c3943a] text-white' : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800'}`}
+            >
+              All Players ({registrations.length})
+            </button>
+            <button 
+              onClick={() => { setActiveTab('Members'); setSelectedIds([]); }}
+              className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors whitespace-nowrap ${activeTab === 'Members' ? 'bg-[#c3943a] text-white' : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800'}`}
+            >
+              Members ({stats?.members || 0})
+            </button>
+            <button 
+              onClick={() => { setActiveTab('NonMembers'); setSelectedIds([]); }}
+              className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors whitespace-nowrap ${activeTab === 'NonMembers' ? 'bg-[#c3943a] text-white' : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800'}`}
+            >
+              Non-Members ({stats?.nonMembers || 0})
             </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left select-none">
               <thead className="text-xs text-neutral-500 bg-[#c3943a] text-white">
                 <tr>
+                  <th className="px-4 py-3 font-bold border-r border-white/20 w-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.length === filteredRegistrations.length && filteredRegistrations.length > 0}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 rounded border-white/30 text-neutral-900 focus:ring-white bg-transparent cursor-pointer"
+                    />
+                  </th>
                   <th className="px-4 py-3 font-bold border-r border-white/20">#</th>
                   <th className="px-6 py-3 font-bold border-r border-white/20">Player / Guest Name</th>
                   <th className="px-6 py-3 font-bold border-r border-white/20">Member ID</th>
                   <th className="px-6 py-3 font-bold border-r border-white/20">Member Type</th>
+                  <th className="px-6 py-3 font-bold border-r border-white/20">Registered Event</th>
+                  <th className="px-6 py-3 font-bold border-r border-white/20">Nationality</th>
                   <th className="px-6 py-3 font-bold border-r border-white/20">Registered At</th>
                   <th className="px-6 py-3 font-bold border-r border-white/20">Contact</th>
-                  <th className="px-6 py-3 font-bold">Passport ID</th>
+                  <th className="px-6 py-3 font-bold">Passport / ID</th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-neutral-500">Loading...</td>
+                    <td colSpan={10} className="px-6 py-8 text-center text-neutral-500">Loading...</td>
                   </tr>
-                ) : registrations.length === 0 ? (
+                ) : filteredRegistrations.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-neutral-500">No attendees yet</td>
+                    <td colSpan={10} className="px-6 py-12 text-center">
+                      <Users className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
+                      <p className="text-neutral-500 font-medium">No registrations found in this category.</p>
+                    </td>
                   </tr>
                 ) : (
-                  registrations.map((reg, index) => (
+                  filteredRegistrations.map((reg, index) => (
                     <tr 
                       key={reg.id} 
                       onContextMenu={(e) => handleContextMenu(e, reg)}
-                      className={`border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-context-menu transition-colors ${reg.isBanned ? 'bg-red-50 dark:bg-red-900/10 opacity-70' : ''}`}
+                      className={`border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-context-menu transition-colors ${reg.isBanned ? 'bg-red-50 dark:bg-red-900/10 opacity-70' : ''} ${selectedIds.includes(reg.id) ? 'bg-orange-50/50 dark:bg-orange-900/10' : ''}`}
                     >
+                      <td className="px-4 py-4 border-r border-neutral-100 dark:border-neutral-800/50">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(reg.id)}
+                          onChange={() => handleSelectOne(reg.id)}
+                          className="w-4 h-4 rounded border-neutral-300 text-[#c3943a] focus:ring-[#c3943a] cursor-pointer"
+                        />
+                      </td>
                       <td className="px-4 py-4 font-medium text-neutral-500 border-r border-neutral-100 dark:border-neutral-800/50">
-                        {registrations.length - index}
+                        {filteredRegistrations.length - index}
                       </td>
                       <td className="px-6 py-4 font-medium border-r border-neutral-100 dark:border-neutral-800/50">
                         <div className="flex items-center gap-3">
@@ -313,14 +439,28 @@ export default function PlayersPage() {
                           {reg.memberType || (reg.isMember ? 'Gold' : '-')}
                         </span>
                       </td>
+                      <td className="px-6 py-4 border-r border-neutral-100 dark:border-neutral-800/50 text-neutral-700 dark:text-neutral-300">
+                        {reg.eventTitle || '-'}
+                      </td>
+                      <td className="px-6 py-4 border-r border-neutral-100 dark:border-neutral-800/50 text-neutral-700 dark:text-neutral-300">
+                        {reg.nationality || '-'}
+                      </td>
                       <td className="px-6 py-4 text-neutral-500 border-r border-neutral-100 dark:border-neutral-800/50 whitespace-nowrap">
                         {new Date(reg.createdAt).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 text-neutral-500 border-r border-neutral-100 dark:border-neutral-800/50">
-                        {reg.contact || '-'}
+                        {reg.phoneNumber || reg.contact || '-'}
                       </td>
                       <td className="px-6 py-4 text-neutral-500">
-                        {reg.passportId || '-'}
+                        {reg.passportId ? (
+                          <span className="font-medium text-neutral-700 dark:text-neutral-300">{reg.passportId}</span>
+                        ) : reg.passportImageUrl ? (
+                          <a href={reg.passportImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center gap-1">
+                            <ImageIcon className="w-3.5 h-3.5" /> View Image
+                          </a>
+                        ) : (
+                          '-'
+                        )}
                       </td>
                     </tr>
                   ))
@@ -334,18 +474,30 @@ export default function PlayersPage() {
       {/* Context Menu */}
       {contextMenu?.visible && (
         <div 
-          className="fixed bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-2xl z-50 w-48 overflow-hidden py-1"
+          className="fixed bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-2xl z-50 w-56 overflow-hidden flex flex-col"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
-          <button onClick={() => handleAction('edit')} className="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-sm font-medium">
-            <Edit className="w-4 h-4" /> Edit Details
-          </button>
+          <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950/50">
+            <p className="text-sm font-bold text-neutral-900 dark:text-white truncate">{contextMenu.reg.name}</p>
+            <p className="text-[11px] text-neutral-500 truncate mt-0.5 font-medium">
+              ID: <span className="text-neutral-700 dark:text-neutral-300">{contextMenu.reg.memberId || contextMenu.reg.passportId || 'N/A'}</span>
+            </p>
+            <p className="text-[11px] text-neutral-500 truncate mt-0.5 font-medium">
+              Phone: <span className="text-neutral-700 dark:text-neutral-300">{contextMenu.reg.phoneNumber || contextMenu.reg.contact || 'N/A'}</span>
+            </p>
+          </div>
+          
+          <div className="py-1">
+            <button onClick={() => handleAction('edit')} className="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-sm font-medium">
+              <Edit className="w-4 h-4" /> Edit Details
+            </button>
           <button onClick={() => handleAction('ban')} className="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-sm font-medium text-yellow-600 dark:text-yellow-500">
             <Ban className="w-4 h-4" /> {contextMenu.reg.isBanned ? 'Unban Player' : 'Ban Player'}
           </button>
           <button onClick={() => handleAction('delete')} className="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-sm font-medium text-red-600 dark:text-red-500 border-t border-neutral-100 dark:border-neutral-800">
             <Trash2 className="w-4 h-4" /> Delete Player
           </button>
+          </div>
         </div>
       )}
 
@@ -386,9 +538,15 @@ export default function PlayersPage() {
 
                 {/* Form Fields */}
                 <div className="space-y-3">
-                  <div>
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1 block">Full Name</label>
-                    <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 outline-none focus:border-[#c3943a]" required />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1 block">Full Name</label>
+                      <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 outline-none focus:border-[#c3943a]" required />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1 block">Member ID</label>
+                      <input type="text" value={editForm.memberId} onChange={e => setEditForm({...editForm, memberId: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 outline-none focus:border-[#c3943a]" />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -398,6 +556,10 @@ export default function PlayersPage() {
                     <div>
                       <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1 block">Contact (Email/TG)</label>
                       <input type="text" value={editForm.contact} onChange={e => setEditForm({...editForm, contact: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 outline-none focus:border-[#c3943a]" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1 block">Nationality</label>
+                      <input type="text" value={editForm.nationality} onChange={e => setEditForm({...editForm, nationality: e.target.value})} placeholder="e.g. Cambodian" className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 outline-none focus:border-[#c3943a]" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -484,6 +646,10 @@ export default function PlayersPage() {
                         <option value="Platinum">Platinum</option>
                         <option value="Diamond">Diamond</option>
                       </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1 block">Nationality</label>
+                      <input type="text" value={addForm.nationality} onChange={e => setAddForm({...addForm, nationality: e.target.value})} placeholder="e.g. Cambodian" className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 outline-none focus:border-[#c3943a]" />
                     </div>
                   </div>
                 </form>

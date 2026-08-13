@@ -1,8 +1,23 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
-import { getAllUsers, addUser } from '@/lib/uploads/metadata';
+import { prisma } from '@/lib/prisma';
 import type { ApiResponse, SubUser } from '@/types';
-import { nanoid } from 'nanoid';
+
+function mapAdminUserToSubUser(user: any): SubUser {
+  const isSuper = user.role.toUpperCase() === 'SUPERADMIN';
+  return {
+    id: user.id,
+    username: user.personnelId, // Map personnelId to username for frontend compatibility
+    password: user.password,
+    role: isSuper ? 'admin' : 'user',
+    permissions: {
+      canUpload: true, // Everyone can upload
+      canDelete: isSuper,
+      canReplace: isSuper,
+    },
+    createdAt: user.createdAt.toISOString(),
+  };
+}
 
 export async function GET() {
   try {
@@ -14,7 +29,12 @@ export async function GET() {
       );
     }
 
-    const users = await getAllUsers();
+    const adminUsers = await prisma.adminUser.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    const users: SubUser[] = adminUsers.map(mapAdminUserToSubUser);
+
     return NextResponse.json<ApiResponse<SubUser[]>>(
       { success: true, data: users },
       { status: 200 }
@@ -39,43 +59,48 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { username, password, role, permissions } = body;
+    const { username, password, role } = body;
 
     if (!username || !username.trim() || !password || !password.trim()) {
       return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Username and password are required' },
+        { success: false, error: 'Personnel ID and password are required' },
         { status: 400 }
       );
     }
 
-    const existingUsers = await getAllUsers();
-    if (
-      existingUsers.some((u) => u.username.toLowerCase() === username.trim().toLowerCase()) ||
-      username.trim().toLowerCase() === 'admin'
-    ) {
+    const personnelId = username.trim().toUpperCase();
+
+    if (personnelId === 'ADMIN') {
       return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Username already exists' },
+        { success: false, error: 'Cannot use reserved Personnel ID' },
         { status: 400 }
       );
     }
 
-    const newUser: SubUser = {
-      id: nanoid(10),
-      username: username.trim(),
-      password: password.trim(),
-      role: role || 'user',
-      permissions: {
-        canUpload: permissions?.canUpload ?? true,
-        canDelete: permissions?.canDelete ?? false,
-        canReplace: permissions?.canReplace ?? false,
-      },
-      createdAt: new Date().toISOString(),
-    };
+    const existingUser = await prisma.adminUser.findUnique({
+      where: { personnelId }
+    });
 
-    await addUser(newUser);
+    if (existingUser) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Personnel ID already exists' },
+        { status: 400 }
+      );
+    }
+
+    const newAdminUser = await prisma.adminUser.create({
+      data: {
+        personnelId,
+        password: password.trim(),
+        role: role === 'admin' ? 'SUPERADMIN' : 'ADMIN',
+        name: personnelId,
+      }
+    });
+
+    const mappedUser = mapAdminUserToSubUser(newAdminUser);
 
     return NextResponse.json<ApiResponse<SubUser>>(
-      { success: true, data: newUser, message: 'User created successfully' },
+      { success: true, data: mappedUser, message: 'User created successfully' },
       { status: 201 }
     );
   } catch (error: any) {

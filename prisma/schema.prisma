@@ -9,13 +9,14 @@ datasource db {
 }
 
 model Member {
-  id         String    @id @default(cuid())
-  memberId   String    @unique
-  name       String
-  memberType String    @default("Gold") // Gold, Silver, Platinum, Diamond
-  dateJoined DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id          String    @id @default(cuid())
+  memberId    String    @unique
+  name        String
+  memberType  String    @default("Gold") // Gold, Silver, Platinum, Diamond
+  nationality String?
+  dateJoined  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Registration {
@@ -29,6 +30,10 @@ model Registration {
   memberId         String?
   memberType       String?
   avatarUrl        String?
+  /// Which event this registration was made for. Title is denormalised so the
+  /// record still reads correctly if the event is later renamed or deleted.
+  eventId          String?
+  eventTitle       String?
   isBanned         Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -45,6 +50,17 @@ model Event {
   tag         String?
   date        String?
   location    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AdminUser {
+  id          String   @id @default(cuid())
+  personnelId String   @unique // e.g., MK-C052
+  name        String?
+  role        String   @default("ADMIN") // SUPERADMIN or ADMIN
+  password    String   // Hashed or plain text
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
