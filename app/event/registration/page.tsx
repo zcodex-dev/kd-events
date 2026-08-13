@@ -10,27 +10,11 @@ import Link from 'next/link';
 const defaultEvents = [
   {
     id: 1,
-    title: 'Summer Tech Conference 2026',
-    date: 'Aug 20 - 22, 2026',
-    location: 'Kompong Dewa Resort',
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop',
-    tag: 'Conference',
-  },
-  {
-    id: 2,
-    title: 'Founders Networking Night',
-    date: 'Sep 05, 2026',
-    location: 'Sky Lounge, KD',
-    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=2069&auto=format&fit=crop',
-    tag: 'Networking',
-  },
-  {
-    id: 3,
-    title: 'Web3 & AI Summit',
-    date: 'Oct 12, 2026',
-    location: 'Main Auditorium',
-    image: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?q=80&w=2070&auto=format&fit=crop',
-    tag: 'Summit',
+    title: 'Kompong Dewa',
+    date: '',
+    location: 'Sihanoukville, Cambodia',
+    image: 'https://kd-events-zeta.vercel.app/api/raw?key=public-uploads%2F2026%2F07%2FGolden-nQKCqSFDx7.webp',
+    tag: 'Resort & Casino',
   }
 ];
 
