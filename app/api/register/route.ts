@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     let status = { isMember: false, memberData: null as any, error: null };
     let finalName = name;
-    let finalMemberId = memberId;
+    let finalMemberId: string | null = memberId;
 
     if (!isNonMemberTab) {
       if (!memberId || memberId.trim() === '') {
@@ -110,38 +110,8 @@ export async function POST(request: Request) {
     }
 
     if (!status.isMember) {
-      const nationality = formData.get('nationality') as string || null;
-
-      let eventType = null;
-      if (eventId) {
-        const event = await prisma.event.findUnique({ where: { id: eventId } });
-        eventType = event?.tag;
-      }
-
-      const prefix = eventType === 'Poker' ? 'KBP-' : 'KDB-';
-
-      const lastMember = await prisma.member.findFirst({
-        where: { memberId: { startsWith: prefix } },
-        orderBy: { memberId: 'desc' },
-      });
-      
-      let nextNum = 1;
-      if (lastMember && lastMember.memberId) {
-        const numPart = parseInt(lastMember.memberId.replace(prefix, ''), 10);
-        if (!isNaN(numPart)) {
-          nextNum = numPart + 1;
-        }
-      }
-      finalMemberId = `${prefix}${nextNum.toString().padStart(7, '0')}`;
-
-      await prisma.member.create({
-        data: {
-          memberId: finalMemberId,
-          name: finalName,
-          memberType: 'Silver',
-          nationality: nationality,
-        }
-      });
+      // Receptionist manually assigns member IDs later, so we do not auto-generate a Member record here.
+      finalMemberId = null;
     }
 
     let registration;

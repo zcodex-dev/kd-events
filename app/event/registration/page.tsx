@@ -45,8 +45,6 @@ export default function EventRegistrationPage() {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [nationality, setNationality] = useState('');
-  const [passportId, setPassportId] = useState('');
-  const [preferNoId, setPreferNoId] = useState(false);
   const [passportFile, setPassportFile] = useState<File | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -121,13 +119,19 @@ export default function EventRegistrationPage() {
       .finally(() => setIsLoadingEvents(false));
   }, []);
 
-  useEffect(() => {
-    if (events.length === 0) return;
-    const interval = setInterval(() => {
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
+  };
+
+  const handleDragEnd = (e: any, { offset, velocity }: any) => {
+    const swipe = swipePower(offset.x, velocity.x);
+    if (swipe < -swipeConfidenceThreshold) {
       setCurrentEventIndex((prev) => (prev + 1) % events.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [events]);
+    } else if (swipe > swipeConfidenceThreshold) {
+      setCurrentEventIndex((prev) => (prev - 1 + events.length) % events.length);
+    }
+  };
 
   /** Member tab: verify the ID only. Non-member tab: submit the registration. */
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,8 +170,8 @@ export default function EventRegistrationPage() {
 
     if (!name.trim()) return toast.error('Please enter your full name');
     if (!phoneNumber.trim()) return toast.error('Please enter your phone number or email');
-    if (!preferNoId && !passportId.trim() && !passportFile) {
-      return toast.error('Please provide an ID number, upload an image, or check "Prefer not to provide ID"');
+    if (!passportFile) {
+      return toast.error('Please upload your ID image');
     }
 
     setIsSubmitting(true);
@@ -177,7 +181,6 @@ export default function EventRegistrationPage() {
       formData.append('name', name);
       formData.append('phoneNumber', phoneNumber);
       formData.append('nationality', nationality);
-      formData.append('passportId', passportId);
       if (passportFile) formData.append('passportImage', passportFile);
       appendCurrentEvent(formData);
 
@@ -287,7 +290,7 @@ export default function EventRegistrationPage() {
         {/* Left / Top Side: Event Previews Carousel */}
         {/* Takes up 65vh on mobile so the branding is the focus, 
             and the form follows underneath. */}
-        <div className="w-full shrink-0 h-[65vh] md:h-[100dvh] relative bg-black overflow-hidden">
+        <div className="w-full shrink-0 h-[65vh] md:w-1/2 md:h-[100dvh] relative bg-black overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={`poster-${currentEventIndex}`}
@@ -295,7 +298,11 @@ export default function EventRegistrationPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8, ease: "easeInOut" }}
-              className="absolute inset-0"
+              className="absolute inset-0 cursor-grab active:cursor-grabbing"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.05}
+              onDragEnd={handleDragEnd}
             >
               {isLoadingEvents ? (
                 <div className="w-full h-full flex items-center justify-center bg-neutral-900">
@@ -315,21 +322,11 @@ export default function EventRegistrationPage() {
 
           {/* Single soft scrim, lower opacity when no events */}
           <div
-            className={`absolute inset-0 z-10 ${detailHref
-                ? 'bg-[linear-gradient(to_top,rgba(0,0,0,1)_0%,rgba(0,0,0,0.95)_30%,rgba(0,0,0,0.8)_50%,rgba(0,0,0,0.4)_75%,rgba(0,0,0,0)_100%)]'
-                : 'bg-[linear-gradient(to_top,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.6)_30%,rgba(0,0,0,0.3)_60%,rgba(0,0,0,0)_100%)]'
+            className={`absolute inset-0 z-10 pointer-events-none ${detailHref
+              ? 'bg-[linear-gradient(to_top,rgba(0,0,0,1)_0%,rgba(0,0,0,0.9)_20%,rgba(0,0,0,0.5)_35%,rgba(0,0,0,0)_50%)]'
+              : 'bg-[linear-gradient(to_top,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.5)_20%,rgba(0,0,0,0)_40%)]'
               }`}
           />
-
-          {/* Whole panel links to the detail page; sits under the content layers
-              so the dots and badges stay independently clickable. */}
-          {detailHref && (
-            <Link
-              href={detailHref}
-              aria-label={`Read more about ${currentEvent?.title || 'this event'}`}
-              className="absolute inset-0 z-10"
-            />
-          )}
 
           {/* Title and details float over the poster. pb clears the form card that
               overlaps this panel on mobile. */}
@@ -346,7 +343,7 @@ export default function EventRegistrationPage() {
                 >
                   {detailHref ? (
                     <Link href={detailHref} className="group inline-block">
-                      <h1 className="text-xl md:text-5xl font-black text-white leading-tight drop-shadow-lg group-hover:text-[#e5ac53] transition-colors">
+                      <h1 className="text-lg md:text-5xl font-black text-white leading-tight drop-shadow-lg group-hover:text-[#e5ac53] transition-colors">
                         {currentEvent?.title || 'Upcoming Event'}
                       </h1>
                       <span className="inline-flex items-center gap-1 mt-1.5 text-[11px] md:text-sm font-semibold text-[#e5ac53]">
@@ -355,7 +352,7 @@ export default function EventRegistrationPage() {
                       </span>
                     </Link>
                   ) : (
-                    <h1 className="text-xl md:text-5xl font-black text-white leading-tight drop-shadow-lg">
+                    <h1 className="text-lg md:text-5xl font-black text-white leading-tight drop-shadow-lg">
                       {currentEvent?.title || 'Upcoming Event'}
                     </h1>
                   )}
@@ -473,7 +470,7 @@ export default function EventRegistrationPage() {
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          placeholder="e.g. Lokas.K"
+                          placeholder="Enter your full name"
                           className="w-full bg-white border border-neutral-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg px-3.5 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-black placeholder:text-neutral-400 transition-all outline-none"
                           required
                         />
@@ -503,53 +500,21 @@ export default function EventRegistrationPage() {
                         />
                       </div>
 
-                      <div className="space-y-3">
-                        <div className="flex gap-3 items-end">
-                          <div className="flex-1">
-                            <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Passport / ID (Optional)</label>
-                            <input
-                              type="text"
-                              value={passportId}
-                              onChange={(e) => setPassportId(e.target.value)}
-                              disabled={preferNoId}
-                              placeholder="e.g. N12345678"
-                              className="w-full bg-white border border-neutral-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg px-3.5 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-black placeholder:text-neutral-400 transition-all outline-none disabled:bg-neutral-100 disabled:text-neutral-400 h-[44px] md:h-[50px]"
-                            />
-                          </div>
-
-                          <div className="flex-1">
-                            <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Upload ID</label>
-                            <label className={`w-full flex flex-row items-center justify-center gap-2 h-[44px] md:h-[50px] border-2 border-dashed border-neutral-300 rounded-lg transition-colors relative overflow-hidden ${preferNoId ? 'bg-neutral-100 cursor-not-allowed opacity-60' : 'bg-white hover:bg-neutral-50 cursor-pointer'}`}>
-                              {passportFile ? (
-                                <>
-                                  <FileImage className="w-4 h-4 text-orange-500 shrink-0" />
-                                  <span className="text-[10px] md:text-xs font-medium truncate max-w-[80px] text-orange-500">{passportFile.name}</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Upload className="w-4 h-4 text-neutral-400 shrink-0" />
-                                  <span className="text-[10px] md:text-xs font-medium text-neutral-400">Click to upload</span>
-                                </>
-                              )}
-                              <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" disabled={preferNoId} />
-                            </label>
-                          </div>
-                        </div>
-
-                        <label className="flex items-center gap-2 pt-1 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={preferNoId}
-                            onChange={(e) => {
-                              setPreferNoId(e.target.checked);
-                              if (e.target.checked) {
-                                setPassportId('');
-                                setPassportFile(null);
-                              }
-                            }}
-                            className="w-4 h-4 rounded border-neutral-300 text-[#c3943a] focus:ring-[#c3943a]"
-                          />
-                          <span className="text-xs md:text-sm text-neutral-600 font-medium">Prefer not to provide ID / Upload later</span>
+                      <div>
+                        <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Upload ID/Passport <span className="text-red-500">*</span></label>
+                        <label className="w-full flex flex-row items-center justify-center gap-2 h-[44px] md:h-[50px] border-2 border-dashed border-neutral-300 rounded-lg transition-colors relative overflow-hidden bg-white hover:bg-neutral-50 cursor-pointer">
+                          {passportFile ? (
+                            <>
+                              <FileImage className="w-4 h-4 text-orange-500 shrink-0" />
+                              <span className="text-[10px] md:text-xs font-medium truncate max-w-[200px] text-orange-500">{passportFile.name}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-4 h-4 text-neutral-400 shrink-0" />
+                              <span className="text-[10px] md:text-xs font-medium text-neutral-400">Click to upload (Required)</span>
+                            </>
+                          )}
+                          <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" required />
                         </label>
                       </div>
                     </motion.div>
@@ -653,7 +618,7 @@ export default function EventRegistrationPage() {
                         {isRegistering ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                          <span>{alreadyRegisteredForCurrent ? 'Registered' : 'Register Event'}</span>
+                          <span>{alreadyRegisteredForCurrent ? 'Enrolled' : 'Enrollment Event'}</span>
                         )}
                       </button>
                       {detailHref ? (
@@ -682,7 +647,7 @@ export default function EventRegistrationPage() {
                       {isSubmitting ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
-                        <span>{activeTab === 'member' ? 'Verify' : 'Register Event'}</span>
+                        <span>{activeTab === 'member' ? 'Verify' : 'Enrollment Event'}</span>
                       )}
                     </button>
                   )}
@@ -702,18 +667,18 @@ export default function EventRegistrationPage() {
                       <CheckedIcon ref={iconRef} size={40} />
                     </div>
                   </div>
-                  
+
                   <div className="text-center mb-6">
-                    <h2 className="text-2xl md:text-3xl font-black text-black mb-2 tracking-tight">Registration Successful</h2>
+                    <h2 className="text-2xl md:text-3xl font-black text-black mb-2 tracking-tight">Enrollment Successful</h2>
                     <p className="text-neutral-500 text-sm">
-                      Your registration has been securely recorded.
+                      Your enrollment has been securely recorded.
                     </p>
                   </div>
 
                   <div className="w-full border-t-[1.5px] border-dashed border-neutral-200 my-6" />
 
                   <div className="space-y-4">
-                    <h3 className="text-[14px] font-bold text-neutral-800 mb-2">Registration details</h3>
+                    <h3 className="text-[14px] font-bold text-neutral-800 mb-2">Enrollment details</h3>
                     {(result.memberData?.name || name) && (
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-neutral-500">Name</span>
@@ -743,14 +708,14 @@ export default function EventRegistrationPage() {
                         <span className="font-bold text-neutral-800">{result.memberId}</span>
                       </div>
                     )}
-                    
+
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-neutral-500">Date</span>
                       <span className="font-bold text-neutral-800">
                         {new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
-                    
+
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-neutral-500">Time</span>
                       <span className="font-bold text-neutral-800">
@@ -771,7 +736,7 @@ export default function EventRegistrationPage() {
                         className="flex-1 flex items-center justify-center gap-2 bg-[#229ED9] hover:bg-[#2090c5] text-white text-sm md:text-base py-3 rounded-xl font-bold transition-all border border-[#1b81b3] shadow-[inset_0px_2px_0px_0px_rgba(255,255,255,0.3)] active:translate-y-[1px] active:shadow-none"
                       >
                         <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+                          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z" />
                         </svg>
                         <span>Telegram</span>
                       </a>
@@ -783,7 +748,7 @@ export default function EventRegistrationPage() {
                         className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#22c35e] text-white text-sm md:text-base py-3 rounded-xl font-bold transition-all border border-[#1ea852] shadow-[inset_0px_2px_0px_0px_rgba(255,255,255,0.3)] active:translate-y-[1px] active:shadow-none"
                       >
                         <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                         </svg>
                         <span>WhatsApp</span>
                       </a>
