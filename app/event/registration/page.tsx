@@ -245,8 +245,6 @@ export default function EventRegistrationPage() {
     setName('');
     setPhoneNumber('');
     setNationality('');
-    setPassportId('');
-    setPreferNoId(false);
     setPassportFile(null);
     setMemberIdInput('');
   };
