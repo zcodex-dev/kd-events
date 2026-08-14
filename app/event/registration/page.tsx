@@ -284,12 +284,12 @@ export default function EventRegistrationPage() {
       {/* Mobile scrolls: the hero is a true 4:5 frame so a portrait poster fills it
           edge to edge, and the form follows underneath. Desktop keeps the
           locked split-screen. */}
-      <div className="min-h-[100dvh] md:h-[100dvh] overflow-y-auto overflow-x-hidden md:overflow-hidden bg-[#F4F4F5] flex flex-col md:flex-row relative pt-16 md:pt-0">
+      <div className="min-h-[100dvh] md:h-[100dvh] overflow-y-auto overflow-x-hidden md:overflow-hidden bg-[#F4F4F5] flex flex-col md:flex-row relative pt-16 md:pt-20">
 
         {/* Left / Top Side: Event Previews Carousel */}
         {/* Takes up 65vh on mobile so the branding is the focus, 
             and the form follows underneath. */}
-        <div className="w-full shrink-0 h-[65vh] md:w-1/2 md:h-[100dvh] relative bg-black overflow-hidden">
+        <div className="w-full shrink-0 h-[65vh] md:w-1/2 md:h-full relative bg-black overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={`poster-${currentEventIndex}`}
@@ -425,7 +425,7 @@ export default function EventRegistrationPage() {
         </div>
 
         {/* Right / Bottom Side: Form Area */}
-        <div className="relative z-30 -mt-8 md:mt-0 w-full md:w-1/2 flex-1 md:h-[100dvh] flex flex-col justify-start md:justify-center items-center px-5 pt-6 pb-10 md:p-12 bg-[#F4F4F5] rounded-t-3xl md:rounded-none shadow-[0_-10px_30px_rgba(0,0,0,0.25)] md:shadow-none md:overflow-y-auto">
+        <div className="relative z-30 -mt-8 md:mt-0 w-full md:w-1/2 flex-1 md:h-full flex flex-col justify-start md:justify-center items-center px-5 pt-6 pb-10 md:p-12 bg-[#F4F4F5] rounded-t-3xl md:rounded-none shadow-[0_-10px_30px_rgba(0,0,0,0.25)] md:shadow-none md:overflow-y-auto">
           {/* Grab handle — mobile only, signals the sheet */}
           <div className="w-10 h-1 rounded-full bg-neutral-300 mb-5 shrink-0 md:hidden" />
           <div className="w-full max-w-md relative z-10 my-auto md:my-0">
