@@ -31,10 +31,10 @@ export async function sendConfirmationEmail(
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaec; border-radius: 8px; overflow: hidden;">
         <div style="padding: 20px; background-color: #ffffff;">
           ${imageHtml}
-          <h2 style="color: #c3943a; text-align: center; margin-top: 0;">Registration Confirmed!</h2>
+          <h2 style="color: #c3943a; text-align: center; margin-top: 0;">Enrollment Confirmed!</h2>
           <p>Dear <strong>${name}</strong>,</p>
           <p>Thank you for enrolling in <strong>${eventTitle}</strong>.</p>
-          <p>Your registration has been successfully received by our system and our receptionist will process your request shortly.</p>
+          <p>Your enrollment has been successfully received by our system and our receptionist will process your request shortly.</p>
           <br />
           <p>We look forward to seeing you at Kompong Dewa Integrated Resort.</p>
         </div>
