@@ -40,7 +40,8 @@ type Event = {
   tag: string | null;
   date: string | null;
   location: string | null;
-  isActive: boolean;
+  status: string;
+  orderIndex: number;
   createdAt: string;
 };
 
@@ -61,7 +62,8 @@ export default function EventsManagementPage() {
   const [tag, setTag] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
-  const [isActive, setIsActive] = useState(true);
+  const [status, setStatus] = useState('ACTIVE');
+  const [orderIndex, setOrderIndex] = useState(0);
   const [imageSlots, setImageSlots] = useState<ImageSlot[]>(emptySlots());
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
@@ -90,7 +92,8 @@ export default function EventsManagementPage() {
     setTag('');
     setDate('');
     setLocation('');
-    setIsActive(true);
+    setStatus('ACTIVE');
+    setOrderIndex(0);
     setImageSlots(emptySlots());
     setIsModalOpen(true);
   };
@@ -102,7 +105,8 @@ export default function EventsManagementPage() {
     setTag(event.tag || '');
     setDate(event.date || '');
     setLocation(event.location || '');
-    setIsActive(event.isActive);
+    setStatus(event.status);
+    setOrderIndex(event.orderIndex || 0);
     setImageSlots(slotsFromImages(imagesOf(event)));
     setIsModalOpen(true);
   };
@@ -127,7 +131,8 @@ export default function EventsManagementPage() {
       formData.append('tag', tag);
       formData.append('date', date);
       formData.append('location', location);
-      formData.append('isActive', String(isActive));
+      formData.append('status', status);
+      formData.append('orderIndex', orderIndex.toString());
       // One set of fields per slot. A slot the server hears nothing about is
       // treated as cleared, which is how removing an image works on edit.
       imageSlots.forEach((slot, i) => {
@@ -166,20 +171,40 @@ export default function EventsManagementPage() {
     }
   };
 
-  const toggleIsActive = async (id: string, currentStatus: boolean) => {
+  const updateStatus = async (id: string, newStatus: string) => {
     try {
       const res = await fetch(`/api/admin/events/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !currentStatus }),
+        body: JSON.stringify({ status: newStatus }),
       });
       const data = await res.json();
       if (data.success) {
-        setEvents(events.map(ev => ev.id === id ? { ...ev, isActive: !currentStatus } : ev));
+        setEvents(events.map(ev => ev.id === id ? { ...ev, status: newStatus } : ev));
         toast.success('Event status updated');
       }
     } catch (error) {
       toast.error('Failed to update status');
+    }
+  };
+  
+  const updateOrder = async (id: string, newOrder: number) => {
+    try {
+      const res = await fetch(`/api/admin/events/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderIndex: newOrder }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Re-sort events array
+        const updatedEvents = events.map(ev => ev.id === id ? { ...ev, orderIndex: newOrder } : ev);
+        updatedEvents.sort((a, b) => a.orderIndex - b.orderIndex || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setEvents(updatedEvents);
+        toast.success('Event order updated');
+      }
+    } catch (error) {
+      toast.error('Failed to update order');
     }
   };
 
@@ -275,23 +300,36 @@ export default function EventsManagementPage() {
                       {imagesOf(event).length} images
                     </span>
                   )}
-                  <div className="absolute top-3 right-3 flex gap-2">
-                    <button
-                      onClick={() => toggleIsActive(event.id, event.isActive)}
-                      className={`px-2.5 py-1 text-xs font-bold rounded-full shadow-sm border transition-colors ${event.isActive ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' : 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700'}`}
+                  <div className="absolute top-3 right-3 flex flex-col gap-2">
+                    <select
+                      value={event.status}
+                      onChange={(e) => updateStatus(event.id, e.target.value)}
+                      className={`px-2.5 py-1 text-xs font-bold rounded-full shadow-sm border transition-colors outline-none cursor-pointer appearance-none text-center ${event.status === 'ACTIVE' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' : event.status === 'UPCOMING' ? 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800' : 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700'}`}
                     >
-                      {event.isActive ? 'Active' : 'Hidden'}
-                    </button>
+                      <option value="ACTIVE">Active</option>
+                      <option value="UPCOMING">Upcoming</option>
+                      <option value="HIDDEN">Hidden</option>
+                    </select>
                   </div>
                 </div>
 
                 <div className="p-5 flex flex-col flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2 justify-between">
                     {event.tag && (
                       <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded">
                         {event.tag}
                       </span>
                     )}
+                    <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded px-1.5 py-0.5 border border-neutral-200 dark:border-neutral-700">
+                      <span className="text-[10px] text-neutral-500 font-medium">Order:</span>
+                      <input 
+                        type="number" 
+                        value={event.orderIndex} 
+                        onChange={(e) => updateOrder(event.id, parseInt(e.target.value) || 0)}
+                        className="w-8 text-[11px] font-bold text-center bg-transparent outline-none text-neutral-700 dark:text-neutral-300"
+                        min="0"
+                      />
+                    </div>
                   </div>
                   <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2 line-clamp-1">{event.title}</h3>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-4 flex-1">
@@ -455,19 +493,33 @@ export default function EventsManagementPage() {
                       <EventImageSlots slots={imageSlots} onChange={setImageSlots} />
                     </div>
 
-                    <div className="sm:col-span-2">
-                      <label className="flex items-center gap-3 p-4 border border-neutral-200 dark:border-neutral-800 rounded-lg cursor-pointer bg-neutral-50 dark:bg-neutral-950">
-                        <input
-                          type="checkbox"
-                          checked={isActive}
-                          onChange={(e) => setIsActive(e.target.checked)}
-                          className="w-5 h-5 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-neutral-900 dark:text-white">Active Event</p>
-                          <p className="text-xs text-neutral-500 dark:text-neutral-400">Show this event on the registration page carousel.</p>
-                        </div>
+                    <div className="sm:col-span-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                        Event Status
                       </label>
+                      <select
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                        className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
+                      >
+                        <option value="ACTIVE">Active (Live)</option>
+                        <option value="UPCOMING">Upcoming (Coming Soon)</option>
+                        <option value="HIDDEN">Hidden</option>
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                        Sort Order Position
+                      </label>
+                      <input
+                        type="number"
+                        value={orderIndex}
+                        onChange={(e) => setOrderIndex(parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
+                        min="0"
+                      />
+                      <p className="mt-1 text-xs text-neutral-500">Lower numbers appear first (e.g. 1, 2, 3)</p>
                     </div>
                   </div>
                 </form>

@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const events = await prisma.event.findMany({
       orderBy: [
-        { isActive: 'desc' },
+        { orderIndex: 'asc' },
         { createdAt: 'desc' }
       ],
     });
@@ -27,7 +27,8 @@ export async function POST(request: Request) {
     const tag = formData.get('tag') as string;
     const date = formData.get('date') as string;
     const location = formData.get('location') as string;
-    const isActive = formData.get('isActive') === 'true';
+    const status = formData.get('status') as string || 'ACTIVE';
+    const orderIndex = parseInt(formData.get('orderIndex') as string || '0', 10);
 
     if (!title) {
       return NextResponse.json({ success: false, error: 'Title is required' }, { status: 400 });
@@ -48,7 +49,8 @@ export async function POST(request: Request) {
         images: resolved.images,
         // Kept in sync so anything still reading the single-image field works.
         imageUrl: resolved.images[0] ?? null,
-        isActive: isActive,
+        status,
+        orderIndex,
       }
     });
 

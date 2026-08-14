@@ -12,7 +12,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     const event = await prisma.event.update({
       where: { id },
       data: {
-        isActive: data.isActive,
+        status: data.status,
       }
     });
 
@@ -33,7 +33,8 @@ export async function PUT(request: Request, { params }: RouteContext) {
     const tag = formData.get('tag') as string;
     const date = formData.get('date') as string;
     const location = formData.get('location') as string;
-    const isActive = formData.get('isActive') === 'true';
+    const status = formData.get('status') as string || 'ACTIVE';
+    const orderIndex = parseInt(formData.get('orderIndex') as string || '0', 10);
 
     if (!title) {
       return NextResponse.json({ success: false, error: 'Title is required' }, { status: 400 });
@@ -52,7 +53,8 @@ export async function PUT(request: Request, { params }: RouteContext) {
         tag: tag || null,
         date: date || null,
         location: location || null,
-        isActive,
+        status,
+        orderIndex,
         images: resolved.images,
         imageUrl: resolved.images[0] ?? null,
       }

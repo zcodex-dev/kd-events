@@ -96,6 +96,7 @@ export default function EventRegistrationPage() {
               location: ev.location,
               image,
               tag: ev.tag,
+              status: ev.status,
             }));
           });
 
@@ -414,8 +415,8 @@ export default function EventRegistrationPage() {
                   </motion.div>
                 </AnimatePresence>
                 {hasActiveEvents && (
-                  <span className="px-2.5 py-0.5 md:px-3 md:py-1 bg-[#c3943a] text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-lg whitespace-nowrap">
-                    Upcoming Events
+                  <span className={`px-2.5 py-0.5 md:px-3 md:py-1 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-lg whitespace-nowrap ${currentEvent?.status === 'UPCOMING' ? 'bg-amber-600' : 'bg-[#c3943a]'}`}>
+                    {currentEvent?.status === 'UPCOMING' ? 'Coming Soon' : 'Live Event'}
                   </span>
                 )}
               </div>
@@ -623,7 +624,7 @@ export default function EventRegistrationPage() {
                         {isRegistering ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                          <span>{alreadyRegisteredForCurrent ? 'Enrolled' : 'Enrollment Now'}</span>
+                          <span>{alreadyRegisteredForCurrent ? (currentEvent?.status === 'UPCOMING' ? 'Expressed Interest' : 'Enrolled') : (currentEvent?.status === 'UPCOMING' ? "I'm Interested" : 'Enrollment Now')}</span>
                         )}
                       </button>
                       {detailHref ? (
@@ -652,7 +653,7 @@ export default function EventRegistrationPage() {
                       {isSubmitting ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
-                        <span>{activeTab === 'member' ? 'Verify' : 'Enrollment Event'}</span>
+                        <span>{activeTab === 'member' ? 'Verify' : (currentEvent?.status === 'UPCOMING' ? "I'm Interested" : 'Enrollment Event')}</span>
                       )}
                     </button>
                   )}

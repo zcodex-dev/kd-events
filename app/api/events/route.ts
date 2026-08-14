@@ -5,11 +5,14 @@ export async function GET() {
   try {
     const events = await prisma.event.findMany({
       where: {
-        isActive: true,
+        status: {
+          in: ['ACTIVE', 'UPCOMING']
+        }
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [
+        { orderIndex: 'asc' },
+        { createdAt: 'desc' }
+      ],
     });
 
     return NextResponse.json({ success: true, data: events });
