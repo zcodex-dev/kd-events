@@ -168,7 +168,14 @@ export async function POST(request: Request) {
     // If contact or phoneNumber is an email, send confirmation email
     const emailAddress = (contact && isEmail(contact)) ? contact : (phoneNumber && isEmail(phoneNumber)) ? phoneNumber : null;
     if (emailAddress) {
-      await sendConfirmationEmail(emailAddress, eventTitle || 'Kompong Dewa Integrated Resort Event', finalName);
+      let eventImageUrl = 'https://i.imgur.com/ykQuk5a.jpeg'; // default
+      if (eventId) {
+        const eventRecord = await prisma.event.findUnique({ where: { id: eventId } });
+        if (eventRecord) {
+          eventImageUrl = eventRecord.imageUrl || (eventRecord.images && eventRecord.images[0]) || eventImageUrl;
+        }
+      }
+      await sendConfirmationEmail(emailAddress, eventTitle || 'Kompong Dewa Integrated Resort Event', finalName, eventImageUrl);
     }
 
     return NextResponse.json({
