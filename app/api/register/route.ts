@@ -162,7 +162,8 @@ export async function POST(request: Request) {
 
     // Fire notifications and wait for them to ensure they complete before response ends
     const statusText = status.isMember ? 'Existing Member' : 'New Non-Member';
-    const alertMessage = `🔔 *New Event Enrollment*\n\n*Event:* ${eventTitle || 'General Registration'}\n*Name:* ${finalName}\n*Status:* ${statusText}\n*Contact:* ${contact || 'N/A'}\n*Phone:* ${phoneNumber || 'N/A'}`;
+    const contactInfo = contact || phoneNumber || 'N/A';
+    const alertMessage = `🔔 *New Event Enrollment*\n\n*Event:* ${eventTitle || 'General Registration'}\n*Name:* ${finalName}\n*Status:* ${statusText}\n*Contact Info:* ${contactInfo}`;
     await sendTelegramAlert(alertMessage);
 
     // If contact or phoneNumber is an email, send confirmation email
