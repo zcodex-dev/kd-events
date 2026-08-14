@@ -165,9 +165,10 @@ export async function POST(request: Request) {
     const alertMessage = `🔔 *New Event Enrollment*\n\n*Event:* ${eventTitle || 'General Registration'}\n*Name:* ${finalName}\n*Status:* ${statusText}\n*Contact:* ${contact || 'N/A'}\n*Phone:* ${phoneNumber || 'N/A'}`;
     await sendTelegramAlert(alertMessage);
 
-    // If contact is an email, send confirmation email
-    if (contact && isEmail(contact)) {
-      await sendConfirmationEmail(contact, eventTitle || 'Kompong Dewa Integrated Resort Event', finalName);
+    // If contact or phoneNumber is an email, send confirmation email
+    const emailAddress = (contact && isEmail(contact)) ? contact : (phoneNumber && isEmail(phoneNumber)) ? phoneNumber : null;
+    if (emailAddress) {
+      await sendConfirmationEmail(emailAddress, eventTitle || 'Kompong Dewa Integrated Resort Event', finalName);
     }
 
     return NextResponse.json({
