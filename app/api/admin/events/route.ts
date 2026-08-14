@@ -5,7 +5,10 @@ import { resolveEventImages } from '@/lib/events/images';
 export async function GET() {
   try {
     const events = await prisma.event.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { isActive: 'desc' },
+        { createdAt: 'desc' }
+      ],
     });
 
     return NextResponse.json({ success: true, data: events });
