@@ -56,7 +56,7 @@ export async function PUT(
       if (!appUrl.startsWith('http://') && !appUrl.startsWith('https://')) {
         appUrl = `https://${appUrl}`;
       }
-      updateData.avatarUrl = `${appUrl}/api/raw/${r2Key}`;
+      updateData.avatarUrl = `${appUrl}/api/raw?key=${encodeURIComponent(r2Key)}`;
     }
 
     const updated = await prisma.registration.update({

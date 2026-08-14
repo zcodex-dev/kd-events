@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, UserCheck, UserX, Loader2, Upload, FileImage, ChevronRight } from 'lucide-react';
+import { Send, UserCheck, UserX, Loader2, Upload, FileImage, ChevronRight, CheckCircle2, CalendarX } from 'lucide-react';
+import CheckedIcon from '@/components/icons/checked-icon';
+import type { AnimatedIconHandle } from '@/components/icons/types';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -49,12 +51,24 @@ export default function EventRegistrationPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [hasActiveEvents, setHasActiveEvents] = useState(true);
   // Set only by the non-member flow — members stay on their profile card.
-  const [result, setResult] = useState<{ isMember: boolean; memberId: string | null; memberData?: any } | null>(null);
+  const [result, setResult] = useState<{ isMember: boolean; memberId: string | null; memberData?: any; registration?: any } | null>(null);
   const [memberProfile, setMemberProfile] = useState<{
     member: { memberId: string; name: string; memberType: string; nationality: string | null; dateJoined: string | null; createdAt: string; cardSerial: string; avatarUrl: string | null };
     events: { eventId: string | null; eventTitle: string | null; createdAt: string }[];
   } | null>(null);
+
+  const iconRef = useRef<AnimatedIconHandle>(null);
+
+  useEffect(() => {
+    if (result && iconRef.current) {
+      const timer = setTimeout(() => {
+        iconRef.current?.startAnimation();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
 
   const formatDate = (value?: string | null) =>
     value
@@ -89,16 +103,20 @@ export default function EventRegistrationPage() {
 
           if (slides.length > 0) {
             setEvents(slides);
+            setHasActiveEvents(true);
           } else {
             setEvents(defaultEvents);
+            setHasActiveEvents(false);
           }
         } else {
           setEvents(defaultEvents);
+          setHasActiveEvents(false);
         }
       })
       .catch(err => {
         console.error('Failed to load events:', err);
         setEvents(defaultEvents);
+        setHasActiveEvents(false);
       })
       .finally(() => setIsLoadingEvents(false));
   }, []);
@@ -167,7 +185,7 @@ export default function EventRegistrationPage() {
       const data = await response.json();
 
       if (data.success) {
-        setResult({ isMember: data.isMember, memberId: data.memberId, memberData: data.memberData });
+        setResult({ isMember: data.isMember, memberId: data.memberId, memberData: data.memberData, registration: data.registration });
         toast.success(data.message);
       } else {
         toast.error(data.error || 'Registration failed. Please try again.');
@@ -264,12 +282,12 @@ export default function EventRegistrationPage() {
       {/* Mobile scrolls: the hero is a true 4:5 frame so a portrait poster fills it
           edge to edge, and the form follows underneath. Desktop keeps the
           locked split-screen. */}
-      <div className="h-[100dvh] overflow-hidden bg-[#F4F4F5] flex flex-col md:flex-row relative pt-16 md:pt-0">
+      <div className="min-h-[100dvh] md:h-[100dvh] overflow-y-auto overflow-x-hidden md:overflow-hidden bg-[#F4F4F5] flex flex-col md:flex-row relative pt-16 md:pt-0">
 
         {/* Left / Top Side: Event Previews Carousel */}
-        {/* A 4:5 frame on mobile, so a 1200x1500 poster fills it exactly — no
-            letterbox, no blurred filler, no seam to read as a cutoff. */}
-        <div className="w-full aspect-[4/5] md:aspect-auto md:w-1/2 md:h-[100dvh] relative bg-black overflow-hidden">
+        {/* Takes up 65vh on mobile so the branding is the focus, 
+            and the form follows underneath. */}
+        <div className="w-full shrink-0 h-[65vh] md:h-[100dvh] relative bg-black overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={`poster-${currentEventIndex}`}
@@ -296,12 +314,11 @@ export default function EventRegistrationPage() {
           </AnimatePresence>
 
           {/* Single soft scrim, lower opacity when no events */}
-          <div 
-            className={`absolute inset-0 z-10 ${
-              detailHref 
+          <div
+            className={`absolute inset-0 z-10 ${detailHref
                 ? 'bg-[linear-gradient(to_top,rgba(0,0,0,1)_0%,rgba(0,0,0,0.95)_30%,rgba(0,0,0,0.8)_50%,rgba(0,0,0,0.4)_75%,rgba(0,0,0,0)_100%)]'
                 : 'bg-[linear-gradient(to_top,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.6)_30%,rgba(0,0,0,0.3)_60%,rgba(0,0,0,0)_100%)]'
-            }`} 
+              }`}
           />
 
           {/* Whole panel links to the detail page; sits under the content layers
@@ -358,7 +375,7 @@ export default function EventRegistrationPage() {
                   </div>
                   {!detailHref && !isLoadingEvents && (
                     <p className="text-sm md:text-base text-neutral-200 leading-relaxed font-normal max-w-xl pt-2 drop-shadow-md">
-                      A seamless ecosystem of luxury, leisure, and entertainment. 
+                      A seamless ecosystem of luxury, leisure, and entertainment.
                       Experience Sihanoukville’s new standard of a life well-lived. Kompong Dewa is an integrated luxury destination redefining Sihanoukville’s landscape. A bold fusion of high-octane excitement and serene tranquility, we stand as the new pulse of Cambodia’s rising coastal city.
                     </p>
                   )}
@@ -394,9 +411,11 @@ export default function EventRegistrationPage() {
                     {events[currentEventIndex]?.tag || 'Event'}
                   </motion.div>
                 </AnimatePresence>
-                <span className="px-2.5 py-0.5 md:px-3 md:py-1 bg-[#c3943a] text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-lg whitespace-nowrap">
-                  Upcoming Events
-                </span>
+                {hasActiveEvents && (
+                  <span className="px-2.5 py-0.5 md:px-3 md:py-1 bg-[#c3943a] text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-lg whitespace-nowrap">
+                    Upcoming Events
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -409,7 +428,17 @@ export default function EventRegistrationPage() {
           <div className="w-full max-w-md relative z-10 my-auto md:my-0">
 
 
-            {!result ? (
+            {!hasActiveEvents && !isLoadingEvents ? (
+              <div className="text-center py-10 px-4 flex flex-col items-center justify-center min-h-[250px]">
+                <div className="w-20 h-20 bg-neutral-200/60 rounded-full flex items-center justify-center mb-6">
+                  <CalendarX className="w-10 h-10 text-neutral-400" />
+                </div>
+                <h3 className="text-2xl font-black text-neutral-800 mb-3 tracking-tight">No Active Events</h3>
+                <p className="text-sm text-neutral-500 max-w-[280px] mx-auto leading-relaxed">
+                  There are currently no events open for registration. Please check back later!
+                </p>
+              </div>
+            ) : !result ? (
               <>
                 {/* Tabs */}
                 <div className="flex bg-neutral-200/50 p-1 rounded-lg mb-4 md:mb-6">
@@ -653,7 +682,7 @@ export default function EventRegistrationPage() {
                       {isSubmitting ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
-                        <span>{activeTab === 'member' ? 'Login' : 'Register Event'}</span>
+                        <span>{activeTab === 'member' ? 'Verify' : 'Register Event'}</span>
                       )}
                     </button>
                   )}
@@ -661,50 +690,113 @@ export default function EventRegistrationPage() {
               </>
             ) : (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-center w-full"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="w-full bg-white rounded-t-3xl md:rounded-3xl mt-auto overflow-hidden text-left"
               >
-                {(
-                  <div className="py-6 px-6">
-                    <div className="flex justify-center mb-6">
-                      <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-                        <UserX className="w-10 h-10 text-blue-600" />
-                      </div>
+                <div className="py-8 px-6 md:px-8">
+                  <div className="flex justify-center mb-6 relative">
+                    <div className="absolute inset-0 bg-emerald-400/20 blur-xl rounded-full scale-150 animate-pulse" />
+                    <div className="relative w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-500 shadow-xl shadow-emerald-500/10">
+                      <CheckedIcon ref={iconRef} size={40} />
                     </div>
-                    <h2 className="text-xl md:text-2xl font-bold text-black mb-2">Registration Received</h2>
-                    <p className="text-neutral-500 text-xs md:text-sm mb-6 md:mb-8">
-                      Please contact our marketing team via Telegram or WhatsApp to verify your status.
+                  </div>
+                  
+                  <div className="text-center mb-6">
+                    <h2 className="text-2xl md:text-3xl font-black text-black mb-2 tracking-tight">Registration Successful</h2>
+                    <p className="text-neutral-500 text-sm">
+                      Your registration has been securely recorded.
                     </p>
+                  </div>
 
-                    <div className="flex flex-col gap-3">
+                  <div className="w-full border-t-[1.5px] border-dashed border-neutral-200 my-6" />
+
+                  <div className="space-y-4">
+                    <h3 className="text-[14px] font-bold text-neutral-800 mb-2">Registration details</h3>
+                    {(result.memberData?.name || name) && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-neutral-500">Name</span>
+                        <span className="font-bold text-neutral-800">{result.memberData?.name || name}</span>
+                      </div>
+                    )}
+
+                    {result.registration?.eventTitle && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-neutral-500">Event</span>
+                        <span className="font-bold text-neutral-800 text-right max-w-[65%] truncate" title={result.registration.eventTitle}>
+                          {result.registration.eventTitle}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-neutral-500">Status</span>
+                      <span className="font-bold text-emerald-600 flex items-center gap-1">
+                        Completed <CheckCircle2 className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+
+                    {result.memberId && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-neutral-500">Member ID</span>
+                        <span className="font-bold text-neutral-800">{result.memberId}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-neutral-500">Date</span>
+                      <span className="font-bold text-neutral-800">
+                        {new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-neutral-500">Time</span>
+                      <span className="font-bold text-neutral-800">
+                        {new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full border-t-[1.5px] border-dashed border-neutral-200 my-6" />
+
+                  <div className="space-y-4">
+                    <p className="text-[10px] md:text-xs font-bold text-neutral-400 uppercase tracking-wider text-center">Verify your status via</p>
+                    <div className="flex gap-3">
                       <a
                         href="https://t.me/KompongDewaMarketing"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full bg-[#229ED9] hover:bg-[#1CA0DE] text-white text-sm md:text-base py-3 md:py-3.5 rounded-lg font-medium transition-colors shadow-md"
+                        className="flex-1 flex items-center justify-center gap-2 bg-[#229ED9] hover:bg-[#2090c5] text-white text-sm md:text-base py-3 rounded-xl font-bold transition-all border border-[#1b81b3] shadow-[inset_0px_2px_0px_0px_rgba(255,255,255,0.3)] active:translate-y-[1px] active:shadow-none"
                       >
-                        Contact via Telegram
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+                        </svg>
+                        <span>Telegram</span>
                       </a>
 
                       <a
                         href="https://wa.me/+85561627566?text="
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm md:text-base py-3 md:py-3.5 rounded-lg font-medium transition-colors shadow-md"
+                        className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#22c35e] text-white text-sm md:text-base py-3 rounded-xl font-bold transition-all border border-[#1ea852] shadow-[inset_0px_2px_0px_0px_rgba(255,255,255,0.3)] active:translate-y-[1px] active:shadow-none"
                       >
-                        Contact via WhatsApp
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        <span>WhatsApp</span>
                       </a>
                     </div>
-
-                    <button
-                      onClick={handleReset}
-                      className="w-full text-neutral-500 text-xs md:text-sm font-medium mt-4 py-2 hover:text-black transition-colors"
-                    >
-                      Back to registration
-                    </button>
                   </div>
-                )}
+
+                  <button
+                    onClick={handleReset}
+                    className="w-full bg-[#1c1c1c] hover:bg-[#262626] text-white text-sm md:text-base font-bold mt-8 py-3.5 md:py-4 rounded-2xl transition-all border border-black shadow-[inset_0px_2px_0px_0px_rgba(255,255,255,0.15)] active:translate-y-[1px] active:shadow-none"
+                  >
+                    Done
+                  </button>
+                </div>
               </motion.div>
             )}
 

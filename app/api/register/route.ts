@@ -89,14 +89,23 @@ export async function POST(request: Request) {
       if (!appUrl.startsWith('http://') && !appUrl.startsWith('https://')) {
         appUrl = `https://${appUrl}`;
       }
-      passportImageUrl = `${appUrl}/api/raw/${r2Key}`;
+      passportImageUrl = `${appUrl}/api/raw?key=${encodeURIComponent(r2Key)}`;
     }
 
-    let finalAvatarUrl = status.isMember ? status.memberData?.avatarUrl : null;
+    let prevReg = null;
+    if (status.isMember) {
+      prevReg = await prisma.registration.findFirst({
+        where: { memberId: finalMemberId },
+        orderBy: { createdAt: 'desc' }
+      });
+    }
+
+    let finalAvatarUrl = null;
     if (passportImageUrl) {
       finalAvatarUrl = passportImageUrl;
-    }
-    if (!finalAvatarUrl) {
+    } else if (prevReg && prevReg.avatarUrl) {
+      finalAvatarUrl = prevReg.avatarUrl;
+    } else {
       finalAvatarUrl = '/assets/profiles/placeholder.svg';
     }
 
@@ -135,21 +144,45 @@ export async function POST(request: Request) {
       });
     }
 
-    const registration = await prisma.registration.create({
-      data: {
-        name: finalName,
-        contact: contact || null,
-        phoneNumber: phoneNumber || null,
-        passportId: passportId || null,
-        passportImageUrl: passportImageUrl,
-        isMember: status.isMember,
-        memberId: finalMemberId || null,
-        memberType: status.isMember ? status.memberData?.memberType : 'Silver',
-        avatarUrl: finalAvatarUrl,
-        eventId,
-        eventTitle,
+    let registration;
+
+    // If they already have an empty registration (no event) and they are registering for an event now,
+    // we just update that empty registration instead of creating a duplicate on the table.
+    if (status.isMember && eventId) {
+      const emptyRegistration = await prisma.registration.findFirst({
+        where: { memberId: finalMemberId, eventId: null }
+      });
+
+      if (emptyRegistration) {
+        registration = await prisma.registration.update({
+          where: { id: emptyRegistration.id },
+          data: {
+            eventId,
+            eventTitle,
+            updatedAt: new Date()
+          }
+        });
       }
-    });
+    }
+
+    // Otherwise, create a new registration and carry over their details from previous registration
+    if (!registration) {
+      registration = await prisma.registration.create({
+        data: {
+          name: finalName,
+          contact: contact || (prevReg?.contact) || null,
+          phoneNumber: phoneNumber || (prevReg?.phoneNumber) || null,
+          passportId: passportId || (prevReg?.passportId) || null,
+          passportImageUrl: passportImageUrl || (prevReg?.passportImageUrl) || null,
+          isMember: status.isMember,
+          memberId: finalMemberId || null,
+          memberType: status.isMember ? status.memberData?.memberType : 'Silver',
+          avatarUrl: finalAvatarUrl,
+          eventId,
+          eventTitle,
+        }
+      });
+    }
 
     if (!registration) {
       return NextResponse.json({ success: false, error: 'Failed to record registration' }, { status: 500 });
@@ -159,6 +192,7 @@ export async function POST(request: Request) {
       success: true,
       isMember: status.isMember,
       memberData: status.memberData,
+      memberId: finalMemberId,
       registration: { eventId: registration.eventId, eventTitle: registration.eventTitle, createdAt: registration.createdAt },
       message: status.isMember
         ? `You're registered${eventTitle ? ` for ${eventTitle}` : ''}, ${finalName}!`
