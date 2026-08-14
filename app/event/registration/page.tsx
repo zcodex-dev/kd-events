@@ -623,7 +623,7 @@ export default function EventRegistrationPage() {
                         {isRegistering ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                          <span>{alreadyRegisteredForCurrent ? 'Enrolled' : 'Enrollment Event'}</span>
+                          <span>{alreadyRegisteredForCurrent ? 'Enrolled' : 'Enrollment Now'}</span>
                         )}
                       </button>
                       {detailHref ? (

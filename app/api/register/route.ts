@@ -4,6 +4,8 @@ import { uploadFile } from '@/lib/r2/client';
 import { generateUniqueFileName, generateUploadPath } from '@/lib/uploads/file-utils';
 import { validateFileSize, MAX_FILE_SIZE } from '@/lib/validation/schemas';
 import { getAppConfig } from '@/lib/uploads/metadata';
+import { sendTelegramAlert } from '@/lib/notifications/telegram';
+import { isEmail, sendConfirmationEmail } from '@/lib/notifications/email';
 
 export async function POST(request: Request) {
   try {
@@ -156,6 +158,16 @@ export async function POST(request: Request) {
 
     if (!registration) {
       return NextResponse.json({ success: false, error: 'Failed to record registration' }, { status: 500 });
+    }
+
+    // Fire notifications and wait for them to ensure they complete before response ends
+    const statusText = status.isMember ? 'Existing Member' : 'New Non-Member';
+    const alertMessage = `🔔 *New Event Enrollment*\n\n*Event:* ${eventTitle || 'General Registration'}\n*Name:* ${finalName}\n*Status:* ${statusText}\n*Contact:* ${contact || 'N/A'}\n*Phone:* ${phoneNumber || 'N/A'}`;
+    await sendTelegramAlert(alertMessage);
+
+    // If contact is an email, send confirmation email
+    if (contact && isEmail(contact)) {
+      await sendConfirmationEmail(contact, eventTitle || 'Kompong Dewa Integrated Resort Event', finalName);
     }
 
     return NextResponse.json({
