@@ -15,7 +15,7 @@ const defaultEvents = [
     title: 'Kompong Dewa Integrated Resort',
     date: '',
     location: 'Sihanoukville, Cambodia',
-    image: 'https://kd-events-zeta.vercel.app/api/raw?key=public-uploads%2F2026%2F07%2FGolden-nQKCqSFDx7.webp',
+    image: 'https://i.imgur.com/ykQuk5a.jpeg',
     tag: 'Resort & Casino',
   }
 ];
@@ -303,8 +303,15 @@ export default function EventRegistrationPage() {
               onDragEnd={handleDragEnd}
             >
               {isLoadingEvents ? (
-                <div className="w-full h-full flex items-center justify-center bg-neutral-900">
-                  <Loader2 className="w-8 h-8 text-neutral-500 animate-spin" />
+                <div className="w-full h-full relative flex items-center justify-center bg-black">
+                  <Image
+                    src={defaultEvents[0].image}
+                    alt="Loading"
+                    fill
+                    className="object-cover opacity-40"
+                    unoptimized
+                  />
+                  <Loader2 className="w-8 h-8 text-neutral-300 animate-spin z-10" />
                 </div>
               ) : (
                 <Image
