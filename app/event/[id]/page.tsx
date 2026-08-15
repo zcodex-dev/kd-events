@@ -161,7 +161,7 @@ export default async function EventDetailPage({ params }: PageProps) {
           )}
 
           <Link
-            href="/event/registration"
+            href={`/event/registration?eventId=${event.id}`}
             className="inline-flex items-center justify-center w-full md:w-auto md:px-10 bg-[#c3943a] hover:bg-[#e5ac53] text-white text-sm md:text-base font-bold py-3 md:py-3.5 px-4 rounded-lg shadow-md transition-colors"
           >
             Register for this event

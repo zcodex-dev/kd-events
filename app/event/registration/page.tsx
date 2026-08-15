@@ -103,6 +103,17 @@ export default function EventRegistrationPage() {
           if (slides.length > 0) {
             setEvents(slides);
             setHasActiveEvents(true);
+            
+            if (typeof window !== 'undefined') {
+              const params = new URLSearchParams(window.location.search);
+              const targetId = params.get('eventId');
+              if (targetId) {
+                const idx = slides.findIndex((s: any) => s.id === targetId);
+                if (idx !== -1) {
+                  setCurrentEventIndex(idx);
+                }
+              }
+            }
           } else {
             setEvents(defaultEvents);
             setHasActiveEvents(false);
