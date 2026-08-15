@@ -298,11 +298,12 @@ export default function EventRegistrationPage() {
       {/* Mobile scrolls: the hero is a true 4:5 frame so a portrait poster fills it
           edge to edge, and the form follows underneath. Desktop keeps the
           locked split-screen. */}
-      <div className="min-h-[100dvh] md:h-[100dvh] overflow-y-auto overflow-x-hidden md:overflow-hidden bg-[#F4F4F5] flex flex-col md:flex-row relative pt-16 md:pt-20">
+      {/* Centered layout for strict 728x210 banner */}
+      <div className="min-h-[100dvh] overflow-y-auto bg-[#F4F4F5] flex flex-col items-center relative pt-16 md:pt-24 pb-12">
 
-        {/* Left / Top Side: Event Previews Carousel */}
-        {/* Takes up 40vh on mobile so the branding is the focus but leaves room for the form */}
-        <div className="w-full shrink-0 h-[40vh] md:w-1/2 md:h-full relative bg-black overflow-hidden">
+        {/* Top Banner: Event Previews Carousel */}
+        {/* Strictly 728x210 aspect ratio and max width */}
+        <div className="w-full max-w-[728px] aspect-[728/210] relative bg-black shrink-0 md:rounded-2xl shadow-xl overflow-hidden z-20">
           <AnimatePresence mode="wait">
             <motion.div
               key={`poster-${currentEventIndex}`}
@@ -339,43 +340,78 @@ export default function EventRegistrationPage() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Single soft scrim, lower opacity when no events */}
-          <div
-            className={`absolute inset-0 z-10 pointer-events-none ${detailHref
-              ? 'bg-[linear-gradient(to_top,rgba(0,0,0,1)_0%,rgba(0,0,0,0.9)_20%,rgba(0,0,0,0.5)_35%,rgba(0,0,0,0)_50%)]'
-              : 'bg-[linear-gradient(to_top,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.5)_20%,rgba(0,0,0,0)_40%)]'
-              }`}
-          />
+          {/* Very light gradient just for texture, no text over it */}
+          <div className="absolute inset-0 z-10 pointer-events-none bg-[linear-gradient(to_top,rgba(0,0,0,0.5)_0%,rgba(0,0,0,0)_40%)]" />
+          
+          {/* Bottom row IN BANNER: carousel indicators left, event labels bottom-right */}
+          <div className="absolute inset-x-0 bottom-0 z-20 px-4 pb-3 flex items-center justify-between gap-3">
+            {!isLoadingEvents && !isLockedEvent && (
+              <div className="flex gap-2">
+                {events.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentEventIndex(idx)}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentEventIndex ? 'w-6 bg-[#c3943a]' : 'w-1.5 bg-white/40 hover:bg-white/70'}`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
 
-          {/* Title and details float over the poster. pb clears the form card that
-              overlaps this panel on mobile. */}
-          <div className="absolute inset-x-0 bottom-0 z-20 px-6 pb-14 md:px-16 md:pb-16">
-            <div className="min-h-[88px] md:min-h-[150px]">
+            <div className="flex items-center gap-2 shrink-0 ml-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentEventIndex}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="space-y-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="px-2 py-0.5 md:py-1 bg-black/40 backdrop-blur-md rounded text-[10px] md:text-xs font-medium text-[#e5ac53] border border-white/20 whitespace-nowrap"
+                >
+                  {events[currentEventIndex]?.tag || 'Event'}
+                </motion.div>
+              </AnimatePresence>
+              {hasActiveEvents && (
+                <span className={`px-2 md:px-3 py-0.5 md:py-1 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-lg whitespace-nowrap ${currentEvent?.status === 'UPCOMING' ? 'bg-amber-600' : 'bg-[#c3943a]'}`}>
+                  {currentEvent?.status === 'UPCOMING' ? 'Coming Soon' : 'Live Event'}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Area: Text and Form side-by-side on large screens, stacked on mobile */}
+        <div className="w-full max-w-[728px] px-4 md:px-0 mt-6 md:mt-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+          
+          {/* Left Side: Event Details */}
+          <div className="flex-1 flex flex-col w-full">
+            <div className="min-h-[120px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentEventIndex}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-4"
                 >
                   {detailHref ? (
                     <Link href={detailHref} className="group inline-block">
-                      <h1 className="text-lg md:text-5xl font-black text-white leading-tight drop-shadow-lg group-hover:text-[#e5ac53] transition-colors">
+                      <h1 className="text-2xl md:text-3xl font-black text-black leading-tight drop-shadow-sm group-hover:text-[#c3943a] transition-colors">
                         {currentEvent?.title || 'Upcoming Event'}
                       </h1>
-                      <span className="inline-flex items-center gap-1 mt-1.5 text-[11px] md:text-sm font-semibold text-[#e5ac53]">
+                      <span className="inline-flex items-center gap-1 mt-1 text-[11px] md:text-sm font-semibold text-[#c3943a]">
                         Read details
-                        <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 transition-transform group-hover:translate-x-0.5" />
+                        <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                       </span>
                     </Link>
                   ) : (
-                    <h1 className="text-lg md:text-5xl font-black text-white leading-tight drop-shadow-lg">
+                    <h1 className="text-2xl md:text-3xl font-black text-black leading-tight drop-shadow-sm">
                       {currentEvent?.title || 'Upcoming Event'}
                     </h1>
                   )}
-                  <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-6 text-xs md:text-sm text-neutral-300 font-medium">
+                  
+                  <div className="flex flex-col gap-2 text-xs md:text-sm text-neutral-600 font-medium">
                     {events[currentEventIndex]?.date && (
                       <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-[#c3943a]" />
@@ -389,8 +425,9 @@ export default function EventRegistrationPage() {
                       </div>
                     )}
                   </div>
+                  
                   {!detailHref && !isLoadingEvents && (
-                    <p className="text-sm md:text-base text-neutral-200 leading-relaxed font-normal max-w-xl pt-2 drop-shadow-md">
+                    <p className="text-sm text-neutral-600 leading-relaxed font-normal pt-4 border-t border-neutral-200">
                       A seamless ecosystem of luxury, leisure, and entertainment.
                       Experience Sihanoukville’s new standard of a life well-lived. Kompong Dewa is an integrated luxury destination redefining Sihanoukville’s landscape. A bold fusion of high-octane excitement and serene tranquility, we stand as the new pulse of Cambodia’s rising coastal city.
                     </p>
@@ -398,51 +435,11 @@ export default function EventRegistrationPage() {
                 </motion.div>
               </AnimatePresence>
             </div>
-
-            {/* Bottom row: carousel indicators left, event labels bottom-right */}
-            <div className="flex items-center justify-between gap-3 mt-8">
-              {!isLoadingEvents && !isLockedEvent && (
-                <div className="flex gap-2">
-                  {events.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentEventIndex(idx)}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentEventIndex ? 'w-8 bg-[#c3943a]' : 'w-2 bg-white/30 hover:bg-white/50'}`}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
-                  ))}
-                </div>
-              )}
-
-              <div className="flex items-center gap-2 shrink-0 ml-auto">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentEventIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="px-2 py-0.5 md:py-1 bg-white/10 backdrop-blur-md rounded text-[10px] md:text-xs font-medium text-[#e5ac53] border border-white/10 whitespace-nowrap"
-                  >
-                    {events[currentEventIndex]?.tag || 'Event'}
-                  </motion.div>
-                </AnimatePresence>
-                {hasActiveEvents && (
-                  <span className={`px-2.5 py-0.5 md:px-3 md:py-1 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-lg whitespace-nowrap ${currentEvent?.status === 'UPCOMING' ? 'bg-amber-600' : 'bg-[#c3943a]'}`}>
-                    {currentEvent?.status === 'UPCOMING' ? 'Coming Soon' : 'Live Event'}
-                  </span>
-                )}
-              </div>
-            </div>
           </div>
-        </div>
 
-        {/* Right / Bottom Side: Form Area */}
-        <div className="relative z-30 -mt-8 md:mt-0 w-full md:w-1/2 flex-1 md:h-full flex flex-col justify-start md:justify-center items-center px-5 pt-6 pb-10 md:p-12 bg-[#F4F4F5] rounded-t-3xl md:rounded-none shadow-[0_-10px_30px_rgba(0,0,0,0.25)] md:shadow-none md:overflow-y-auto">
-          {/* Grab handle — mobile only, signals the sheet */}
-          <div className="w-10 h-1 rounded-full bg-neutral-300 mb-5 shrink-0 md:hidden" />
-          <div className="w-full max-w-md relative z-10 my-auto md:my-0">
-
+          {/* Right Side: Form Area */}
+          <div className="w-full md:w-[340px] shrink-0 relative z-30 flex flex-col justify-start bg-white rounded-2xl shadow-xl border border-neutral-200 px-5 pt-6 pb-8">
+            <div className="w-full relative z-10">
 
             {!hasActiveEvents && !isLoadingEvents ? (
               <div className="text-center py-10 px-4 flex flex-col items-center justify-center min-h-[250px]">
@@ -787,6 +784,7 @@ export default function EventRegistrationPage() {
           </div>
         </div>
       </div>
+    </div>
     </>
   );
 }
