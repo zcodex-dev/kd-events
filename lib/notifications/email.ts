@@ -24,7 +24,7 @@ export async function sendConfirmationEmail(
     const fromEmail = 'no-reply@kompongdewa.win';
 
     const imageHtml = eventImageUrl 
-      ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${eventImageUrl}" alt="Event Artwork" style="max-width: 100%; height: auto; border-radius: 8px;" /></div>`
+      ? `<div style="text-align: center; margin-bottom: 20px; background-color: #0b0b0b;"><img src="${eventImageUrl}" alt="Event Artwork" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px 8px 0 0; display: block;" /></div>`
       : '';
 
     const htmlContent = `

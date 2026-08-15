@@ -301,9 +301,8 @@ export default function EventRegistrationPage() {
       <div className="min-h-[100dvh] md:h-[100dvh] overflow-y-auto overflow-x-hidden md:overflow-hidden bg-[#F4F4F5] flex flex-col md:flex-row relative pt-16 md:pt-20">
 
         {/* Left / Top Side: Event Previews Carousel */}
-        {/* Takes up 65vh on mobile so the branding is the focus, 
-            and the form follows underneath. */}
-        <div className="w-full shrink-0 h-[65vh] md:w-1/2 md:h-full relative bg-black overflow-hidden">
+        {/* Takes up 40vh on mobile so the branding is the focus but leaves room for the form */}
+        <div className="w-full shrink-0 h-[40vh] md:w-1/2 md:h-full relative bg-black overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={`poster-${currentEventIndex}`}
