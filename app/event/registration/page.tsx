@@ -36,6 +36,7 @@ export default function EventRegistrationPage() {
   const [memberIdInput, setMemberIdInput] = useState('');
   const [events, setEvents] = useState<any[]>([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+  const [isLockedEvent, setIsLockedEvent] = useState(false);
 
   // The placeholder events above aren't real records, so they have no detail page.
   const currentEvent = events[currentEventIndex] || defaultEvents[0];
@@ -111,6 +112,7 @@ export default function EventRegistrationPage() {
                 const idx = slides.findIndex((s: any) => s.id === targetId);
                 if (idx !== -1) {
                   setCurrentEventIndex(idx);
+                  setIsLockedEvent(true);
                 }
               }
             }
@@ -137,6 +139,7 @@ export default function EventRegistrationPage() {
   };
 
   const handleDragEnd = (e: any, { offset, velocity }: any) => {
+    if (isLockedEvent) return;
     const swipe = swipePower(offset.x, velocity.x);
     if (swipe < -swipeConfidenceThreshold) {
       setCurrentEventIndex((prev) => (prev + 1) % events.length);
@@ -399,7 +402,7 @@ export default function EventRegistrationPage() {
 
             {/* Bottom row: carousel indicators left, event labels bottom-right */}
             <div className="flex items-center justify-between gap-3 mt-8">
-              {!isLoadingEvents && (
+              {!isLoadingEvents && !isLockedEvent && (
                 <div className="flex gap-2">
                   {events.map((_, idx) => (
                     <button
