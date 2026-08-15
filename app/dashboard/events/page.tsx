@@ -397,7 +397,7 @@ export default function EventsManagementPage() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-[90vw] lg:max-w-[80vw] bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col max-h-[90vh]"
             >
               <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between sticky top-0 bg-white dark:bg-neutral-900 z-10">
                 <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
@@ -440,8 +440,7 @@ export default function EventsManagementPage() {
                         />
                       </div>
                       <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-500">
-                        Tables: use the grid button to insert one, then the row/column buttons while the
-                        cursor is inside it. The first row is styled as the header.
+                        You can easily insert tables using the toolbar. Drag column edges to resize them perfectly.
                       </p>
                     </div>
 

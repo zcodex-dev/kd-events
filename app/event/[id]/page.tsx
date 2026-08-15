@@ -86,11 +86,11 @@ export default async function EventDetailPage({ params }: PageProps) {
             src={cover || FALLBACK_IMAGE}
             alt=""
             fill
-            className="object-cover opacity-60"
+            className="object-cover opacity-80 md:opacity-60"
             unoptimized
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-[#0b0b0b]/60 md:via-black/40 to-transparent" />
 
           <div className="absolute inset-x-0 bottom-0 max-w-4xl mx-auto px-6 md:px-8 pb-6 md:pb-10">
             {event.tag && (

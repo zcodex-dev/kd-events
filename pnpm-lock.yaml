@@ -23,6 +23,12 @@ importers:
       framer-motion:
         specifier: ^12.42.2
         version: 12.42.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      jodit:
+        specifier: ^4.13.22
+        version: 4.13.22
+      jodit-react:
+        specifier: ^5.4.72
+        version: 5.4.72(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       lucide-react:
         specifier: ^1.24.0
         version: 1.26.0(react@19.2.4)
@@ -1701,6 +1707,15 @@ packages:
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
     hasBin: true
+
+  jodit-react@5.4.72:
+    resolution: {integrity: sha512-fJ6Da4MKxt0cF6QnRZG4ZT2j+WHCDfs0fyY9fSMq/HtlRSGjLn8xqclhwzroQ5zeFFBOqB2CSFSUe2qYdA9EZA==}
+    peerDependencies:
+      react: ~0.14 || ^15 || ^16 || ^17 || ^18 || ^19
+      react-dom: ~0.14 || ^15 || ^16 || ^17 || ^18 || ^19
+
+  jodit@4.13.22:
+    resolution: {integrity: sha512-a4ln9N89xuz9z/evjezOlFpoPix7gQGxHyXc3JKFWSu3RSYsjC2cxz99wZhrvOIrXsdrs07msIeAgxnuJBEMCg==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -4258,6 +4273,14 @@ snapshots:
       set-function-name: 2.0.2
 
   jiti@2.7.0: {}
+
+  jodit-react@5.4.72(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+    dependencies:
+      jodit: 4.13.22
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+
+  jodit@4.13.22: {}
 
   js-tokens@4.0.0: {}
 

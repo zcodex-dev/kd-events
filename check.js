@@ -1,0 +1,1 @@
+const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); prisma.event.findMany().then(e => console.log(JSON.stringify(e, null, 2))).catch(console.error).finally(() => prisma.$disconnect());

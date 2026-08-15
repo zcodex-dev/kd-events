@@ -256,7 +256,8 @@ export default function PlayersPage() {
       'Nationality': reg.nationality || '-',
       'Registered At': new Date(reg.createdAt).toLocaleString(),
       'Contact': reg.phoneNumber || reg.contact || '-',
-      'Passport / ID': reg.passportId || reg.passportImageUrl || '-',
+      'Passport ID': reg.passportId || '-',
+      'Image Link': reg.passportImageUrl || reg.avatarUrl || '-',
       'Status': reg.isBanned ? 'Banned' : 'Active'
     }));
 
