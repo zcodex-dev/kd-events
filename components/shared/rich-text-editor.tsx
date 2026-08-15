@@ -36,7 +36,24 @@ export default function RichTextEditor({ value, onChange, placeholder, className
       },
       showCharsCounter: false,
       showWordsCounter: false,
-      showXPathInStatusbar: false
+      showXPathInStatusbar: false,
+      controls: {
+        font: {
+          list: {
+            '"Playfair Display", serif': 'Playfair Display',
+            'Roboto, sans-serif': 'Roboto',
+            '"Bebas Neue", sans-serif': 'Bebas Neue',
+            '"Outfit", sans-serif': 'Outfit',
+            '"Montserrat", sans-serif': 'Montserrat',
+            'Arial, Helvetica, sans-serif': 'Arial',
+            'Georgia, serif': 'Georgia',
+            'Impact, Charcoal, sans-serif': 'Impact',
+            'Tahoma, Geneva, sans-serif': 'Tahoma',
+            '"Times New Roman", Times, serif': 'Times New Roman',
+            'Verdana, Geneva, sans-serif': 'Verdana'
+          }
+        }
+      }
     }),
     [placeholder]
   );
