@@ -4,8 +4,12 @@ import { requireAuth } from '@/lib/auth/session';
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const host = request.headers.get('host') || '';
+  const hostHeader = request.headers.get('host') || '';
+  const forwardedHost = request.headers.get('x-forwarded-host') || '';
+  const host = forwardedHost || hostHeader;
   const url = request.nextUrl.clone();
+  
+  console.log(`[PROXY] Request received - Host: "${host}", Path: "${pathname}"`);
 
   // Protect dashboard routes
   if (pathname.startsWith('/dashboard')) {
