@@ -1,4 +1,7 @@
-export async function sendTelegramAlert(message: string, imageUrl?: string) {
+require('dotenv').config();
+const fetch = require('node-fetch');
+
+async function sendTelegramAlert(message, imageUrl) {
   try {
     const token = process.env.TELEGRAM_BOT_TOKEN;
     if (!token) {
@@ -23,10 +26,10 @@ export async function sendTelegramAlert(message: string, imageUrl?: string) {
     }
 
     let url = `https://api.telegram.org/bot${token}/sendMessage`;
-    let body: any = {
+    let body = {
       chat_id: chatId,
       text: message,
-      parse_mode: 'HTML',
+      parse_mode: 'Markdown',
     };
 
     if (imageUrl) {
@@ -35,7 +38,7 @@ export async function sendTelegramAlert(message: string, imageUrl?: string) {
         chat_id: chatId,
         photo: imageUrl,
         caption: message,
-        parse_mode: 'HTML',
+        parse_mode: 'Markdown',
       };
     }
 
@@ -52,8 +55,8 @@ export async function sendTelegramAlert(message: string, imageUrl?: string) {
       url = `https://api.telegram.org/bot${token}/sendMessage`;
       body = {
         chat_id: chatId,
-        text: message + `\n\n<b>Image URL:</b> <a href="${imageUrl}">Click to view</a>`,
-        parse_mode: 'HTML',
+        text: message + `\n\n*Image URL:* [Click to view](${imageUrl})`,
+        parse_mode: 'Markdown',
       };
       response = await fetch(url, {
         method: 'POST',
@@ -67,8 +70,12 @@ export async function sendTelegramAlert(message: string, imageUrl?: string) {
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Failed to send Telegram alert:', errorData);
+    } else {
+      console.log('Success!');
     }
   } catch (error) {
     console.error('Error in sendTelegramAlert:', error);
   }
 }
+
+sendTelegramAlert('🔔 *New Registration Test*\n\nName: Fallback Test', 'http://localhost:3000/api/raw?key=test.jpg');

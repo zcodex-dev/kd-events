@@ -140,9 +140,9 @@ export async function POST(request: Request) {
     const wantsMembership = formData.get('wantsMembership') === 'true';
     const statusText = status.isMember ? 'Existing Member' : 'New Non-Member';
     const contactInfo = contact || phoneNumber || 'N/A';
-    const wantsText = wantsMembership ? '\n*Requested Membership:* Yes' : '';
-    const alertHeader = eventId ? '🔔 *New Registration*' : '🔔 *New Membership Enrollment*';
-    const alertMessage = `${alertHeader}\n\n*Event:* ${eventTitle || 'General Registration'}\n*Name:* ${finalName}\n*Status:* ${statusText}${wantsText}\n*Contact Info:* ${contactInfo}`;
+    const wantsText = wantsMembership ? '\n<b>Requested Membership:</b> Yes' : '';
+    const alertHeader = eventId ? '🔔 <b>New Registration</b>' : '🔔 <b>New Membership Enrollment</b>';
+    const alertMessage = `${alertHeader}\n\n<b>Event:</b> ${eventTitle || 'General Registration'}\n<b>Name:</b> ${finalName}\n<b>Status:</b> ${statusText}${wantsText}\n<b>Contact Info:</b> ${contactInfo}`;
     const alertImageUrl = (finalAvatarUrl && !finalAvatarUrl.includes('placeholder.svg')) ? finalAvatarUrl : undefined;
     await sendTelegramAlert(alertMessage, alertImageUrl);
 
