@@ -376,6 +376,27 @@ export default function EventRegistrationPage() {
               </div>
             ) : !result ? (
               <>
+                {isEmbed && !isLoadingEvents && events.length > 0 && (
+                  <div className="w-full aspect-[16/9] relative rounded-xl overflow-hidden mb-5 shadow-sm border border-neutral-100">
+                    <Image
+                      src={currentEvent?.image || defaultEvents[0].image}
+                      alt={currentEvent?.title || 'Event'}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-4">
+                      {currentEvent?.tag && (
+                        <span className="w-fit mb-1.5 px-2 py-0.5 bg-[#c3943a] rounded text-[10px] font-bold text-white uppercase tracking-wider">
+                          {currentEvent.tag}
+                        </span>
+                      )}
+                      <h3 className="text-white font-black text-lg leading-tight line-clamp-2 drop-shadow-md">
+                        {currentEvent?.title || 'Event Registration'}
+                      </h3>
+                    </div>
+                  </div>
+                )}
                 <h2 className="text-xl font-black text-neutral-800 tracking-tight mb-4">Event Registration</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4 flex flex-col min-h-[340px] md:min-h-[380px]">
