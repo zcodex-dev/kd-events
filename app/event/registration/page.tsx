@@ -137,8 +137,7 @@ export default function EventRegistrationPage() {
 
     if (!name.trim()) return toast.error('Please enter your full name');
     if (!phoneNumber.trim()) return toast.error('Please enter your phone number or email');
-
-
+    if (!memberStatus) return toast.error('Please select your membership status');
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -411,58 +410,50 @@ export default function EventRegistrationPage() {
 
                     <div className="pt-2">
                       <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-2">Membership Status</label>
-                      <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input 
-                            type="radio" 
-                            name="memberStatus" 
-                            value="member" 
-                            checked={memberStatus === 'member'} 
-                            onChange={() => setMemberStatus('member')} 
-                            className="w-4 h-4 text-[#c3943a] border-neutral-300 focus:ring-[#c3943a]"
-                            required
-                          />
-                          <span className="text-sm font-medium text-neutral-800">Member</span>
-                        </label>
-                        
-                        <AnimatePresence>
-
-                        </AnimatePresence>
-
-                        <label className="flex items-center gap-2 cursor-pointer mt-1">
-                          <input 
-                            type="radio" 
-                            name="memberStatus" 
-                            value="non-member" 
-                            checked={memberStatus === 'non-member'} 
-                            onChange={() => setMemberStatus('non-member')} 
-                            className="w-4 h-4 text-[#c3943a] border-neutral-300 focus:ring-[#c3943a]"
-                            required
-                          />
-                          <span className="text-sm font-medium text-neutral-800">Non-Member</span>
-                        </label>
-
-                        <AnimatePresence>
-                          {memberStatus === 'non-member' && (
-                            <motion.div 
-                              initial={{ opacity: 0, height: 0 }} 
-                              animate={{ opacity: 1, height: 'auto' }} 
-                              exit={{ opacity: 0, height: 0 }}
-                              className="pl-6 overflow-hidden"
-                            >
-                              <label className="flex items-start gap-2 cursor-pointer mt-1">
-                                <input 
-                                  type="checkbox" 
-                                  checked={wantsMembership} 
-                                  onChange={(e) => setWantsMembership(e.target.checked)} 
-                                  className="w-4 h-4 mt-0.5 rounded text-[#c3943a] border-neutral-300 focus:ring-[#c3943a]"
-                                />
-                                <span className="text-[13px] leading-snug font-medium text-neutral-600">Want us to create a Member account for you?</span>
-                              </label>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                      <div className="flex bg-neutral-100 p-1 rounded-xl">
+                        <button
+                          type="button"
+                          onClick={() => setMemberStatus('member')}
+                          className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-sm font-bold rounded-lg transition-all duration-200 ${
+                            memberStatus === 'member'
+                              ? 'bg-white text-[#c3943a] shadow-sm ring-1 ring-black/5'
+                              : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200/50'
+                          }`}
+                        >
+                          Member
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMemberStatus('non-member')}
+                          className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-sm font-bold rounded-lg transition-all duration-200 ${
+                            memberStatus === 'non-member'
+                              ? 'bg-white text-neutral-900 shadow-sm ring-1 ring-black/5'
+                              : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200/50'
+                          }`}
+                        >
+                          Non-Member
+                        </button>
                       </div>
+
+                      <AnimatePresence>
+                        {memberStatus === 'non-member' && (
+                          <motion.div 
+                            initial={{ opacity: 0, height: 0, marginTop: 0 }} 
+                            animate={{ opacity: 1, height: 'auto', marginTop: 12 }} 
+                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className={`flex items-start gap-3 cursor-pointer p-3 md:p-4 rounded-xl border transition-all duration-200 ${wantsMembership ? 'bg-orange-50 border-orange-200/60' : 'bg-neutral-50 border-neutral-200/60 hover:bg-neutral-100/50'}`} onClick={() => setWantsMembership(!wantsMembership)}>
+                              <div className={`mt-0.5 w-5 h-5 rounded-[6px] border flex items-center justify-center shrink-0 transition-colors ${wantsMembership ? 'bg-[#c3943a] border-[#c3943a]' : 'bg-white border-neutral-300'}`}>
+                                {wantsMembership && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                              </div>
+                              <span className={`text-[11px] md:text-xs leading-relaxed font-medium transition-colors ${wantsMembership ? 'text-orange-900' : 'text-neutral-600'}`}>
+                                I want to become a Kompong Dewa member to enjoy exclusive perks and rewards.
+                              </span>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </motion.div>
 
