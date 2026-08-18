@@ -198,21 +198,23 @@ export default function EventRegistrationPage() {
   return (
     <>
       {/* Navigation / Header */}
-      <header className="fixed top-0 left-0 w-full bg-black backdrop-blur-md border-b border-white/10 z-50">
-        <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center">
-          <div className="py-1 md:py-2">
-            <Image
-              src="/logo-v2.png"
-              alt="Kompong Dewa Logo"
-              width={300}
-              height={64}
-              className="h-12 md:h-16 w-auto shrink-0 object-contain"
-              unoptimized
-              priority
-            />
+      {!isEmbed && (
+        <header className="fixed top-0 left-0 w-full bg-black backdrop-blur-md border-b border-white/10 z-50">
+          <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center">
+            <div className="py-1 md:py-2">
+              <Image
+                src="/logo-v2.png"
+                alt="Kompong Dewa Logo"
+                width={300}
+                height={64}
+                className="h-12 md:h-16 w-auto shrink-0 object-contain"
+                unoptimized
+                priority
+              />
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Centered layout for strict 728x210 banner */}
       <div className={`min-h-[100dvh] overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent pt-4 pb-4" : "bg-[#F4F4F5] pt-16 md:pt-24 pb-12"}`}>
