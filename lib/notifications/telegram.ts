@@ -30,6 +30,13 @@ export async function sendTelegramAlert(message: string, imageUrl?: string) {
     };
 
     if (imageUrl) {
+      // If it's a relative URL from our own uploads, we must make it absolute for Telegram
+      if (imageUrl.startsWith('/')) {
+        // Fallback to localhost if APP_URL is not set, though localhost won't work in prod Telegram
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
+        imageUrl = `${baseUrl}${imageUrl}`;
+      }
+
       url = `https://api.telegram.org/bot${token}/sendPhoto`;
       body = {
         chat_id: chatId,
