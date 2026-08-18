@@ -44,8 +44,7 @@ export default function EventRegistrationPage() {
   // Non-member fields
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [nationality, setNationality] = useState('');
-  const [passportFile, setPassportFile] = useState<File | null>(null);
+
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasActiveEvents, setHasActiveEvents] = useState(true);
@@ -144,9 +143,7 @@ export default function EventRegistrationPage() {
 
     if (!name.trim()) return toast.error('Please enter your full name');
     if (!phoneNumber.trim()) return toast.error('Please enter your phone number or email');
-    if (!passportFile) {
-      return toast.error('Please upload your ID image');
-    }
+
 
     setIsSubmitting(true);
     try {
@@ -154,8 +151,7 @@ export default function EventRegistrationPage() {
       formData.append('isNonMemberTab', 'true');
       formData.append('name', name);
       formData.append('phoneNumber', phoneNumber);
-      formData.append('nationality', nationality);
-      if (passportFile) formData.append('passportImage', passportFile);
+
       appendCurrentEvent(formData);
 
       const response = await fetch('/api/register', { method: 'POST', body: formData });
@@ -185,16 +181,9 @@ export default function EventRegistrationPage() {
     setResult(null);
     setName('');
     setPhoneNumber('');
-    setNationality('');
-    setPassportFile(null);
+
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPassportFile(file);
-    }
-  };
 
   return (
     <>
@@ -399,35 +388,7 @@ export default function EventRegistrationPage() {
                       />
                     </div>
 
-                    <div>
-                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Nationality</label>
-                      <input
-                        type="text"
-                        value={nationality}
-                        onChange={(e) => setNationality(e.target.value)}
-                        placeholder="e.g. Cambodian, Chinese, etc."
-                        className="w-full bg-white border border-neutral-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg px-3.5 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-black placeholder:text-neutral-400 transition-all outline-none"
-                        required
-                      />
-                    </div>
 
-                    <div>
-                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Upload ID/Passport <span className="text-red-500">*</span></label>
-                      <label className="w-full flex flex-row items-center justify-center gap-2 h-[44px] md:h-[50px] border-2 border-dashed border-neutral-300 rounded-lg transition-colors relative overflow-hidden bg-white hover:bg-neutral-50 cursor-pointer">
-                        {passportFile ? (
-                          <>
-                            <FileImage className="w-4 h-4 text-orange-500 shrink-0" />
-                            <span className="text-[10px] md:text-xs font-medium truncate max-w-[200px] text-orange-500">{passportFile.name}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4 text-neutral-400 shrink-0" />
-                            <span className="text-[10px] md:text-xs font-medium text-neutral-400">Click to upload (Required)</span>
-                          </>
-                        )}
-                        <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" required />
-                      </label>
-                    </div>
                   </motion.div>
 
                   <button
