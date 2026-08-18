@@ -93,16 +93,20 @@ export default function EventRegistrationPage() {
             }));
           });
 
-          setEvents(slides);
-
           const params = new URLSearchParams(window.location.search);
           const urlEventId = params.get('event');
+          
           if (urlEventId) {
-            const index = slides.findIndex((e: any) => e.id === urlEventId);
-            if (index !== -1) {
-              setCurrentEventIndex(index);
+            const eventSlides = slides.filter((e: any) => e.id === urlEventId);
+            if (eventSlides.length > 0) {
+              setEvents(eventSlides);
+              setCurrentEventIndex(0);
               setIsLockedEvent(true);
+            } else {
+              setEvents(slides);
             }
+          } else {
+            setEvents(slides);
           }
         } else {
           setHasActiveEvents(false);
