@@ -136,7 +136,8 @@ export async function POST(request: Request) {
     const wantsText = wantsMembership ? '\n*Requested Membership:* Yes' : '';
     const alertHeader = eventId ? '🔔 *New Registration*' : '🔔 *New Membership Enrollment*';
     const alertMessage = `${alertHeader}\n\n*Event:* ${eventTitle || 'General Registration'}\n*Name:* ${finalName}\n*Status:* ${statusText}${wantsText}\n*Contact Info:* ${contactInfo}`;
-    await sendTelegramAlert(alertMessage);
+    const alertImageUrl = (finalAvatarUrl && !finalAvatarUrl.includes('placeholder.svg')) ? finalAvatarUrl : undefined;
+    await sendTelegramAlert(alertMessage, alertImageUrl);
 
     // If contact or phoneNumber is an email, send confirmation email
     const emailAddress = (contact && isEmail(contact)) ? contact : (phoneNumber && isEmail(phoneNumber)) ? phoneNumber : null;

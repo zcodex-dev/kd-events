@@ -1,4 +1,4 @@
-export async function sendTelegramAlert(message: string) {
+export async function sendTelegramAlert(message: string, imageUrl?: string) {
   try {
     const token = process.env.TELEGRAM_BOT_TOKEN;
     if (!token) {
@@ -22,16 +22,29 @@ export async function sendTelegramAlert(message: string) {
       }
     }
 
-    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    let url = `https://api.telegram.org/bot${token}/sendMessage`;
+    let body: any = {
+      chat_id: chatId,
+      text: message,
+      parse_mode: 'Markdown',
+    };
+
+    if (imageUrl) {
+      url = `https://api.telegram.org/bot${token}/sendPhoto`;
+      body = {
+        chat_id: chatId,
+        photo: imageUrl,
+        caption: message,
+        parse_mode: 'Markdown',
+      };
+    }
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'Markdown',
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
