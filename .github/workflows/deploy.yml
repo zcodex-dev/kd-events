@@ -10,17 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Deploy to register.kompongdewa.win
-        uses: appleboy/ssh-action@master
-        with:
-          host: 43.134.129.74
-          username: kompongdewa
-          password: ${{ secrets.SERVER_SSH_PASSWORD }}
-          script: |
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            cd /home/kompongdewa/htdocs/register.kompongdewa.win
-            ./deploy.sh
 
       - name: Deploy to kompongdewa.win (Admin)
         uses: appleboy/ssh-action@master
