@@ -76,7 +76,7 @@ export default function EnrollmentPage() {
       formData.append('wantsMembership', 'true'); // Implicit for enrollment
       formData.append('name', name);
       formData.append('phoneNumber', phoneNumber);
-      formData.append('passportId', nationality); // Map nationality to passportId for API
+      formData.append('nationality', nationality);
       formData.append('passportImage', passportFile);
 
       const response = await fetch('/api/register', { method: 'POST', body: formData });

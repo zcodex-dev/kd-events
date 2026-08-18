@@ -453,15 +453,17 @@ export default function PlayersPage() {
                         {reg.phoneNumber || reg.contact || '-'}
                       </td>
                       <td className="px-6 py-4 text-neutral-500">
-                        {reg.passportId ? (
-                          <span className="font-medium text-neutral-700 dark:text-neutral-300">{reg.passportId}</span>
-                        ) : reg.passportImageUrl ? (
-                          <a href={reg.passportImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center gap-1">
-                            <ImageIcon className="w-3.5 h-3.5" /> View Image
-                          </a>
-                        ) : (
-                          '-'
-                        )}
+                        <div className="flex flex-col gap-1">
+                          {reg.passportId && (
+                            <span className="font-medium text-neutral-700 dark:text-neutral-300">{reg.passportId}</span>
+                          )}
+                          {reg.passportImageUrl && (
+                            <a href={reg.passportImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center gap-1">
+                              <ImageIcon className="w-3.5 h-3.5" /> View Image
+                            </a>
+                          )}
+                          {!reg.passportId && !reg.passportImageUrl && '-'}
+                        </div>
                       </td>
                     </tr>
                   ))

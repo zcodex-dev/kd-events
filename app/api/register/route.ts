@@ -15,6 +15,7 @@ export async function POST(request: Request) {
     const contact = formData.get('contact') as string;
     const phoneNumber = formData.get('phoneNumber') as string;
     const passportId = formData.get('passportId') as string;
+    const nationality = formData.get('nationality') as string;
     const memberId = formData.get('memberId') as string;
     const isNonMemberTab = formData.get('isNonMemberTab') === 'true';
     const eventId = (formData.get('eventId') as string) || null;
@@ -100,7 +101,12 @@ export async function POST(request: Request) {
           data: {
             eventId,
             eventTitle,
-            updatedAt: new Date()
+            name: finalName,
+            contact,
+            phoneNumber,
+            passportId,
+            nationality,
+            passportImageUrl: passportImageUrl || emptyRegistration.passportImageUrl,
           }
         });
       }
@@ -114,6 +120,7 @@ export async function POST(request: Request) {
           contact: contact || (prevReg?.contact) || null,
           phoneNumber: phoneNumber || (prevReg?.phoneNumber) || null,
           passportId: passportId || (prevReg?.passportId) || null,
+          nationality: nationality || (prevReg?.nationality) || null,
           passportImageUrl: passportImageUrl || (prevReg?.passportImageUrl) || null,
           isMember: status.isMember,
           memberId: finalMemberId || null,

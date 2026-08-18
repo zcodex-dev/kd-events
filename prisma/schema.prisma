@@ -25,6 +25,7 @@ model Registration {
   contact          String?
   phoneNumber      String?
   passportId       String?
+  nationality      String?
   passportImageUrl String?
   isMember         Boolean  @default(false)
   memberId         String?

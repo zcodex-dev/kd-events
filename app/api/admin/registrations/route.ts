@@ -14,7 +14,7 @@ export async function GET() {
     const nationalityByMemberId = new Map(members.map((m) => [m.memberId, m.nationality]));
     const rows = registrations.map((r) => ({
       ...r,
-      nationality: r.memberId ? nationalityByMemberId.get(r.memberId) ?? null : null,
+      nationality: r.nationality || (r.memberId ? nationalityByMemberId.get(r.memberId) ?? null : null),
     }));
 
     const stats = {
