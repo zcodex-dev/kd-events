@@ -313,7 +313,7 @@ export default function EnrollmentPage() {
                   >
                     {detailHref ? (
                       <Link href={detailHref} className="group inline-block">
-                        <h1 className="text-2xl md:text-3xl font-black text-black leading-tight drop-shadow-sm group-hover:text-[#c3943a] transition-colors">
+                        <h1 className="text-2xl md:text-3xl font-black text-black leading-tight group-hover:text-[#c3943a] transition-colors">
                           {currentEvent?.title || 'Upcoming Event'}
                         </h1>
                         <span className="inline-flex items-center gap-1 mt-1 text-[11px] md:text-sm font-semibold text-[#c3943a]">
@@ -322,7 +322,7 @@ export default function EnrollmentPage() {
                         </span>
                       </Link>
                     ) : (
-                      <h1 className="text-2xl md:text-3xl font-black text-black leading-tight drop-shadow-sm">
+                      <h1 className="text-2xl md:text-3xl font-black text-black leading-tight">
                         {currentEvent?.title || 'Upcoming Event'}
                       </h1>
                     )}
