@@ -91,6 +91,7 @@ export type GitHubCreateUpdateResponse = {
 export type AppConfig = {
   allowedTypes: string[];
   loginBgUrl?: string;
+  enrollmentBgUrl?: string;
 };
 
 export type UserRole = 'admin' | 'user';
