@@ -132,10 +132,10 @@ export default function EnrollmentPage() {
         </div>
       </header>
 
-      {/* Centered layout for strict 728x210 banner */}
+      {/* Centered layout */}
       <div className={`min-h-[100dvh] overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent pt-4 pb-4" : "bg-[#F4F4F5] pt-16 md:pt-24 pb-12"}`}>        {/* Left Side: Static Background Image (Hidden on Embed) */}
         {!isEmbed && (
-          <div className="relative w-full max-w-[728px] aspect-[4/3] md:aspect-[16/9] overflow-hidden shrink-0">
+          <div className="relative w-full max-w-[728px] aspect-[4/3] md:aspect-[16/9] overflow-hidden shrink-0 md:rounded-t-2xl">
             <Image
               src={bgImage}
               alt="Kompong Dewa Integrated Resort"
@@ -163,11 +163,11 @@ export default function EnrollmentPage() {
         )}
 
         {/* Main Content Area */}
-        <div className={`w-full px-4 md:px-0 flex flex-col items-center ${isEmbed ? "mt-0 max-w-md mx-auto" : "max-w-[728px] mt-6 md:mt-8"}`}>
+        <div className={`w-full px-4 md:px-0 flex flex-col items-center ${isEmbed ? "mt-0 max-w-md mx-auto" : "max-w-[728px] mt-0"}`}>
           
           {/* Form Area */}
-          <div className={`w-full relative z-30 flex flex-col justify-start bg-white rounded-2xl shadow-xl border border-neutral-200 px-5 pt-6 pb-8 ${isEmbed ? "w-full shadow-none border-none" : "max-w-[480px]"}`}>
-            <div className="w-full relative z-10">
+          <div className={`w-full relative z-30 flex flex-col justify-start bg-white shadow-xl px-5 md:px-8 pt-6 md:pt-8 pb-8 md:pb-10 ${isEmbed ? "w-full shadow-none border-none" : "md:rounded-b-2xl border-x border-b border-neutral-200"}`}>
+            <div className="w-full relative z-10 max-w-[480px] mx-auto">
 
             {!result ? (
               <>
