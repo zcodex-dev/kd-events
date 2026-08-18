@@ -115,13 +115,7 @@ export default function EventRegistrationPage() {
       });
   }, []);
 
-  useEffect(() => {
-    if (events.length <= 1 || isLockedEvent) return;
-    const interval = setInterval(() => {
-      setCurrentEventIndex(prev => (prev + 1) % events.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [events.length, isLockedEvent]);
+  // Autoplay is disabled on the registration page to prevent the selected event from changing while the user is filling out the form.
 
   const handleDragEnd = (event: any, info: any) => {
     if (events.length <= 1 || isLockedEvent) return;
