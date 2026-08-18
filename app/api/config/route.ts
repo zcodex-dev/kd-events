@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    if (!body || !Array.isArray(body.allowedTypes)) {
+    if (!body) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'Invalid configuration parameters' },
         { status: 400 }
@@ -32,7 +32,8 @@ export async function POST(request: Request) {
     const currentConfig = await getAppConfig();
     const updated = await updateAppConfig({
       ...currentConfig,
-      allowedTypes: body.allowedTypes,
+      ...(body.allowedTypes ? { allowedTypes: body.allowedTypes } : {}),
+      ...(body.enrollmentBgUrl !== undefined ? { enrollmentBgUrl: body.enrollmentBgUrl } : {}),
     });
 
     return NextResponse.json<ApiResponse<AppConfig>>(

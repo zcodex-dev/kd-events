@@ -28,7 +28,6 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingBg, setIsUploadingBg] = useState(false);
-  const [isUploadingEnrollmentBg, setIsUploadingEnrollmentBg] = useState(false);
 
   // Fetch the configuration on mount
   useEffect(() => {
@@ -73,7 +72,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ allowedTypes }),
+        body: JSON.stringify({ allowedTypes, enrollmentBgUrl }),
       });
       const data = await res.json();
       if (data.success) {
@@ -117,38 +116,6 @@ export default function SettingsPage() {
       toast.error('Network error during upload');
     } finally {
       setIsUploadingBg(false);
-    }
-  };
-
-  const handleEnrollmentBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
-
-    setIsUploadingEnrollmentBg(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const res = await fetch('/api/config/enrollment-bg', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.success && data.data?.url) {
-        setEnrollmentBgUrl(data.data.url);
-        toast.success('Enrollment background updated successfully');
-      } else {
-        toast.error(data.error || 'Failed to update background');
-      }
-    } catch {
-      toast.error('Network error during upload');
-    } finally {
-      setIsUploadingEnrollmentBg(false);
     }
   };
 
@@ -315,25 +282,23 @@ export default function SettingsPage() {
 
           <div className="p-5 space-y-4">
             {enrollmentBgUrl && (
-              <div className="w-full h-32 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden relative mb-4">
+              <div className="w-full h-32 md:h-48 rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden relative mb-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={enrollmentBgUrl} alt="Current enrollment background" className="w-full h-full object-cover" />
               </div>
             )}
             
-            <label className="flex items-center justify-center w-full h-24 px-4 transition bg-white dark:bg-neutral-950 border-2 border-neutral-300 dark:border-neutral-800 border-dashed rounded-lg appearance-none cursor-pointer hover:border-neutral-400 dark:hover:border-neutral-700 focus:outline-none">
-              <span className="flex flex-col items-center space-y-2">
-                {isUploadingEnrollmentBg ? (
-                  <LoadingSpinner size={20} />
-                ) : (
-                  <UploadCloud className="w-6 h-6 text-neutral-400" />
-                )}
-                <span className="font-medium text-xs text-neutral-600 dark:text-neutral-400">
-                  {isUploadingEnrollmentBg ? 'Uploading...' : 'Click to select image to upload'}
-                </span>
-              </span>
-              <input type="file" name="file_upload" className="hidden" accept="image/*" onChange={handleEnrollmentBgUpload} disabled={isUploadingEnrollmentBg} />
-            </label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 block">Image URL</label>
+              <input
+                type="text"
+                value={enrollmentBgUrl || ''}
+                onChange={(e) => setEnrollmentBgUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 transition-all outline-none"
+              />
+              <p className="text-[11px] text-neutral-500 mt-1">Paste a URL for the image. Click "Save Settings" above to apply.</p>
+            </div>
           </div>
         </div>
       </motion.div>
