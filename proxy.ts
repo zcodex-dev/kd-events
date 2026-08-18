@@ -42,7 +42,19 @@ export function proxy(request: NextRequest) {
       return NextResponse.rewrite(url);
     }
   } 
-  // 2. Handling for kompongdewa.win (and others like localhost)
+  // 2. Handling for enrollment.kompongdewa.win
+  else if (host.includes('enrollment.kompongdewa.win') || host.includes('enrollment')) {
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/login')) {
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
+    
+    if (pathname === '/') {
+      url.pathname = '/enrollment';
+      return NextResponse.rewrite(url);
+    }
+  }
+  // 3. Handling for kompongdewa.win (and others like localhost)
   else {
     // Redirect root to /dashboard
     if (pathname === '/') {
@@ -50,8 +62,8 @@ export function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
     
-    // Prevent access to /event from the admin domain (allow localhost for testing)
-    if (pathname.startsWith('/event') && !host.includes('localhost')) {
+    // Prevent access to /event or /enrollment from the admin domain (allow localhost for testing)
+    if ((pathname.startsWith('/event') || pathname.startsWith('/enrollment')) && !host.includes('localhost')) {
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }
