@@ -137,12 +137,18 @@ export async function POST(request: Request) {
     }
 
     // Fire notifications and wait for them to ensure they complete before response ends
-    const wantsMembership = formData.get('wantsMembership') === 'true';
-    const statusText = status.isMember ? 'Existing Member' : 'New Non-Member';
-    const contactInfo = contact || phoneNumber || 'N/A';
-    const wantsText = wantsMembership ? '\n<b>Requested Membership:</b> Yes' : '';
     const alertHeader = eventId ? '🔔 <b>New Registration</b>' : '🔔 <b>New Membership Enrollment</b>';
-    const alertMessage = `${alertHeader}\n\n<b>Event:</b> ${eventTitle || 'General Registration'}\n<b>Name:</b> ${finalName}\n<b>Status:</b> ${statusText}${wantsText}\n<b>Contact Info:</b> ${contactInfo}`;
+    const contactInfo = contact || phoneNumber || 'N/A';
+    
+    let alertMessage = `${alertHeader}\n\n`;
+    alertMessage += `<b>Name:</b> ${finalName}\n`;
+    alertMessage += `<b>Contact Info:</b> ${contactInfo}\n`;
+    alertMessage += `<b>Nationality:</b> ${nationality || 'N/A'}`;
+    
+    if (eventId) {
+      alertMessage += `\n<b>Event:</b> ${eventTitle || 'General Registration'}`;
+    }
+
     const alertImageUrl = (finalAvatarUrl && !finalAvatarUrl.includes('placeholder.svg')) ? finalAvatarUrl : undefined;
     await sendTelegramAlert(alertMessage, alertImageUrl);
 

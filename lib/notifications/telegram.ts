@@ -47,27 +47,10 @@ export async function sendTelegramAlert(message: string, imageUrl?: string) {
       body: JSON.stringify(body),
     });
 
-    if (!response.ok && imageUrl) {
-      console.warn('Failed to send photo to Telegram (likely localhost URL). Falling back to text message.');
-      url = `https://api.telegram.org/bot${token}/sendMessage`;
-      body = {
-        chat_id: chatId,
-        text: message + `\n\n<b>Image URL:</b> <a href="${imageUrl}">Click to view</a>`,
-        parse_mode: 'HTML',
-      };
-      response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-    }
-
     if (!response.ok) {
-      const errorData = await response.json();
+      let errorData = await response.json();
       
-      // Handle Telegram group to supergroup migration automatically
+      // 1. Handle Telegram group to supergroup migration automatically
       if (errorData.parameters?.migrate_to_chat_id) {
         console.warn(`Chat migrated to supergroup. Retrying with new ID: ${errorData.parameters.migrate_to_chat_id}`);
         body.chat_id = errorData.parameters.migrate_to_chat_id;
@@ -76,14 +59,32 @@ export async function sendTelegramAlert(message: string, imageUrl?: string) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
-        
         if (!response.ok) {
-          const retryError = await response.json();
-          console.error('Failed to send Telegram alert after migration retry:', retryError);
-        } else {
-          return; // Success on retry
+          errorData = await response.json();
         }
-      } else {
+      }
+
+      // 2. If it still failed and we tried to send a photo, fallback to text (likely localhost URL)
+      if (!response.ok && imageUrl) {
+        console.warn('Failed to send photo to Telegram (likely localhost URL). Falling back to text message.');
+        url = `https://api.telegram.org/bot${token}/sendMessage`;
+        body = {
+          chat_id: body.chat_id, // Use the updated chat_id if migrated
+          text: message + `\n\n<b>Image URL:</b> <a href="${imageUrl}">Click to view</a>`,
+          parse_mode: 'HTML',
+        };
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!response.ok) {
+          errorData = await response.json();
+        }
+      }
+
+      // 3. If all fails, log the final error
+      if (!response.ok) {
         console.error('Failed to send Telegram alert:', errorData);
       }
     }
