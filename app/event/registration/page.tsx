@@ -8,6 +8,8 @@ import type { AnimatedIconHandle } from '@/components/icons/types';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Checkbox } from '@/components/ui/checkbox-1';
+import { Label } from '@/components/ui/label';
 
 const defaultEvents = [
   {
@@ -443,13 +445,19 @@ export default function EventRegistrationPage() {
                             exit={{ opacity: 0, height: 0, marginTop: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className={`flex items-start gap-3 cursor-pointer p-3 md:p-4 rounded-xl border transition-all duration-200 ${wantsMembership ? 'bg-orange-50 border-orange-200/60' : 'bg-neutral-50 border-neutral-200/60 hover:bg-neutral-100/50'}`} onClick={() => setWantsMembership(!wantsMembership)}>
-                              <div className={`mt-0.5 w-5 h-5 rounded-[6px] border flex items-center justify-center shrink-0 transition-colors ${wantsMembership ? 'bg-[#c3943a] border-[#c3943a]' : 'bg-white border-neutral-300'}`}>
-                                {wantsMembership && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
-                              </div>
-                              <span className={`text-[11px] md:text-xs leading-relaxed font-medium transition-colors ${wantsMembership ? 'text-orange-900' : 'text-neutral-600'}`}>
+                            <div className="flex items-start space-x-3 pt-1">
+                              <Checkbox 
+                                id="wantsMembership" 
+                                checked={wantsMembership} 
+                                onCheckedChange={(value) => setWantsMembership(!!value)} 
+                                className="mt-0.5"
+                              />
+                              <Label 
+                                htmlFor="wantsMembership" 
+                                className="text-[13px] text-neutral-600 leading-snug font-medium cursor-pointer"
+                              >
                                 I want to become a Kompong Dewa member to enjoy exclusive perks and rewards.
-                              </span>
+                              </Label>
                             </div>
                           </motion.div>
                         )}
