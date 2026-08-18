@@ -25,43 +25,12 @@ export async function POST(request: Request) {
     let finalMemberId: string | null = memberId;
 
     if (!isNonMemberTab) {
-      if (!memberId || memberId.trim() === '') {
-        return NextResponse.json({ success: false, error: 'Member ID is required' }, { status: 400 });
+      if (!name || name.trim() === '') {
+        return NextResponse.json({ success: false, error: 'Name is required' }, { status: 400 });
       }
-
-      const member = await prisma.member.findUnique({
-        where: { memberId: memberId.trim() }
-      });
-
-      if (!member) {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Member ID not found. Please check your spelling or register as a Non-Member.' 
-        }, { status: 404 });
-      }
-
       status.isMember = true;
-      status.memberData = member;
-      finalName = member.name;
-      finalMemberId = member.memberId;
-
-      // Pressing "Register Event" twice for the same event shouldn't stack rows.
-      if (eventId) {
-        const existing = await prisma.registration.findFirst({
-          where: { memberId: member.memberId, eventId },
-          select: { id: true },
-        });
-
-        if (existing) {
-          return NextResponse.json({
-            success: true,
-            alreadyRegistered: true,
-            isMember: true,
-            memberData: member,
-            message: `You are already registered for ${eventTitle || 'this event'}.`,
-          });
-        }
-      }
+      finalName = name;
+      finalMemberId = null;
     } else {
       if (!name || name.trim() === '') {
         return NextResponse.json({ success: false, error: 'Name is required' }, { status: 400 });
@@ -95,7 +64,7 @@ export async function POST(request: Request) {
     }
 
     let prevReg = null;
-    if (status.isMember) {
+    if (status.isMember && finalMemberId) {
       prevReg = await prisma.registration.findFirst({
         where: { memberId: finalMemberId },
         orderBy: { createdAt: 'desc' }
@@ -120,7 +89,7 @@ export async function POST(request: Request) {
 
     // If they already have an empty registration (no event) and they are registering for an event now,
     // we just update that empty registration instead of creating a duplicate on the table.
-    if (status.isMember && eventId) {
+    if (status.isMember && eventId && finalMemberId) {
       const emptyRegistration = await prisma.registration.findFirst({
         where: { memberId: finalMemberId, eventId: null }
       });
@@ -188,7 +157,7 @@ export async function POST(request: Request) {
       memberId: finalMemberId,
       registration: { eventId: registration.eventId, eventTitle: registration.eventTitle, createdAt: registration.createdAt },
       message: status.isMember
-        ? `You're registered${eventTitle ? ` for ${eventTitle}` : ''}, ${finalName}!`
+        ? `Registration successful! We will contact you for your Member details.`
         : 'Registration recorded successfully.'
     }, { status: 200 });
 

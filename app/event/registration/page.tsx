@@ -44,9 +44,7 @@ export default function EventRegistrationPage() {
   // Non-member fields
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-
   const [memberStatus, setMemberStatus] = useState<'member' | 'non-member' | null>(null);
-  const [memberIdInput, setMemberIdInput] = useState('');
   const [wantsMembership, setWantsMembership] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasActiveEvents, setHasActiveEvents] = useState(true);
@@ -145,16 +143,13 @@ export default function EventRegistrationPage() {
 
     if (!name.trim()) return toast.error('Please enter your full name');
     if (!phoneNumber.trim()) return toast.error('Please enter your phone number or email');
-    if (memberStatus === 'member' && !memberIdInput.trim()) return toast.error('Please enter your Member ID');
 
 
     setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('isNonMemberTab', memberStatus === 'member' ? 'false' : 'true');
-      if (memberStatus === 'member') {
-        formData.append('memberId', memberIdInput);
-      } else {
+      if (memberStatus !== 'member') {
         formData.append('wantsMembership', wantsMembership ? 'true' : 'false');
       }
       formData.append('name', name);
@@ -190,7 +185,6 @@ export default function EventRegistrationPage() {
     setName('');
     setPhoneNumber('');
     setMemberStatus(null);
-    setMemberIdInput('');
     setWantsMembership(false);
   };
 
@@ -427,23 +421,7 @@ export default function EventRegistrationPage() {
                         </label>
                         
                         <AnimatePresence>
-                          {memberStatus === 'member' && (
-                            <motion.div 
-                              initial={{ opacity: 0, height: 0 }} 
-                              animate={{ opacity: 1, height: 'auto' }} 
-                              exit={{ opacity: 0, height: 0 }}
-                              className="pl-6 overflow-hidden"
-                            >
-                              <input
-                                type="text"
-                                value={memberIdInput}
-                                onChange={(e) => setMemberIdInput(e.target.value)}
-                                placeholder="Member ID (e.g. KDB-0000001...)"
-                                className="w-full bg-white border border-neutral-200 focus:border-[#c3943a] focus:ring-2 focus:ring-[#c3943a]/20 rounded-lg px-3.5 py-2.5 mt-1 text-sm text-black placeholder:text-neutral-400 outline-none transition-all"
-                                required={memberStatus === 'member'}
-                              />
-                            </motion.div>
-                          )}
+
                         </AnimatePresence>
 
                         <label className="flex items-center gap-2 cursor-pointer mt-1">
