@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
@@ -55,6 +55,8 @@ export default function EventsManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [embedModalEvent, setEmbedModalEvent] = useState<Event | null>(null);
+  const [hasCopiedEmbed, setHasCopiedEmbed] = useState(false);
 
   // Form State
   const [title, setTitle] = useState('');
@@ -361,6 +363,13 @@ export default function EventsManagementPage() {
                       <Eye className="w-4 h-4" />
                     </Link>
                     <button
+                      onClick={() => { setEmbedModalEvent(event); setHasCopiedEmbed(false); }}
+                      className="p-2 text-neutral-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/30 rounded-lg transition-colors"
+                      title="Embed Event"
+                    >
+                      <Code className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => handleOpenEditModal(event)}
                       className="p-2 text-neutral-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors"
                       title="Edit Event"
@@ -540,6 +549,69 @@ export default function EventsManagementPage() {
                 >
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : editingEvent ? 'Save Changes' : 'Create Event'}
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Embed Modal */}
+      <AnimatePresence>
+        {embedModalEvent && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEmbedModalEvent(null)}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col"
+            >
+              <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-950">
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <Code className="w-5 h-5 text-purple-600" /> Direct Embed
+                </h3>
+                <button
+                  onClick={() => setEmbedModalEvent(null)}
+                  className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+                >
+                  <Plus className="w-5 h-5 rotate-45" />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                  Copy the code below to embed the registration form for <strong>{embedModalEvent.title}</strong> directly into your WordPress site or any other webpage.
+                </p>
+                
+                <div className="relative group">
+                  <pre className="p-4 bg-neutral-100 dark:bg-neutral-950 rounded-xl text-xs text-neutral-800 dark:text-neutral-300 font-mono whitespace-pre-wrap break-all border border-neutral-200 dark:border-neutral-800">
+{`<iframe 
+  src="https://register.kompongdewa.win/?eventId=${embedModalEvent.id}&embed=true" 
+  width="100%" 
+  height="600" 
+  style="border:none; border-radius: 12px; overflow: hidden;" 
+  title="${embedModalEvent.title} Registration"
+></iframe>`}
+                  </pre>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`<iframe src="https://register.kompongdewa.win/?eventId=${embedModalEvent.id}&embed=true" width="100%" height="600" style="border:none; border-radius: 12px; overflow: hidden;" title="${embedModalEvent.title} Registration"></iframe>`);
+                      setHasCopiedEmbed(true);
+                      toast.success("Embed code copied to clipboard!");
+                      setTimeout(() => setHasCopiedEmbed(false), 2000);
+                    }}
+                    className="absolute top-2 right-2 p-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm text-neutral-600 dark:text-neutral-300 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-neutral-50 dark:hover:bg-neutral-700"
+                    title="Copy Code"
+                  >
+                    {hasCopiedEmbed ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
