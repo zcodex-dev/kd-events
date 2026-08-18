@@ -46,7 +46,7 @@ export default function EventRegistrationPage() {
   // Non-member fields
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [memberStatus, setMemberStatus] = useState<'member' | 'non-member' | null>(null);
+  const [memberStatus, setMemberStatus] = useState<'member' | 'non-member'>('non-member');
   const [wantsMembership, setWantsMembership] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasActiveEvents, setHasActiveEvents] = useState(true);
@@ -139,7 +139,6 @@ export default function EventRegistrationPage() {
 
     if (!name.trim()) return toast.error('Please enter your full name');
     if (!phoneNumber.trim()) return toast.error('Please enter your phone number or email');
-    if (!memberStatus) return toast.error('Please select your membership status');
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -410,42 +409,31 @@ export default function EventRegistrationPage() {
                       />
                     </div>
 
-                    <div className="pt-2">
-                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-2">Membership Status</label>
-                      <div className="flex bg-neutral-100 p-1 rounded-xl">
-                        <button
-                          type="button"
-                          onClick={() => setMemberStatus('member')}
-                          className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-sm font-bold rounded-lg transition-all duration-200 ${
-                            memberStatus === 'member'
-                              ? 'bg-white text-[#c3943a] shadow-sm ring-1 ring-black/5'
-                              : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200/50'
-                          }`}
+                    <div className="pt-4 flex flex-col gap-4">
+                      <div className="flex items-start space-x-3">
+                        <Checkbox 
+                          id="isMember" 
+                          checked={memberStatus === 'member'} 
+                          onCheckedChange={(c) => setMemberStatus(c ? 'member' : 'non-member')} 
+                          className="mt-0.5"
+                        />
+                        <Label 
+                          htmlFor="isMember" 
+                          className="text-[13px] md:text-sm text-neutral-800 leading-snug font-semibold cursor-pointer"
                         >
-                          Member
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setMemberStatus('non-member')}
-                          className={`flex-1 py-2 md:py-2.5 text-[13px] md:text-sm font-bold rounded-lg transition-all duration-200 ${
-                            memberStatus === 'non-member'
-                              ? 'bg-white text-neutral-900 shadow-sm ring-1 ring-black/5'
-                              : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200/50'
-                          }`}
-                        >
-                          Non-Member
-                        </button>
+                          I am an existing Kompong Dewa member
+                        </Label>
                       </div>
 
                       <AnimatePresence>
                         {memberStatus === 'non-member' && (
                           <motion.div 
-                            initial={{ opacity: 0, height: 0, marginTop: 0 }} 
-                            animate={{ opacity: 1, height: 'auto', marginTop: 12 }} 
-                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                            initial={{ opacity: 0, height: 0 }} 
+                            animate={{ opacity: 1, height: 'auto' }} 
+                            exit={{ opacity: 0, height: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className="flex items-start space-x-3 pt-1">
+                            <div className="flex items-start space-x-3">
                               <Checkbox 
                                 id="wantsMembership" 
                                 checked={wantsMembership} 
@@ -454,7 +442,7 @@ export default function EventRegistrationPage() {
                               />
                               <Label 
                                 htmlFor="wantsMembership" 
-                                className="text-[13px] text-neutral-600 leading-snug font-medium cursor-pointer"
+                                className="text-[13px] md:text-sm text-neutral-600 leading-snug font-medium cursor-pointer"
                               >
                                 I want to become a Kompong Dewa member to enjoy exclusive perks and rewards.
                               </Label>
