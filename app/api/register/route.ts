@@ -137,16 +137,22 @@ export async function POST(request: Request) {
     }
 
     // Fire notifications and wait for them to ensure they complete before response ends
-    const alertHeader = eventId ? '🔔 <b>New Registration</b>' : '🔔 <b>New Membership Enrollment</b>';
     const contactInfo = contact || phoneNumber || 'N/A';
     
-    let alertMessage = `${alertHeader}\n\n`;
-    alertMessage += `<b>Name:</b> ${finalName}\n`;
-    alertMessage += `<b>Contact Info:</b> ${contactInfo}\n`;
-    alertMessage += `<b>Nationality:</b> ${nationality || 'N/A'}`;
+    let alertMessage = '';
     
     if (eventId) {
-      alertMessage += `\n<b>Event:</b> ${eventTitle || 'General Registration'}`;
+      // Event Registration Format
+      alertMessage = `🔔 <b>New Event Registration</b>\n\n`;
+      alertMessage += `<b>Event:</b> ${eventTitle || 'General Registration'}\n`;
+      alertMessage += `<b>Name:</b> ${finalName}\n`;
+      alertMessage += `<b>Contact Info:</b> ${contactInfo}`;
+    } else {
+      // Membership Enrollment Format
+      alertMessage = `🔔 <b>New Membership Enrollment</b>\n\n`;
+      alertMessage += `<b>Name:</b> ${finalName}\n`;
+      alertMessage += `<b>Contact Info:</b> ${contactInfo}\n`;
+      alertMessage += `<b>Nationality:</b> ${nationality || 'N/A'}`;
     }
 
     const alertImageUrl = (finalAvatarUrl && !finalAvatarUrl.includes('placeholder.svg')) ? finalAvatarUrl : undefined;
