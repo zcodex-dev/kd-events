@@ -46,7 +46,7 @@ export default function EventRegistrationPage() {
   // Non-member fields
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [memberStatus, setMemberStatus] = useState<'member' | 'non-member'>('non-member');
+  const [memberStatus, setMemberStatus] = useState<'member' | 'non-member' | null>(null);
   const [wantsMembership, setWantsMembership] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasActiveEvents, setHasActiveEvents] = useState(true);
@@ -139,6 +139,7 @@ export default function EventRegistrationPage() {
 
     if (!name.trim()) return toast.error('Please enter your full name');
     if (!phoneNumber.trim()) return toast.error('Please enter your phone number or email');
+    if (!memberStatus) return toast.error('Please select your membership status');
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -178,7 +179,7 @@ export default function EventRegistrationPage() {
     setResult(null);
     setName('');
     setPhoneNumber('');
-    setMemberStatus('non-member');
+    setMemberStatus(null);
     setWantsMembership(false);
   };
 
@@ -409,47 +410,65 @@ export default function EventRegistrationPage() {
                       />
                     </div>
 
-                    <div className="pt-4 flex flex-col gap-4">
-                      <div className="flex items-start space-x-3">
-                        <Checkbox 
-                          id="isMember" 
-                          checked={memberStatus === 'member'} 
-                          onCheckedChange={(c) => setMemberStatus(c ? 'member' : 'non-member')} 
-                          className="mt-0.5"
-                        />
-                        <Label 
-                          htmlFor="isMember" 
-                          className="text-[13px] md:text-sm text-neutral-800 leading-snug font-semibold cursor-pointer"
-                        >
-                          I am an existing Kompong Dewa member
-                        </Label>
-                      </div>
-
-                      <AnimatePresence>
-                        {memberStatus === 'non-member' && (
-                          <motion.div 
-                            initial={{ opacity: 0, height: 0 }} 
-                            animate={{ opacity: 1, height: 'auto' }} 
-                            exit={{ opacity: 0, height: 0 }}
-                            className="overflow-hidden"
+                    <div className="pt-2">
+                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-3">Membership Status</label>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center space-x-3">
+                          <Checkbox 
+                            id="statusMember" 
+                            checked={memberStatus === 'member'} 
+                            onCheckedChange={() => setMemberStatus('member')} 
+                            className="w-4.5 h-4.5"
+                          />
+                          <Label 
+                            htmlFor="statusMember" 
+                            className="text-[13px] md:text-sm font-medium text-neutral-800 cursor-pointer"
                           >
-                            <div className="flex items-start space-x-3">
-                              <Checkbox 
-                                id="wantsMembership" 
-                                checked={wantsMembership} 
-                                onCheckedChange={(value) => setWantsMembership(!!value)} 
-                                className="mt-0.5"
-                              />
-                              <Label 
-                                htmlFor="wantsMembership" 
-                                className="text-[13px] md:text-sm text-neutral-600 leading-snug font-medium cursor-pointer"
-                              >
-                                I want to become a Kompong Dewa member to enjoy exclusive perks and rewards.
-                              </Label>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                            Member
+                          </Label>
+                        </div>
+
+                        <div className="flex items-center space-x-3">
+                          <Checkbox 
+                            id="statusNonMember" 
+                            checked={memberStatus === 'non-member'} 
+                            onCheckedChange={() => setMemberStatus('non-member')} 
+                            className="w-4.5 h-4.5"
+                          />
+                          <Label 
+                            htmlFor="statusNonMember" 
+                            className="text-[13px] md:text-sm font-medium text-neutral-800 cursor-pointer"
+                          >
+                            Non-Member
+                          </Label>
+                        </div>
+
+                        <AnimatePresence>
+                          {memberStatus === 'non-member' && (
+                            <motion.div 
+                              initial={{ opacity: 0, height: 0 }} 
+                              animate={{ opacity: 1, height: 'auto' }} 
+                              exit={{ opacity: 0, height: 0 }}
+                              className="overflow-hidden pl-7 pt-1"
+                            >
+                              <div className="flex items-start space-x-3">
+                                <Checkbox 
+                                  id="wantsMembership" 
+                                  checked={wantsMembership} 
+                                  onCheckedChange={(value) => setWantsMembership(!!value)} 
+                                  className="mt-0.5"
+                                />
+                                <Label 
+                                  htmlFor="wantsMembership" 
+                                  className="text-[13px] md:text-sm text-neutral-600 leading-snug font-medium cursor-pointer"
+                                >
+                                  I want to become a Kompong Dewa member to enjoy exclusive perks and rewards.
+                                </Label>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
                   </motion.div>
 
