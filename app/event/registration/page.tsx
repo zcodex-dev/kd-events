@@ -22,12 +22,16 @@ const defaultEvents = [
 
 export default function EventRegistrationPage() {
   const [activeTab, setActiveTab] = useState<'member' | 'non-member'>('member');
+  const [isEmbed, setIsEmbed] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       if (params.get('tab') === 'non-member' || params.get('type') === 'non-member') {
         setActiveTab('non-member');
+      }
+      if (params.get('embed') === 'true') {
+        setIsEmbed(true);
       }
     }
   }, []);
@@ -299,9 +303,10 @@ export default function EventRegistrationPage() {
           edge to edge, and the form follows underneath. Desktop keeps the
           locked split-screen. */}
       {/* Centered layout for strict 728x210 banner */}
-      <div className="min-h-[100dvh] overflow-y-auto bg-[#F4F4F5] flex flex-col items-center relative pt-16 md:pt-24 pb-12">
+      <div className={`min-h-[100dvh] overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent pt-4 pb-4" : "bg-[#F4F4F5] pt-16 md:pt-24 pb-12"}`}>
 
         {/* Top Banner: Event Previews Carousel */}
+        {!isEmbed && (
         {/* Strictly 728x210 aspect ratio and max width */}
         <div className="w-full max-w-[728px] aspect-[728/210] relative bg-black shrink-0 md:rounded-2xl shadow-xl overflow-hidden z-20">
           <AnimatePresence mode="wait">
@@ -379,11 +384,13 @@ export default function EventRegistrationPage() {
             </div>
           </div>
         </div>
+        )}
 
         {/* Main Content Area: Text and Form side-by-side on large screens, stacked on mobile */}
-        <div className="w-full max-w-[728px] px-4 md:px-0 mt-6 md:mt-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+        <div className={`w-full px-4 md:px-0 flex flex-col items-start ${isEmbed ? "mt-0 max-w-md mx-auto" : "max-w-[728px] md:flex-row gap-6 md:gap-8 mt-6 md:mt-8"}`}>
           
           {/* Left Side: Event Details */}
+          {!isEmbed && (
           <div className="flex-1 flex flex-col w-full">
             <div className="min-h-[120px]">
               <AnimatePresence mode="wait">
@@ -436,9 +443,10 @@ export default function EventRegistrationPage() {
               </AnimatePresence>
             </div>
           </div>
+          )}
 
           {/* Right Side: Form Area */}
-          <div className="w-full md:w-[340px] shrink-0 relative z-30 flex flex-col justify-start bg-white rounded-2xl shadow-xl border border-neutral-200 px-5 pt-6 pb-8">
+          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start bg-white rounded-2xl shadow-xl border border-neutral-200 px-5 pt-6 pb-8 ${isEmbed ? "w-full shadow-none border-none" : "md:w-[340px]"}`}>
             <div className="w-full relative z-10">
 
             {!hasActiveEvents && !isLoadingEvents ? (
