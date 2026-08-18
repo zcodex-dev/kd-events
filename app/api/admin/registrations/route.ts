@@ -19,8 +19,8 @@ export async function GET() {
 
     const stats = {
       total: registrations.length,
-      members: registrations.filter(r => r.isMember).length,
-      nonMembers: registrations.filter(r => !r.isMember).length,
+      registeredEvents: registrations.filter(r => !!r.eventId).length,
+      enrollments: registrations.filter(r => !r.eventId).length,
       totalRegisteredMembers: members.length,
     };
 

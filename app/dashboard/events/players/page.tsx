@@ -13,7 +13,7 @@ export default function PlayersPage() {
   const { openSidebar } = useDashboard();
   const [stats, setStats] = useState<any>(null);
   const [registrations, setRegistrations] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'All' | 'Members' | 'NonMembers'>('All');
+  const [activeTab, setActiveTab] = useState<'All' | 'RegisteredEvents' | 'Enrollments'>('All');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -241,8 +241,8 @@ export default function PlayersPage() {
 
   const filteredRegistrations = registrations.filter(reg => {
     if (activeTab === 'All') return true;
-    if (activeTab === 'Members') return reg.isMember;
-    if (activeTab === 'NonMembers') return !reg.isMember;
+    if (activeTab === 'RegisteredEvents') return !!reg.eventId;
+    if (activeTab === 'Enrollments') return !reg.eventId;
     return true;
   });
 
@@ -261,19 +261,19 @@ export default function PlayersPage() {
       'Status': reg.isBanned ? 'Banned' : 'Active'
     }));
 
-    const members = registrations.filter(r => r.isMember);
-    const nonMembers = registrations.filter(r => !r.isMember);
+    const registeredEvents = registrations.filter(r => !!r.eventId);
+    const enrollments = registrations.filter(r => !r.eventId);
 
     const wb = XLSX.utils.book_new();
 
     const wsAll = XLSX.utils.json_to_sheet(formatData(registrations));
     XLSX.utils.book_append_sheet(wb, wsAll, `All Players (${registrations.length})`);
 
-    const wsMembers = XLSX.utils.json_to_sheet(formatData(members));
-    XLSX.utils.book_append_sheet(wb, wsMembers, `Members (${members.length})`);
+    const wsRegisteredEvents = XLSX.utils.json_to_sheet(formatData(registeredEvents));
+    XLSX.utils.book_append_sheet(wb, wsRegisteredEvents, `Registered Event (${registeredEvents.length})`);
 
-    const wsNonMembers = XLSX.utils.json_to_sheet(formatData(nonMembers));
-    XLSX.utils.book_append_sheet(wb, wsNonMembers, `Non-Members (${nonMembers.length})`);
+    const wsEnrollments = XLSX.utils.json_to_sheet(formatData(enrollments));
+    XLSX.utils.book_append_sheet(wb, wsEnrollments, `Enrollment (${enrollments.length})`);
 
     XLSX.writeFile(wb, `Players_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
@@ -319,12 +319,12 @@ export default function PlayersPage() {
             <p className="text-3xl font-black mt-2">{stats?.total || 0}</p>
           </div>
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl shadow-sm">
-            <h3 className="text-neutral-500 text-sm">KD Members</h3>
-            <p className="text-3xl font-black mt-2 text-[#c3943a]">{stats?.members || 0}</p>
+            <h3 className="text-neutral-500 text-sm">Registered Event</h3>
+            <p className="text-3xl font-black mt-2 text-[#c3943a]">{stats?.registeredEvents || 0}</p>
           </div>
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl shadow-sm">
-            <h3 className="text-neutral-500 text-sm">Non-Members</h3>
-            <p className="text-3xl font-black mt-2">{stats?.nonMembers || 0}</p>
+            <h3 className="text-neutral-500 text-sm">Enrollment</h3>
+            <p className="text-3xl font-black mt-2">{stats?.enrollments || 0}</p>
           </div>
         </div>
 
@@ -354,16 +354,16 @@ export default function PlayersPage() {
               All Players ({registrations.length})
             </button>
             <button 
-              onClick={() => { setActiveTab('Members'); setSelectedIds([]); }}
-              className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors whitespace-nowrap ${activeTab === 'Members' ? 'bg-[#c3943a] text-white' : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800'}`}
+              onClick={() => { setActiveTab('RegisteredEvents'); setSelectedIds([]); }}
+              className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors whitespace-nowrap ${activeTab === 'RegisteredEvents' ? 'bg-[#c3943a] text-white' : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800'}`}
             >
-              Members ({stats?.members || 0})
+              Registered Event ({stats?.registeredEvents || 0})
             </button>
             <button 
-              onClick={() => { setActiveTab('NonMembers'); setSelectedIds([]); }}
-              className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors whitespace-nowrap ${activeTab === 'NonMembers' ? 'bg-[#c3943a] text-white' : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800'}`}
+              onClick={() => { setActiveTab('Enrollments'); setSelectedIds([]); }}
+              className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-colors whitespace-nowrap ${activeTab === 'Enrollments' ? 'bg-[#c3943a] text-white' : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800'}`}
             >
-              Non-Members ({stats?.nonMembers || 0})
+              Enrollment ({stats?.enrollments || 0})
             </button>
           </div>
           <div className="overflow-x-auto">
