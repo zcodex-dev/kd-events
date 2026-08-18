@@ -211,7 +211,7 @@ export default function EventRegistrationPage() {
       )}
 
       {/* Centered layout for strict 1080x520 banner */}
-      <div className={`min-h-[100dvh] overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent pt-4 pb-4" : "bg-white md:bg-[#F4F4F5] pt-16 md:pt-24 md:pb-12"}`}>
+      <div className={`overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent w-full h-full" : "min-h-[100dvh] bg-white md:bg-[#F4F4F5] pt-16 md:pt-24 md:pb-12"}`}>
 
         {/* Top Banner: Event Previews Carousel */}
         {!isEmbed && (
@@ -273,7 +273,7 @@ export default function EventRegistrationPage() {
         )}
 
         {/* Main Content Area */}
-        <div className={`w-full flex flex-col items-start ${isEmbed ? "px-4 mt-0 max-w-md mx-auto" : "max-w-[1080px] md:flex-row gap-0 md:gap-8 mt-0 md:mt-8"}`}>
+        <div className={`w-full flex flex-col items-start ${isEmbed ? "max-w-full m-0 p-0" : "max-w-[1080px] md:flex-row gap-0 md:gap-8 mt-0 md:mt-8"}`}>
           
           {/* Left Side: Event Details */}
           {!isEmbed && (
@@ -361,7 +361,7 @@ export default function EventRegistrationPage() {
           )}
 
           {/* Right Side: Form Area */}
-          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start bg-white md:rounded-2xl md:shadow-xl border-none md:border border-neutral-200 px-5 pt-0 md:pt-6 pb-8 ${isEmbed ? "shadow-none border-none" : "md:w-[340px]"}`}>
+          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start ${isEmbed ? "bg-transparent shadow-none border-none p-0" : "bg-white md:rounded-2xl md:shadow-xl border-none md:border border-neutral-200 px-5 pt-0 md:pt-6 pb-8 md:w-[340px]"}`}>
             <div className="w-full relative z-10">
 
             {!hasActiveEvents && !isLoadingEvents ? (
