@@ -274,25 +274,6 @@ export default function EventRegistrationPage() {
                 </div>
               )}
 
-              <div className="flex items-center gap-2 shrink-0 ml-auto">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentEventIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="px-2 py-0.5 md:py-1 bg-black/40 backdrop-blur-md rounded text-[10px] md:text-xs font-medium text-[#e5ac53] border border-white/20 whitespace-nowrap"
-                  >
-                    {events[currentEventIndex]?.tag || 'Event'}
-                  </motion.div>
-                </AnimatePresence>
-                {hasActiveEvents && (
-                  <span className={`px-2 md:px-3 py-0.5 md:py-1 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-lg whitespace-nowrap ${currentEvent?.status === 'UPCOMING' ? 'bg-amber-600' : 'bg-[#c3943a]'}`}>
-                    {currentEvent?.status === 'UPCOMING' ? 'Coming Soon' : 'Live Event'}
-                  </span>
-                )}
-              </div>
             </div>
           </div>
         )}
@@ -318,15 +299,44 @@ export default function EventRegistrationPage() {
                         <h1 className="text-2xl md:text-3xl font-black text-black leading-tight group-hover:text-[#c3943a] transition-colors">
                           {currentEvent?.title || 'Upcoming Event'}
                         </h1>
-                        <span className="inline-flex items-center gap-1 mt-1 text-[11px] md:text-sm font-semibold text-[#c3943a]">
-                          Read details
-                          <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                        </span>
+                        <div className="flex flex-wrap items-center gap-3 mt-2">
+                          <span className="inline-flex items-center gap-1 text-[11px] md:text-sm font-semibold text-[#c3943a]">
+                            Read details
+                            <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                          </span>
+                          
+                          <div className="flex items-center gap-2">
+                            {events[currentEventIndex]?.tag && (
+                              <span className="px-2 py-0.5 md:py-1 bg-black/5 rounded text-[10px] md:text-xs font-medium text-[#c3943a] border border-black/10 whitespace-nowrap">
+                                {events[currentEventIndex].tag}
+                              </span>
+                            )}
+                            {hasActiveEvents && (
+                              <span className={`px-2 md:px-3 py-0.5 md:py-1 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-sm whitespace-nowrap ${currentEvent?.status === 'UPCOMING' ? 'bg-amber-600' : 'bg-[#c3943a]'}`}>
+                                {currentEvent?.status === 'UPCOMING' ? 'Coming Soon' : 'Live Event'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </Link>
                     ) : (
-                      <h1 className="text-2xl md:text-3xl font-black text-black leading-tight">
-                        {currentEvent?.title || 'Upcoming Event'}
-                      </h1>
+                      <div className="inline-block">
+                        <h1 className="text-2xl md:text-3xl font-black text-black leading-tight">
+                          {currentEvent?.title || 'Upcoming Event'}
+                        </h1>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          {events[currentEventIndex]?.tag && (
+                            <span className="px-2 py-0.5 md:py-1 bg-black/5 rounded text-[10px] md:text-xs font-medium text-[#c3943a] border border-black/10 whitespace-nowrap">
+                              {events[currentEventIndex].tag}
+                            </span>
+                          )}
+                          {hasActiveEvents && (
+                            <span className={`px-2 md:px-3 py-0.5 md:py-1 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-sm whitespace-nowrap ${currentEvent?.status === 'UPCOMING' ? 'bg-amber-600' : 'bg-[#c3943a]'}`}>
+                              {currentEvent?.status === 'UPCOMING' ? 'Coming Soon' : 'Live Event'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     )}
                     
                     <div className="flex flex-col gap-2 text-xs md:text-sm text-neutral-600 font-medium">
