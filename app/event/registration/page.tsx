@@ -45,7 +45,9 @@ export default function EventRegistrationPage() {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
 
-
+  const [memberStatus, setMemberStatus] = useState<'member' | 'non-member' | null>(null);
+  const [memberIdInput, setMemberIdInput] = useState('');
+  const [wantsMembership, setWantsMembership] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasActiveEvents, setHasActiveEvents] = useState(true);
   // Set by the non-member flow
@@ -143,12 +145,18 @@ export default function EventRegistrationPage() {
 
     if (!name.trim()) return toast.error('Please enter your full name');
     if (!phoneNumber.trim()) return toast.error('Please enter your phone number or email');
+    if (memberStatus === 'member' && !memberIdInput.trim()) return toast.error('Please enter your Member ID');
 
 
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append('isNonMemberTab', 'true');
+      formData.append('isNonMemberTab', memberStatus === 'member' ? 'false' : 'true');
+      if (memberStatus === 'member') {
+        formData.append('memberId', memberIdInput);
+      } else {
+        formData.append('wantsMembership', wantsMembership ? 'true' : 'false');
+      }
       formData.append('name', name);
       formData.append('phoneNumber', phoneNumber);
 
@@ -181,7 +189,9 @@ export default function EventRegistrationPage() {
     setResult(null);
     setName('');
     setPhoneNumber('');
-
+    setMemberStatus(null);
+    setMemberIdInput('');
+    setWantsMembership(false);
   };
 
 
@@ -388,7 +398,77 @@ export default function EventRegistrationPage() {
                       />
                     </div>
 
+                    <div className="pt-2">
+                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-2">Membership Status</label>
+                      <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="memberStatus" 
+                            value="member" 
+                            checked={memberStatus === 'member'} 
+                            onChange={() => setMemberStatus('member')} 
+                            className="w-4 h-4 text-[#c3943a] border-neutral-300 focus:ring-[#c3943a]"
+                            required
+                          />
+                          <span className="text-sm font-medium text-neutral-800">Member</span>
+                        </label>
+                        
+                        <AnimatePresence>
+                          {memberStatus === 'member' && (
+                            <motion.div 
+                              initial={{ opacity: 0, height: 0 }} 
+                              animate={{ opacity: 1, height: 'auto' }} 
+                              exit={{ opacity: 0, height: 0 }}
+                              className="pl-6 overflow-hidden"
+                            >
+                              <input
+                                type="text"
+                                value={memberIdInput}
+                                onChange={(e) => setMemberIdInput(e.target.value)}
+                                placeholder="Member ID (e.g. KDB-0000001...)"
+                                className="w-full bg-white border border-neutral-200 focus:border-[#c3943a] focus:ring-2 focus:ring-[#c3943a]/20 rounded-lg px-3.5 py-2.5 mt-1 text-sm text-black placeholder:text-neutral-400 outline-none transition-all"
+                                required={memberStatus === 'member'}
+                              />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
 
+                        <label className="flex items-center gap-2 cursor-pointer mt-1">
+                          <input 
+                            type="radio" 
+                            name="memberStatus" 
+                            value="non-member" 
+                            checked={memberStatus === 'non-member'} 
+                            onChange={() => setMemberStatus('non-member')} 
+                            className="w-4 h-4 text-[#c3943a] border-neutral-300 focus:ring-[#c3943a]"
+                            required
+                          />
+                          <span className="text-sm font-medium text-neutral-800">Non-Member</span>
+                        </label>
+
+                        <AnimatePresence>
+                          {memberStatus === 'non-member' && (
+                            <motion.div 
+                              initial={{ opacity: 0, height: 0 }} 
+                              animate={{ opacity: 1, height: 'auto' }} 
+                              exit={{ opacity: 0, height: 0 }}
+                              className="pl-6 overflow-hidden"
+                            >
+                              <label className="flex items-start gap-2 cursor-pointer mt-1">
+                                <input 
+                                  type="checkbox" 
+                                  checked={wantsMembership} 
+                                  onChange={(e) => setWantsMembership(e.target.checked)} 
+                                  className="w-4 h-4 mt-0.5 rounded text-[#c3943a] border-neutral-300 focus:ring-[#c3943a]"
+                                />
+                                <span className="text-[13px] leading-snug font-medium text-neutral-600">Want us to create a Member account for you?</span>
+                              </label>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
                   </motion.div>
 
                   <button
