@@ -66,7 +66,26 @@ export async function sendTelegramAlert(message: string, imageUrl?: string) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Failed to send Telegram alert:', errorData);
+      
+      // Handle Telegram group to supergroup migration automatically
+      if (errorData.parameters?.migrate_to_chat_id) {
+        console.warn(`Chat migrated to supergroup. Retrying with new ID: ${errorData.parameters.migrate_to_chat_id}`);
+        body.chat_id = errorData.parameters.migrate_to_chat_id;
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        
+        if (!response.ok) {
+          const retryError = await response.json();
+          console.error('Failed to send Telegram alert after migration retry:', retryError);
+        } else {
+          return; // Success on retry
+        }
+      } else {
+        console.error('Failed to send Telegram alert:', errorData);
+      }
     }
   } catch (error) {
     console.error('Error in sendTelegramAlert:', error);
