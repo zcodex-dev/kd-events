@@ -133,7 +133,7 @@ export default function EnrollmentPage() {
       </header>
 
       {/* Centered layout */}
-      <div className={`min-h-[100dvh] overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent pt-4 pb-4" : "bg-[#F4F4F5] pt-16 md:pt-24 pb-12"}`}>        {/* Left Side: Static Background Image (Hidden on Embed) */}
+      <div className={`min-h-[100dvh] overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent pt-4 pb-4" : "bg-white md:bg-[#F4F4F5] pt-16 md:pt-24 md:pb-12"}`}>        {/* Left Side: Static Background Image (Hidden on Embed) */}
         {!isEmbed && (
           <div className="relative w-full max-w-[728px] aspect-[4/3] md:aspect-[16/9] overflow-hidden shrink-0 md:rounded-t-2xl">
             <Image
@@ -163,10 +163,10 @@ export default function EnrollmentPage() {
         )}
 
         {/* Main Content Area */}
-        <div className={`w-full px-4 md:px-0 flex flex-col items-center ${isEmbed ? "mt-0 max-w-md mx-auto" : "max-w-[728px] mt-0"}`}>
+        <div className={`w-full flex flex-col items-center ${isEmbed ? "mt-0 max-w-md mx-auto px-4" : "max-w-[728px] mt-0"}`}>
           
           {/* Form Area */}
-          <div className={`w-full relative z-30 flex flex-col justify-start bg-white shadow-xl px-5 md:px-8 pt-6 md:pt-8 pb-8 md:pb-10 ${isEmbed ? "w-full shadow-none border-none" : "md:rounded-b-2xl border-x border-b border-neutral-200"}`}>
+          <div className={`w-full relative z-30 flex flex-col justify-start bg-white px-5 md:px-8 pt-6 md:pt-8 pb-8 md:pb-10 ${isEmbed ? "shadow-none border-none" : "shadow-none md:shadow-xl md:rounded-b-2xl md:border-x md:border-b border-neutral-200"}`}>
             <div className="w-full relative z-10 max-w-[480px] mx-auto">
 
             {!result ? (

@@ -211,11 +211,11 @@ export default function EventRegistrationPage() {
       )}
 
       {/* Centered layout for strict 1080x520 banner */}
-      <div className={`min-h-[100dvh] overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent pt-4 pb-4" : "bg-[#F4F4F5] pt-16 md:pt-24 pb-12"}`}>
+      <div className={`min-h-[100dvh] overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent pt-4 pb-4" : "bg-white md:bg-[#F4F4F5] pt-16 md:pt-24 md:pb-12"}`}>
 
         {/* Top Banner: Event Previews Carousel */}
         {!isEmbed && (
-          <div className="w-full max-w-[1080px] aspect-[1080/520] relative bg-black shrink-0 md:rounded-2xl shadow-xl overflow-hidden z-20">
+          <div className="w-full max-w-[1080px] aspect-[1080/520] relative bg-black shrink-0 md:rounded-2xl md:shadow-xl overflow-hidden z-20">
             <AnimatePresence mode="wait">
               <motion.div
                 key={`poster-${currentEventIndex}`}
@@ -273,11 +273,11 @@ export default function EventRegistrationPage() {
         )}
 
         {/* Main Content Area */}
-        <div className={`w-full px-4 md:px-0 flex flex-col items-start ${isEmbed ? "mt-0 max-w-md mx-auto" : "max-w-[1080px] md:flex-row gap-6 md:gap-8 mt-6 md:mt-8"}`}>
+        <div className={`w-full flex flex-col items-start ${isEmbed ? "px-4 mt-0 max-w-md mx-auto" : "max-w-[1080px] md:flex-row gap-0 md:gap-8 mt-0 md:mt-8"}`}>
           
           {/* Left Side: Event Details */}
           {!isEmbed && (
-            <div className="flex-1 flex flex-col w-full">
+            <div className="flex-1 flex flex-col w-full px-5 md:px-0 pt-6 md:pt-0 pb-6 md:pb-0">
               <div className="min-h-[120px]">
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -361,7 +361,7 @@ export default function EventRegistrationPage() {
           )}
 
           {/* Right Side: Form Area */}
-          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start bg-white rounded-2xl shadow-xl border border-neutral-200 px-5 pt-6 pb-8 ${isEmbed ? "w-full shadow-none border-none" : "md:w-[340px]"}`}>
+          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start bg-white md:rounded-2xl md:shadow-xl border-none md:border border-neutral-200 px-5 pt-0 md:pt-6 pb-8 ${isEmbed ? "shadow-none border-none" : "md:w-[340px]"}`}>
             <div className="w-full relative z-10">
 
             {!hasActiveEvents && !isLoadingEvents ? (
@@ -376,7 +376,7 @@ export default function EventRegistrationPage() {
               </div>
             ) : !result ? (
               <>
-                <h2 className="text-xl font-black text-neutral-800 tracking-tight mb-4">Registration Event</h2>
+                <h2 className="text-xl font-black text-neutral-800 tracking-tight mb-4">Event Registration</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4 flex flex-col min-h-[340px] md:min-h-[380px]">
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 flex-1">
