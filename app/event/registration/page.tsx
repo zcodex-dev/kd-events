@@ -216,12 +216,12 @@ export default function EventRegistrationPage() {
         </header>
       )}
 
-      {/* Centered layout for strict 728x210 banner */}
+      {/* Centered layout for strict 1080x520 banner */}
       <div className={`min-h-[100dvh] overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent pt-4 pb-4" : "bg-[#F4F4F5] pt-16 md:pt-24 pb-12"}`}>
 
         {/* Top Banner: Event Previews Carousel */}
         {!isEmbed && (
-          <div className="w-full max-w-[728px] aspect-[728/210] relative bg-black shrink-0 md:rounded-2xl shadow-xl overflow-hidden z-20">
+          <div className="w-full max-w-[1080px] aspect-[1080/520] relative bg-black shrink-0 md:rounded-2xl shadow-xl overflow-hidden z-20">
             <AnimatePresence mode="wait">
               <motion.div
                 key={`poster-${currentEventIndex}`}
@@ -298,7 +298,7 @@ export default function EventRegistrationPage() {
         )}
 
         {/* Main Content Area */}
-        <div className={`w-full px-4 md:px-0 flex flex-col items-start ${isEmbed ? "mt-0 max-w-md mx-auto" : "max-w-[728px] md:flex-row gap-6 md:gap-8 mt-6 md:mt-8"}`}>
+        <div className={`w-full px-4 md:px-0 flex flex-col items-start ${isEmbed ? "mt-0 max-w-md mx-auto" : "max-w-[1080px] md:flex-row gap-6 md:gap-8 mt-6 md:mt-8"}`}>
           
           {/* Left Side: Event Details */}
           {!isEmbed && (
