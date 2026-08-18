@@ -134,7 +134,8 @@ export async function POST(request: Request) {
     const statusText = status.isMember ? 'Existing Member' : 'New Non-Member';
     const contactInfo = contact || phoneNumber || 'N/A';
     const wantsText = wantsMembership ? '\n*Requested Membership:* Yes' : '';
-    const alertMessage = `🔔 *New Event Enrollment*\n\n*Event:* ${eventTitle || 'General Registration'}\n*Name:* ${finalName}\n*Status:* ${statusText}${wantsText}\n*Contact Info:* ${contactInfo}`;
+    const alertHeader = eventId ? '🔔 *New Registration*' : '🔔 *New Membership Enrollment*';
+    const alertMessage = `${alertHeader}\n\n*Event:* ${eventTitle || 'General Registration'}\n*Name:* ${finalName}\n*Status:* ${statusText}${wantsText}\n*Contact Info:* ${contactInfo}`;
     await sendTelegramAlert(alertMessage);
 
     // If contact or phoneNumber is an email, send confirmation email
