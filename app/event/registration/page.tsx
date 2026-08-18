@@ -178,7 +178,7 @@ export default function EventRegistrationPage() {
     setResult(null);
     setName('');
     setPhoneNumber('');
-    setMemberStatus(null);
+    setMemberStatus('non-member');
     setWantsMembership(false);
   };
 
