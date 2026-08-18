@@ -139,6 +139,14 @@ export async function POST(request: Request) {
     // Fire notifications and wait for them to ensure they complete before response ends
     const contactInfo = contact || phoneNumber || 'N/A';
     
+    let eventImageUrl = 'https://i.imgur.com/ykQuk5a.jpeg'; // default
+    if (eventId) {
+      const eventRecord = await prisma.event.findUnique({ where: { id: eventId } });
+      if (eventRecord) {
+        eventImageUrl = eventRecord.imageUrl || (eventRecord.images && eventRecord.images[0]) || eventImageUrl;
+      }
+    }
+    
     let alertMessage = '';
     
     if (eventId) {
@@ -155,19 +163,15 @@ export async function POST(request: Request) {
       alertMessage += `<b>Nationality:</b> ${nationality || 'N/A'}`;
     }
 
-    const alertImageUrl = (finalAvatarUrl && !finalAvatarUrl.includes('placeholder.svg')) ? finalAvatarUrl : undefined;
+    const alertImageUrl = eventId 
+      ? (eventImageUrl !== 'https://i.imgur.com/ykQuk5a.jpeg' ? eventImageUrl : undefined)
+      : ((finalAvatarUrl && !finalAvatarUrl.includes('placeholder.svg')) ? finalAvatarUrl : undefined);
+      
     await sendTelegramAlert(alertMessage, alertImageUrl);
 
     // If contact or phoneNumber is an email, send confirmation email
     const emailAddress = (contact && isEmail(contact)) ? contact : (phoneNumber && isEmail(phoneNumber)) ? phoneNumber : null;
     if (emailAddress) {
-      let eventImageUrl = 'https://i.imgur.com/ykQuk5a.jpeg'; // default
-      if (eventId) {
-        const eventRecord = await prisma.event.findUnique({ where: { id: eventId } });
-        if (eventRecord) {
-          eventImageUrl = eventRecord.imageUrl || (eventRecord.images && eventRecord.images[0]) || eventImageUrl;
-        }
-      }
       await sendConfirmationEmail(emailAddress, eventTitle || 'Kompong Dewa Integrated Resort Event', finalName, eventImageUrl);
     }
 
