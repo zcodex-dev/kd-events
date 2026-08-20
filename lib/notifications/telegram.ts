@@ -42,7 +42,7 @@ export async function sendTelegramAlert(message: string, imageUrl?: string) {
         const imgRes = await fetch(imageUrl);
         if (imgRes.ok) {
           const blob = await imgRes.blob();
-          formData.append('chat_id', chatId);
+          formData.append('chat_id', chatId as string);
           formData.append('caption', message);
           formData.append('parse_mode', 'HTML');
           formData.append('photo', blob, 'image.png');
