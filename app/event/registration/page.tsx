@@ -376,13 +376,11 @@ export default function EventRegistrationPage() {
             ) : !result ? (
               <>
                 {isEmbed && !isLoadingEvents && events.length > 0 && (
-                  <div className="w-full aspect-[16/9] relative rounded-xl overflow-hidden mb-5 shadow-sm border border-neutral-100 bg-black/5">
-                    <Image
+                  <div className="w-full mb-5">
+                    <img
                       src={currentEvent?.image || defaultEvents[0].image}
                       alt={currentEvent?.title || 'Event'}
-                      fill
-                      className="object-contain"
-                      unoptimized
+                      className="w-full h-auto rounded-xl shadow-sm border border-neutral-100"
                     />
                   </div>
                 )}
