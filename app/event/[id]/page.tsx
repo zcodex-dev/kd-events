@@ -82,51 +82,11 @@ export default async function EventDetailPage({ params }: PageProps) {
       </header>
 
       <main className="min-h-screen bg-[#0b0b0b] pt-16 pb-16">
-        {/* Cover */}
-        <div className="relative h-[38dvh] md:h-[52dvh] bg-black overflow-hidden">
-          <Image
-            src={cover || FALLBACK_IMAGE}
-            alt=""
-            fill
-            className="object-cover opacity-80 md:opacity-60"
-            unoptimized
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-[#0b0b0b]/60 md:via-black/40 to-transparent" />
-
-          <LocalizedEventDetails event={event} />
-        </div>
-
-        <div className="max-w-4xl mx-auto px-6 md:px-8">
-          {gallery.length > 0 && (
-            <div className="pb-8">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {gallery.map((src, i) => (
-                  <div
-                    key={`${src}-${i}`}
-                    className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/40 border border-white/10"
-                  >
-                    <Image
-                      src={src}
-                      alt=""
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 50vw, 33vw"
-                      unoptimized
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <Link
-            href={`/event/registration?eventId=${event.id}`}
-            className="inline-flex items-center justify-center w-full md:w-auto md:px-10 bg-[#c3943a] hover:bg-[#e5ac53] text-white text-sm md:text-base font-bold py-3 md:py-3.5 px-4 rounded-lg shadow-md transition-colors"
-          >
-            Register for this event
-          </Link>
-        </div>
+        <LocalizedEventDetails 
+          event={event} 
+          cover={cover || FALLBACK_IMAGE}
+          gallery={gallery}
+        />
       </main>
     </>
   );

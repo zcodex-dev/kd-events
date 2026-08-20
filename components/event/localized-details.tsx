@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Calendar, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 type LocalizedEventDetailsProps = {
   event: {
@@ -15,6 +17,8 @@ type LocalizedEventDetailsProps = {
     location: string | null;
     tag: string | null;
   };
+  cover: string;
+  gallery: string[];
 };
 
 function wrapTables(html: string) {
@@ -23,7 +27,7 @@ function wrapTables(html: string) {
     .replace(/<\/table>/gi, '</table></div>');
 }
 
-export function LocalizedEventDetails({ event }: LocalizedEventDetailsProps) {
+export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventDetailsProps) {
   const [lang, setLang] = useState<'en' | 'id' | 'zh'>('en');
 
   const currentTitle = lang === 'en' ? event.title : lang === 'id' ? (event.titleId || event.title) : (event.titleZh || event.title);
@@ -34,15 +38,27 @@ export function LocalizedEventDetails({ event }: LocalizedEventDetailsProps) {
 
   return (
     <>
-      <div className="absolute inset-x-0 bottom-0 max-w-4xl mx-auto px-6 md:px-8 pb-6 md:pb-10 z-10 pointer-events-none">
-        {event.tag && (
-          <div className="inline-block px-2 py-0.5 md:py-1 mb-3 bg-white/10 backdrop-blur-md rounded text-[10px] md:text-xs font-medium text-[#e5ac53] border border-white/10">
-            {event.tag}
-          </div>
-        )}
-        <h1 className="text-2xl md:text-4xl font-black text-white leading-tight drop-shadow-lg pointer-events-auto transition-all duration-300">
-          {currentTitle}
-        </h1>
+      <div className="relative h-[38dvh] md:h-[52dvh] bg-black overflow-hidden">
+        <Image
+          src={cover}
+          alt=""
+          fill
+          className="object-cover opacity-80 md:opacity-60"
+          unoptimized
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-[#0b0b0b]/60 md:via-black/40 to-transparent" />
+
+        <div className="absolute inset-x-0 bottom-0 max-w-4xl mx-auto px-6 md:px-8 pb-6 md:pb-10 z-10 pointer-events-none">
+          {event.tag && (
+            <div className="inline-block px-2 py-0.5 md:py-1 mb-3 bg-white/10 backdrop-blur-md rounded text-[10px] md:text-xs font-medium text-[#e5ac53] border border-white/10 pointer-events-auto">
+              {event.tag}
+            </div>
+          )}
+          <h1 className="text-2xl md:text-4xl font-black text-white leading-tight drop-shadow-lg pointer-events-auto transition-all duration-300">
+            {currentTitle}
+          </h1>
+        </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 md:px-8">
@@ -109,6 +125,37 @@ export function LocalizedEventDetails({ event }: LocalizedEventDetailsProps) {
             <p className="whitespace-pre-line" key={lang}>{descSource}</p>
           )}
         </article>
+
+        {gallery.length > 0 && (
+          <div className="pb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {gallery.map((src, i) => (
+                <div
+                  key={`${src}-${i}`}
+                  className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/40 border border-white/10"
+                >
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 50vw, 33vw"
+                    unoptimized
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="pb-8">
+          <Link
+            href={`/event/registration?eventId=${(event as any).id}`}
+            className="inline-flex items-center justify-center w-full md:w-auto md:px-10 bg-[#c3943a] hover:bg-[#e5ac53] text-white text-sm md:text-base font-bold py-3 md:py-3.5 px-4 rounded-lg shadow-md transition-colors"
+          >
+            Register for this event
+          </Link>
+        </div>
       </div>
     </>
   );
