@@ -360,7 +360,7 @@ export default function EventRegistrationPage() {
           )}
 
           {/* Right Side: Form Area */}
-          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start ${isEmbed ? "max-w-2xl mx-auto bg-transparent shadow-none border-none p-0" : "bg-white md:rounded-2xl md:shadow-xl border-none md:border border-neutral-200 px-5 pt-0 md:pt-6 pb-8 md:w-[340px]"}`}>
+          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start ${isEmbed ? "max-w-xl mx-auto bg-transparent shadow-none border-none p-0" : "bg-white md:rounded-2xl md:shadow-xl border-none md:border border-neutral-200 px-5 pt-0 md:pt-6 pb-8 md:w-[340px]"}`}>
             <div className="w-full relative z-10">
 
             {!hasActiveEvents && !isLoadingEvents ? (
@@ -376,12 +376,12 @@ export default function EventRegistrationPage() {
             ) : !result ? (
               <>
                 {isEmbed && !isLoadingEvents && events.length > 0 && (
-                  <div className="w-full aspect-[16/9] relative rounded-xl overflow-hidden mb-5 shadow-sm border border-neutral-100">
+                  <div className="w-full aspect-[16/9] relative rounded-xl overflow-hidden mb-5 shadow-sm border border-neutral-100 bg-black/5">
                     <Image
                       src={currentEvent?.image || defaultEvents[0].image}
                       alt={currentEvent?.title || 'Event'}
                       fill
-                      className="object-cover"
+                      className="object-contain"
                       unoptimized
                     />
                   </div>
