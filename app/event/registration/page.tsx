@@ -360,7 +360,7 @@ export default function EventRegistrationPage() {
           )}
 
           {/* Right Side: Form Area */}
-          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start ${isEmbed ? "bg-transparent shadow-none border-none p-0" : "bg-white md:rounded-2xl md:shadow-xl border-none md:border border-neutral-200 px-5 pt-0 md:pt-6 pb-8 md:w-[340px]"}`}>
+          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start ${isEmbed ? "max-w-md mx-auto bg-transparent shadow-none border-none p-0" : "bg-white md:rounded-2xl md:shadow-xl border-none md:border border-neutral-200 px-5 pt-0 md:pt-6 pb-8 md:w-[340px]"}`}>
             <div className="w-full relative z-10">
 
             {!hasActiveEvents && !isLoadingEvents ? (
