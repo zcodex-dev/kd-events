@@ -34,20 +34,19 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
   
   const descSource = lang === 'en' ? event.description : lang === 'id' ? (event.descriptionId || event.description) : (event.descriptionZh || event.description);
   
-  const hasMultipleLangs = !!(event.descriptionId || event.descriptionZh || event.titleId || event.titleZh);
+  const hasId = !!(event.descriptionId || event.titleId);
+  const hasZh = !!(event.descriptionZh || event.titleZh);
+  const hasMultipleLangs = hasId || hasZh;
 
   return (
     <>
-      <div className="relative h-[38dvh] md:h-[52dvh] bg-black overflow-hidden">
-        <Image
+      <div className="relative w-full bg-black flex justify-center">
+        <img
           src={cover}
           alt=""
-          fill
-          className="object-cover opacity-80 md:opacity-60"
-          unoptimized
-          priority
+          className="w-full h-auto max-h-[60vh] md:max-h-[75vh] object-contain opacity-90"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-[#0b0b0b]/60 md:via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-[#0b0b0b]/40 to-transparent pointer-events-none" />
 
         <div className="absolute inset-x-0 bottom-0 max-w-4xl mx-auto px-6 md:px-8 pb-6 md:pb-10 z-10 pointer-events-none">
           {event.tag && (
@@ -84,12 +83,16 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
                 <button type="button" onClick={() => setLang('en')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
                   <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm opacity-90" /> EN
                 </button>
-                <button type="button" onClick={() => setLang('id')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                  <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
-                </button>
-                <button type="button" onClick={() => setLang('zh')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                  <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
-                </button>
+                {hasId && (
+                  <button type="button" onClick={() => setLang('id')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                    <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
+                  </button>
+                )}
+                {hasZh && (
+                  <button type="button" onClick={() => setLang('zh')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                    <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -102,12 +105,16 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
                 <button type="button" onClick={() => setLang('en')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
                   <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm opacity-90" /> EN
                 </button>
-                <button type="button" onClick={() => setLang('id')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                  <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
-                </button>
-                <button type="button" onClick={() => setLang('zh')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                  <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
-                </button>
+                {hasId && (
+                  <button type="button" onClick={() => setLang('id')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                    <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
+                  </button>
+                )}
+                {hasZh && (
+                  <button type="button" onClick={() => setLang('zh')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                    <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
+                  </button>
+                )}
             </div>
           </div>
         )}
