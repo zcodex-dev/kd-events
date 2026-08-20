@@ -30,6 +30,11 @@ export async function PUT(request: Request, { params }: RouteContext) {
 
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
+    const titleZh = formData.get('titleZh') as string;
+    const descriptionZh = formData.get('descriptionZh') as string;
+    const titleId = formData.get('titleId') as string;
+    const descriptionId = formData.get('descriptionId') as string;
+
     const tag = formData.get('tag') as string;
     const date = formData.get('date') as string;
     const location = formData.get('location') as string;
@@ -50,6 +55,10 @@ export async function PUT(request: Request, { params }: RouteContext) {
       data: {
         title,
         description: description || null,
+        titleZh: titleZh || null,
+        descriptionZh: descriptionZh || null,
+        titleId: titleId || null,
+        descriptionId: descriptionId || null,
         tag: tag || null,
         date: date || null,
         location: location || null,

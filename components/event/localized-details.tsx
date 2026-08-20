@@ -1,0 +1,115 @@
+'use client';
+
+import { useState } from 'react';
+import { Calendar, MapPin } from 'lucide-react';
+
+type LocalizedEventDetailsProps = {
+  event: {
+    title: string;
+    description: string | null;
+    titleZh: string | null;
+    descriptionZh: string | null;
+    titleId: string | null;
+    descriptionId: string | null;
+    date: string | null;
+    location: string | null;
+    tag: string | null;
+  };
+};
+
+function wrapTables(html: string) {
+  return html
+    .replace(/<table/gi, '<div class="event-table-wrap"><table')
+    .replace(/<\/table>/gi, '</table></div>');
+}
+
+export function LocalizedEventDetails({ event }: LocalizedEventDetailsProps) {
+  const [lang, setLang] = useState<'en' | 'id' | 'zh'>('en');
+
+  const currentTitle = lang === 'en' ? event.title : lang === 'id' ? (event.titleId || event.title) : (event.titleZh || event.title);
+  
+  const descSource = lang === 'en' ? event.description : lang === 'id' ? (event.descriptionId || event.description) : (event.descriptionZh || event.description);
+  
+  const hasMultipleLangs = !!(event.descriptionId || event.descriptionZh || event.titleId || event.titleZh);
+
+  return (
+    <>
+      <div className="absolute inset-x-0 bottom-0 max-w-4xl mx-auto px-6 md:px-8 pb-6 md:pb-10 z-10 pointer-events-none">
+        {event.tag && (
+          <div className="inline-block px-2 py-0.5 md:py-1 mb-3 bg-white/10 backdrop-blur-md rounded text-[10px] md:text-xs font-medium text-[#e5ac53] border border-white/10">
+            {event.tag}
+          </div>
+        )}
+        <h1 className="text-2xl md:text-4xl font-black text-white leading-tight drop-shadow-lg pointer-events-auto transition-all duration-300">
+          {currentTitle}
+        </h1>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-6 md:px-8">
+        {(event.date || event.location) && (
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-5 border-b border-white/10 text-xs md:text-sm text-neutral-300 font-medium">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
+              {event.date && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#c3943a] shrink-0" />
+                  {event.date}
+                </div>
+              )}
+              {event.location && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#c3943a] shrink-0" />
+                  {event.location}
+                </div>
+              )}
+            </div>
+            
+            {hasMultipleLangs && (
+              <div className="flex bg-white/5 backdrop-blur border border-white/10 p-1 rounded-lg w-full md:w-auto overflow-hidden">
+                <button type="button" onClick={() => setLang('en')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                  <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm opacity-90" /> EN
+                </button>
+                <button type="button" onClick={() => setLang('id')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                  <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
+                </button>
+                <button type="button" onClick={() => setLang('zh')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                  <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* If there are no dates/locations but we have multiple languages, show tabs anyway */}
+        {hasMultipleLangs && !(event.date || event.location) && (
+          <div className="py-5 border-b border-white/10">
+            <div className="flex bg-white/5 backdrop-blur border border-white/10 p-1 rounded-lg w-full max-w-[300px]">
+                <button type="button" onClick={() => setLang('en')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                  <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm opacity-90" /> EN
+                </button>
+                <button type="button" onClick={() => setLang('id')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                  <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
+                </button>
+                <button type="button" onClick={() => setLang('zh')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                  <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
+                </button>
+            </div>
+          </div>
+        )}
+
+        <article className="py-6 text-sm md:text-base text-neutral-300 leading-relaxed transition-opacity duration-300">
+          {!descSource ? (
+            <p className="text-neutral-500">No further details have been published for this event yet.</p>
+          ) : /<\/?[a-z][\s\S]*>/i.test(descSource) ? (
+            <div
+              key={lang}
+              className="event-prose prose prose-sm prose-invert prose-p:text-sm prose-li:text-sm prose-li:marker:text-[#c3943a] max-w-none break-words overflow-hidden"
+              dangerouslySetInnerHTML={{ __html: wrapTables(descSource) }}
+            />
+          ) : (
+            <p className="whitespace-pre-line" key={lang}>{descSource}</p>
+          )}
+        </article>
+      </div>
+    </>
+  );
+}

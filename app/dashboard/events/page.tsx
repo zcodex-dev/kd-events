@@ -35,6 +35,10 @@ type Event = {
   id: string;
   title: string;
   description: string | null;
+  titleZh: string | null;
+  descriptionZh: string | null;
+  titleId: string | null;
+  descriptionId: string | null;
   images: string[];
   imageUrl: string | null;
   tag: string | null;
@@ -59,8 +63,13 @@ export default function EventsManagementPage() {
   const [hasCopiedEmbed, setHasCopiedEmbed] = useState(false);
 
   // Form State
+  const [activeLangTab, setActiveLangTab] = useState<'en' | 'id' | 'zh'>('en');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [titleZh, setTitleZh] = useState('');
+  const [descriptionZh, setDescriptionZh] = useState('');
+  const [titleId, setTitleId] = useState('');
+  const [descriptionId, setDescriptionId] = useState('');
   const [tag, setTag] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
@@ -89,8 +98,13 @@ export default function EventsManagementPage() {
 
   const handleOpenModal = () => {
     setEditingEvent(null);
+    setActiveLangTab('en');
     setTitle('');
     setDescription('');
+    setTitleZh('');
+    setDescriptionZh('');
+    setTitleId('');
+    setDescriptionId('');
     setTag('');
     setDate('');
     setLocation('');
@@ -102,8 +116,13 @@ export default function EventsManagementPage() {
 
   const handleOpenEditModal = (event: Event) => {
     setEditingEvent(event);
+    setActiveLangTab('en');
     setTitle(event.title);
     setDescription(event.description || '');
+    setTitleZh(event.titleZh || '');
+    setDescriptionZh(event.descriptionZh || '');
+    setTitleId(event.titleId || '');
+    setDescriptionId(event.descriptionId || '');
     setTag(event.tag || '');
     setDate(event.date || '');
     setLocation(event.location || '');
@@ -128,8 +147,11 @@ export default function EventsManagementPage() {
     try {
       const formData = new FormData();
       formData.append('title', title);
-      // Quill leaves "<p><br></p>" behind when the user clears it — store empty instead.
       formData.append('description', stripHtml(description) ? description : '');
+      formData.append('titleZh', titleZh);
+      formData.append('descriptionZh', stripHtml(descriptionZh) ? descriptionZh : '');
+      formData.append('titleId', titleId);
+      formData.append('descriptionId', stripHtml(descriptionId) ? descriptionId : '');
       formData.append('tag', tag);
       formData.append('date', date);
       formData.append('location', location);
@@ -424,16 +446,34 @@ export default function EventsManagementPage() {
                 <form id="event-form" onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="sm:col-span-2">
+                      <div className="flex bg-neutral-100 dark:bg-neutral-800/80 p-1 rounded-lg w-full mb-2">
+                        <button type="button" onClick={() => setActiveLangTab('en')} className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-md transition-all ${activeLangTab === 'en' ? 'bg-white dark:bg-neutral-900 shadow text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}>
+                          <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm" /> English
+                        </button>
+                        <button type="button" onClick={() => setActiveLangTab('id')} className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-md transition-all ${activeLangTab === 'id' ? 'bg-white dark:bg-neutral-900 shadow text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}>
+                          <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto border border-neutral-200 dark:border-neutral-700 rounded-sm" /> Bahasa
+                        </button>
+                        <button type="button" onClick={() => setActiveLangTab('zh')} className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-md transition-all ${activeLangTab === 'zh' ? 'bg-white dark:bg-neutral-900 shadow text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}>
+                          <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm" /> 中文
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-2">
                       <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                        Title <span className="text-red-500">*</span>
+                        Title {activeLangTab === 'en' && <span className="text-red-500">*</span>}
                       </label>
                       <input
                         type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="e.g. Poker Tournament 2026"
+                        value={activeLangTab === 'en' ? title : activeLangTab === 'id' ? titleId : titleZh}
+                        onChange={(e) => {
+                          if (activeLangTab === 'en') setTitle(e.target.value);
+                          if (activeLangTab === 'id') setTitleId(e.target.value);
+                          if (activeLangTab === 'zh') setTitleZh(e.target.value);
+                        }}
+                        placeholder={activeLangTab === 'en' ? "e.g. Poker Tournament 2026" : activeLangTab === 'id' ? "e.g. Turnamen Poker 2026" : "e.g. 2026年扑克锦标赛"}
                         className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
-                        required
+                        required={activeLangTab === 'en'}
                       />
                     </div>
 
@@ -443,9 +483,14 @@ export default function EventsManagementPage() {
                       </label>
                       <div className="event-description-editor bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg overflow-hidden">
                         <RichTextEditor
-                          value={description}
-                          onChange={setDescription}
-                          placeholder="Detailed information about the event..."
+                          key={activeLangTab} // Force remount on tab change to reset editor state cleanly
+                          value={activeLangTab === 'en' ? description : activeLangTab === 'id' ? descriptionId : descriptionZh}
+                          onChange={(val) => {
+                            if (activeLangTab === 'en') setDescription(val);
+                            if (activeLangTab === 'id') setDescriptionId(val);
+                            if (activeLangTab === 'zh') setDescriptionZh(val);
+                          }}
+                          placeholder={activeLangTab === 'en' ? "Detailed information about the event..." : "Informasi detail tentang acara..."}
                         />
                       </div>
                       <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-500">

@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 
+import { LocalizedEventDetails } from '@/components/event/localized-details';
+
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop';
 
@@ -92,52 +94,10 @@ export default async function EventDetailPage({ params }: PageProps) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-[#0b0b0b]/60 md:via-black/40 to-transparent" />
 
-          <div className="absolute inset-x-0 bottom-0 max-w-4xl mx-auto px-6 md:px-8 pb-6 md:pb-10">
-            {event.tag && (
-              <div className="inline-block px-2 py-0.5 md:py-1 mb-3 bg-white/10 backdrop-blur-md rounded text-[10px] md:text-xs font-medium text-[#e5ac53] border border-white/10">
-                {event.tag}
-              </div>
-            )}
-            <h1 className="text-2xl md:text-4xl font-black text-white leading-tight drop-shadow-lg">
-              {event.title}
-            </h1>
-          </div>
+          <LocalizedEventDetails event={event} />
         </div>
 
         <div className="max-w-4xl mx-auto px-6 md:px-8">
-          {/* Meta */}
-          {(event.date || event.location) && (
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 py-5 border-b border-white/10 text-xs md:text-sm text-neutral-300 font-medium">
-              {event.date && (
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-[#c3943a] shrink-0" />
-                  {event.date}
-                </div>
-              )}
-              {event.location && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[#c3943a] shrink-0" />
-                  {event.location}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Description. Events created before the rich-text editor hold plain
-              text, whose line breaks would collapse if rendered as HTML. */}
-          <article className="py-6 text-sm md:text-base text-neutral-300 leading-relaxed">
-            {!event.description ? (
-              <p className="text-neutral-500">No further details have been published for this event yet.</p>
-            ) : /<\/?[a-z][\s\S]*>/i.test(event.description) ? (
-              <div
-                className="event-prose prose prose-sm prose-invert prose-p:text-sm prose-li:text-sm prose-li:marker:text-[#c3943a] max-w-none break-words overflow-hidden"
-                dangerouslySetInnerHTML={{ __html: wrapTables(event.description) }}
-              />
-            ) : (
-              <p className="whitespace-pre-line">{event.description}</p>
-            )}
-          </article>
-
           {gallery.length > 0 && (
             <div className="pb-8">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
