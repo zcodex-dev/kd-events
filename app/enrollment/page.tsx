@@ -8,6 +8,7 @@ import type { AnimatedIconHandle } from '@/components/icons/types';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import Link from 'next/link';
+import Tesseract from 'tesseract.js';
 
 
 
@@ -40,6 +41,10 @@ export default function EnrollmentPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [nationality, setNationality] = useState('');
   const [passportFile, setPassportFile] = useState<File | null>(null);
+  
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState('');
+  const [scanSuccess, setScanSuccess] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<{ isMember: boolean; memberId: string | null; memberData?: any; registration?: any } | null>(null);
@@ -59,6 +64,56 @@ export default function EnrollmentPage() {
     value
       ? new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
       : '—';
+
+  const passportLine1Regex = /^P[A-Z<][A-Z<0-9]{42}$/;
+  const passportLine2Regex = /^[A-Z0-9<]{44}$/;
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsScanning(true);
+    setScanError('');
+    setScanSuccess('');
+    setPassportFile(null); // Clear previous valid file while scanning
+
+    try {
+      const result = await Tesseract.recognize(file, 'eng');
+      const text = result.data.text;
+      
+      const lines = text.split('\n').map(line => line.trim().replace(/\s+/g, '')); // MRZ lines usually don't have spaces, but OCR might add them
+      
+      let isValid = false;
+      for (const line of lines) {
+        if (passportLine1Regex.test(line) || passportLine2Regex.test(line)) {
+          isValid = true;
+          break;
+        }
+      }
+
+      // Fallback check
+      if (!isValid && text.toLowerCase().includes('passport')) {
+        isValid = true;
+      }
+
+      if (isValid) {
+        setPassportFile(file);
+        setScanSuccess('Passport verified successfully!');
+        toast.success('Passport verified successfully!');
+      } else {
+        setScanError('Please upload a valid passport image. Selfies or random images are not allowed.');
+        toast.error('Invalid passport image. Please try again.');
+        e.target.value = ''; // Reset input
+      }
+    } catch (err) {
+      console.error('OCR Error:', err);
+      setScanError('Failed to scan image. Please try again.');
+      toast.error('Failed to scan image. Please try again.');
+      e.target.value = ''; // Reset input
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
 
 
@@ -103,14 +158,10 @@ export default function EnrollmentPage() {
     setPhoneNumber('');
     setNationality('');
     setPassportFile(null);
+    setScanSuccess('');
+    setScanError('');
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPassportFile(file);
-    }
-  };
 
 
   return (
@@ -213,26 +264,40 @@ export default function EnrollmentPage() {
 
                     <div>
                       <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Upload ID/Passport <span className="text-red-500">*</span></label>
-                      <label className="w-full flex flex-row items-center justify-center gap-2 h-[44px] md:h-[50px] border-2 border-dashed border-neutral-300 rounded-lg transition-colors relative overflow-hidden bg-white hover:bg-neutral-50 cursor-pointer">
-                        {passportFile ? (
+                      <label className={`w-full flex flex-row items-center justify-center gap-2 h-[44px] md:h-[50px] border-2 ${scanError ? 'border-red-400 bg-red-50' : 'border-dashed border-neutral-300 bg-white hover:bg-neutral-50'} rounded-lg transition-colors relative overflow-hidden cursor-pointer`}>
+                        {isScanning ? (
+                          <>
+                            <Loader2 className="w-4 h-4 text-[#c3943a] animate-spin shrink-0" />
+                            <span className="text-[10px] md:text-xs font-medium text-[#c3943a]">Scanning ID...</span>
+                          </>
+                        ) : passportFile ? (
                           <>
                             <FileImage className="w-4 h-4 text-[#c3943a] shrink-0" />
                             <span className="text-[10px] md:text-xs font-medium truncate max-w-[200px] text-[#c3943a]">{passportFile.name}</span>
                           </>
                         ) : (
                           <>
-                            <Upload className="w-4 h-4 text-neutral-400 shrink-0" />
-                            <span className="text-[10px] md:text-xs font-medium text-neutral-400">Click to upload (Required)</span>
+                            <Upload className={`w-4 h-4 ${scanError ? 'text-red-500' : 'text-neutral-400'} shrink-0`} />
+                            <span className={`text-[10px] md:text-xs font-medium ${scanError ? 'text-red-500' : 'text-neutral-400'}`}>Click to upload (Required)</span>
                           </>
                         )}
-                        <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" required />
+                        <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" required disabled={isScanning} />
                       </label>
+                      {scanError && (
+                        <p className="text-[10px] md:text-xs text-red-500 mt-1 font-medium">{scanError}</p>
+                      )}
+                      {scanSuccess && (
+                        <p className="text-[10px] md:text-xs text-green-600 mt-1 font-medium flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          {scanSuccess}
+                        </p>
+                      )}
                     </div>
                   </motion.div>
 
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isScanning}
                     className="w-full mt-4 md:mt-6 bg-[#c3943a] hover:bg-[#a67c2c] text-white py-3 md:py-3.5 rounded-lg font-bold text-sm md:text-base flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed group shadow-lg shadow-[#c3943a]/20 shrink-0 relative overflow-hidden"
                   >
                     <div className="absolute inset-0 w-full h-full bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
