@@ -78,28 +78,26 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
               )}
             </div>
             
-            {hasMultipleLangs && (
-              <div className="flex bg-white/5 backdrop-blur border border-white/10 p-1 rounded-lg w-full sm:w-auto overflow-hidden shrink-0">
-                <button type="button" onClick={() => setLang('en')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                  <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm opacity-90" /> EN
+            <div className="flex bg-white/5 backdrop-blur border border-white/10 p-1 rounded-lg w-full sm:w-auto overflow-hidden shrink-0">
+              <button type="button" onClick={() => setLang('en')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm opacity-90" /> EN
+              </button>
+              {hasId && (
+                <button type="button" onClick={() => setLang('id')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                  <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
                 </button>
-                {hasId && (
-                  <button type="button" onClick={() => setLang('id')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                    <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
-                  </button>
-                )}
-                {hasZh && (
-                  <button type="button" onClick={() => setLang('zh')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                    <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
-                  </button>
-                )}
-              </div>
-            )}
+              )}
+              {hasZh && (
+                <button type="button" onClick={() => setLang('zh')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                  <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
+                </button>
+              )}
+            </div>
           </div>
         )}
 
-        {/* If there are no dates/locations but we have multiple languages, show tabs anyway */}
-        {hasMultipleLangs && !(event.date || event.location) && (
+        {/* If there are no dates/locations but we have a language switcher to show */}
+        {!(event.date || event.location) && (
           <div className="py-5 border-b border-white/10">
             <div className="flex bg-white/5 backdrop-blur border border-white/10 p-1 rounded-lg w-full max-w-[300px]">
                 <button type="button" onClick={() => setLang('en')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>

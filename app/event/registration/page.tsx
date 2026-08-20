@@ -94,7 +94,7 @@ export default function EventRegistrationPage() {
           });
 
           const params = new URLSearchParams(window.location.search);
-          const urlEventId = params.get('event');
+          const urlEventId = params.get('eventId') || params.get('event');
           
           if (urlEventId) {
             const eventSlides = slides.filter((e: any) => e.id === urlEventId);

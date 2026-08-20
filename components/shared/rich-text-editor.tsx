@@ -64,8 +64,8 @@ export default function RichTextEditor({ value, onChange, placeholder, className
         ref={editor}
         value={value}
         config={config}
-        onBlur={(newContent) => onChange(newContent)} // preferred to use only this option to update the content for performance reasons
-        onChange={() => {}}
+        onBlur={(newContent) => onChange(newContent)}
+        onChange={(newContent) => onChange(newContent)}
       />
     </div>
   );
