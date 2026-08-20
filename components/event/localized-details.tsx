@@ -47,24 +47,24 @@ export function LocalizedEventDetails({ event }: LocalizedEventDetailsProps) {
 
       <div className="max-w-4xl mx-auto px-6 md:px-8">
         {(event.date || event.location) && (
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-5 border-b border-white/10 text-xs md:text-sm text-neutral-300 font-medium">
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-5 border-b border-white/10 text-xs md:text-sm text-neutral-300 font-medium">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 flex-1">
               {event.date && (
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-[#c3943a] shrink-0" />
-                  {event.date}
+                <div className="flex items-start sm:items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#c3943a] shrink-0 mt-0.5 sm:mt-0" />
+                  <span>{event.date}</span>
                 </div>
               )}
               {event.location && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[#c3943a] shrink-0" />
-                  {event.location}
+                <div className="flex items-start sm:items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#c3943a] shrink-0 mt-0.5 sm:mt-0" />
+                  <span className="max-w-xl">{event.location}</span>
                 </div>
               )}
             </div>
             
             {hasMultipleLangs && (
-              <div className="flex bg-white/5 backdrop-blur border border-white/10 p-1 rounded-lg w-full md:w-auto overflow-hidden">
+              <div className="flex bg-white/5 backdrop-blur border border-white/10 p-1 rounded-lg w-full sm:w-auto overflow-hidden shrink-0">
                 <button type="button" onClick={() => setLang('en')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
                   <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm opacity-90" /> EN
                 </button>
