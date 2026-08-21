@@ -188,7 +188,7 @@ export default function EnrollmentPage() {
       <div className={`flex flex-col items-center relative ${isEmbed ? "w-full min-h-0 bg-transparent p-0" : "min-h-[100dvh] overflow-y-auto bg-white md:bg-[#F4F4F5] pt-16 md:pt-24 md:pb-12"}`}>
         {/* Left Side: Static Background Image (Included on full embed & normal view) */}
         {showBanner && (
-          <div className={`relative w-full max-w-[728px] aspect-[4/3] md:aspect-[16/9] overflow-hidden shrink-0 ${isEmbed ? "rounded-t-2xl border-t border-x border-neutral-200" : "md:rounded-t-2xl"}`}>
+          <div className={`relative w-full max-w-[728px] aspect-[4/3] sm:aspect-[16/10] md:aspect-[16/9] min-h-[260px] sm:min-h-[300px] overflow-hidden shrink-0 ${isEmbed ? "rounded-t-2xl border-t border-x border-neutral-200" : "md:rounded-t-2xl"}`}>
             <Image
               src={bgImage}
               alt="Kompong Dewa Integrated Resort"
@@ -196,18 +196,18 @@ export default function EnrollmentPage() {
               className="object-cover"
               unoptimized
             />
-            <div className="absolute inset-0 z-10 pointer-events-none bg-[linear-gradient(to_top,rgba(0,0,0,0.95)_0%,rgba(0,0,0,0.5)_50%,rgba(0,0,0,0)_100%)]" />
-            <div className="absolute inset-x-0 bottom-0 z-20 px-6 pb-6 md:px-8 md:pb-8 flex flex-col items-start justify-end gap-2 text-left">
-              <h1 className="text-2xl md:text-4xl font-black text-white leading-tight">
+            <div className="absolute inset-0 z-10 pointer-events-none bg-[linear-gradient(to_top,rgba(0,0,0,0.95)_0%,rgba(0,0,0,0.6)_55%,rgba(0,0,0,0)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 z-20 px-5 pb-5 sm:px-8 sm:pb-7 flex flex-col items-start justify-end gap-1.5 sm:gap-2 text-left">
+              <h1 className="text-xl sm:text-3xl md:text-4xl font-black text-white leading-tight">
                 Kompong Dewa Integrated Resort
               </h1>
               
-              <div className="flex items-center gap-2 text-xs md:text-sm text-neutral-300 font-medium mb-1">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-300 font-medium mb-0.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#c3943a]" />
                 Sihanoukville, Cambodia
               </div>
               
-              <p className="text-sm text-neutral-300 leading-relaxed font-normal max-w-[600px] mt-1 hidden md:block">
+              <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal max-w-[620px] line-clamp-3 sm:line-clamp-none block">
                 A seamless ecosystem of luxury, leisure, and entertainment.
                 Experience Sihanoukville’s new standard of a life well-lived. Kompong Dewa is an integrated luxury destination redefining Sihanoukville’s landscape.
               </p>
