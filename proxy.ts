@@ -66,12 +66,6 @@ export function proxy(request: NextRequest) {
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }
-    
-    // Prevent access to /event/registration or /enrollment from the admin domain (allow localhost for testing)
-    if ((pathname === '/event/registration' || pathname.startsWith('/enrollment')) && !host.includes('localhost')) {
-      url.pathname = '/dashboard';
-      return NextResponse.redirect(url);
-    }
   }
 }
 
