@@ -162,10 +162,14 @@ export default function FoldersPage() {
             icon={PackageOpen}
             title="No folders found"
             description="You haven't created any folders yet. You can create a folder by assigning a file to it in the Media Library."
-            action={{
-              label: 'Go to Library',
-              href: '/dashboard/files'
-            }}
+            action={
+              <Link 
+                href="/dashboard/files"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Go to Library
+              </Link>
+            }
           />
         ) : (
           <div className="flex flex-wrap items-center justify-center gap-8 py-8 w-full">
