@@ -19,6 +19,8 @@ type DropZoneProps = {
   setGroupAsAlbum: (val: boolean) => void;
   albumTitle: string;
   setAlbumTitle: (val: string) => void;
+  targetFolder: string;
+  setTargetFolder: (val: string) => void;
 };
 
 export function DropZone({
@@ -30,8 +32,12 @@ export function DropZone({
   setGroupAsAlbum,
   albumTitle,
   setAlbumTitle,
+  targetFolder,
+  setTargetFolder,
 }: DropZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [existingFolders, setExistingFolders] = useState<string[]>([]);
+  const [isCustomFolder, setIsCustomFolder] = useState(false);
   const [allowedMimeTypes, setAllowedMimeTypes] = useState<string[]>([
     'image/jpeg',
     'image/png',
@@ -50,6 +56,16 @@ export function DropZone({
       .then((data) => {
         if (data.success && data.data?.allowedTypes && data.data.allowedTypes.length > 0) {
           setAllowedMimeTypes(data.data.allowedTypes);
+        }
+      })
+      .catch(() => {});
+
+    // Fetch existing folders
+    fetch('/api/folders')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) {
+          setExistingFolders(data.data.map((f: any) => f.name));
         }
       })
       .catch(() => {});
@@ -176,15 +192,17 @@ export function DropZone({
   }, [files, setFiles]);
 
   return (
-    <div>
-      {/* Drop area */}
+    <div className="flex flex-col lg:flex-row gap-6">
+      {/* Left Panel: Upload Area (60%) */}
+      <div className="w-full lg:w-[60%] space-y-4">
+        {/* Drop area */}
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onClick={() => inputRef.current?.click()}
         className={`
-          border-2 border-dashed rounded-xl p-8 sm:p-12 cursor-pointer transition-colors duration-200
+          border-2 border-dashed rounded-xl p-8 sm:p-12 min-h-[320px] cursor-pointer transition-colors duration-200
           flex flex-col items-center justify-center text-center
           ${
             isDragOver
@@ -252,9 +270,56 @@ export function DropZone({
               />
             ))}
           </div>
+        </motion.div>
+      )}
+      </div>
 
-          {/* Album Grouping Options */}
-          <div className="mt-4 p-4 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3.5">
+      {/* Right Panel: Details (40%) */}
+      <div className="w-full lg:w-[40%] space-y-4">
+        {/* Folder Destination Option */}
+        <div className="p-4 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3.5">
+          <div className="space-y-1.5 animate-fadeIn">
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+              Destination Folder (Optional)
+            </label>
+            
+            <select
+              value={isCustomFolder ? 'custom' : targetFolder}
+              onChange={(e) => {
+                if (e.target.value === 'custom') {
+                  setIsCustomFolder(true);
+                  setTargetFolder('');
+                } else {
+                  setIsCustomFolder(false);
+                  setTargetFolder(e.target.value);
+                }
+              }}
+              disabled={isUploading}
+              className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white rounded-lg focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-600 transition-colors"
+            >
+              <option value="">Root / Library</option>
+              {existingFolders.map(f => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+              <option value="custom">Type new folder name...</option>
+            </select>
+
+            {isCustomFolder && (
+              <input
+                type="text"
+                value={targetFolder}
+                onChange={(e) => setTargetFolder(e.target.value)}
+                disabled={isUploading}
+                placeholder="e.g. Campaign 2024"
+                className="w-full px-3 py-2 text-xs border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white rounded-lg focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-600 transition-colors mt-2"
+                autoFocus
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Album Grouping Options */}
+        <div className="p-4 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3.5">
             <label className="flex items-center gap-2.5 cursor-pointer">
               <input
                 type="checkbox"
@@ -297,24 +362,23 @@ export function DropZone({
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-3">
             <button
               onClick={onUpload}
-              disabled={isUploading || files.every((f) => f.status === 'success')}
-              className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isUploading || files.length === 0 || files.every((f) => f.status === 'success')}
+              className="flex-1 py-3 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isUploading ? 'Uploading...' : 'Upload'}
             </button>
             <button
               onClick={clearAll}
               disabled={isUploading}
-              className="px-5 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 rounded-lg transition-colors disabled:opacity-50"
+              className="px-5 py-3 text-sm font-medium text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 rounded-xl transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
           </div>
-        </motion.div>
-      )}
+      </div>
     </div>
   );
 }

@@ -9,6 +9,8 @@ function mapAdminUserToSubUser(user: any): SubUser {
     id: user.id,
     username: user.personnelId, // Map personnelId to username for frontend compatibility
     password: user.password,
+    nickname: user.nickname,
+    avatarUrl: user.avatarUrl,
     role: isSuper ? 'admin' : 'user',
     permissions: {
       canUpload: true, // Everyone can upload
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { username, password, role } = body;
+    const { username, password, role, nickname, avatarUrl } = body;
 
     if (!username || !username.trim() || !password || !password.trim()) {
       return NextResponse.json<ApiResponse>(
@@ -94,6 +96,8 @@ export async function POST(request: Request) {
         password: password.trim(),
         role: role === 'admin' ? 'SUPERADMIN' : 'ADMIN',
         name: personnelId,
+        nickname: nickname?.trim() || null,
+        avatarUrl: avatarUrl?.trim() || null,
       }
     });
 

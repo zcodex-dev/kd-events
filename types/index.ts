@@ -26,6 +26,7 @@ export type UploadedFile = {
   uploadedAt: string;
   viewCount: number;
   additionalImages?: AdditionalImage[];
+  folder?: string;
 };
 
 // ─── API Response ────────────────────────────────────────────────────────────
@@ -106,6 +107,8 @@ export type SubUser = {
   id: string;
   username: string;
   password: string;
+  nickname?: string;
+  avatarUrl?: string;
   role: UserRole;
   permissions: UserPermissions;
   createdAt: string;
@@ -165,8 +168,15 @@ export type TvScreen = {
   updatedAt: string;
 };
 
+export type FolderConfig = {
+  name: string;
+  color?: string; // hex color or similar
+  createdAt: string;
+};
+
 export type MetadataIndex = {
   files: UploadedFile[];
+  folders?: FolderConfig[];
   config?: AppConfig;
   users?: SubUser[];
   webPages?: WebPage[];

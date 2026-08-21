@@ -30,6 +30,12 @@ export async function GET(request: Request) {
       );
     }
 
+    // Filter by folder
+    const folder = searchParams.get('folder');
+    if (folder) {
+      files = files.filter((f) => f.folder === folder);
+    }
+
     // Filter by file type
     if (type) {
       files = files.filter((f) => f.mimeType.includes(type));

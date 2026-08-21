@@ -21,6 +21,7 @@ export default function UploadPage() {
   // Album specific states
   const [groupAsAlbum, setGroupAsAlbum] = useState(false);
   const [albumTitle, setAlbumTitle] = useState('');
+  const [targetFolder, setTargetFolder] = useState('');
 
   if (session && !session.permissions.canUpload) {
     return (
@@ -58,6 +59,7 @@ export default function UploadPage() {
 
       const result = await directUploadAlbum(itemsToUpload, {
         title: albumTitle.trim() || undefined,
+        folder: targetFolder.trim() || undefined,
         onProgress: (percent) => {
           setFiles((prev) =>
             prev.map((f) =>
@@ -109,6 +111,7 @@ export default function UploadPage() {
         const result = await directUploadSingleFile(item.file, {
           width: item.width,
           height: item.height,
+          folder: targetFolder.trim() || undefined,
           onProgress: (percent) => {
             setFiles((prev) =>
               prev.map((f) => (f.id === item.id ? { ...f, progress: percent } : f))
@@ -140,7 +143,7 @@ export default function UploadPage() {
     }
 
     setIsUploading(false);
-  }, []);
+  }, [targetFolder]);
 
   const handleUpload = useCallback(async () => {
     const pendingFiles = files.filter(
@@ -188,6 +191,8 @@ export default function UploadPage() {
           setGroupAsAlbum={setGroupAsAlbum}
           albumTitle={albumTitle}
           setAlbumTitle={setAlbumTitle}
+          targetFolder={targetFolder}
+          setTargetFolder={setTargetFolder}
         />
       </motion.div>
 

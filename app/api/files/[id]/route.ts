@@ -53,6 +53,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (body.originalName && typeof body.originalName === 'string') {
       allowedUpdates.originalName = body.originalName.slice(0, 200);
     }
+    
+    if (body.folder !== undefined) {
+      if (body.folder === null || typeof body.folder === 'string') {
+        allowedUpdates.folder = body.folder || undefined;
+      }
+    }
 
     const updated = await updateFileRecord(id, allowedUpdates);
 

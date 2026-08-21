@@ -17,6 +17,7 @@ import {
   Calendar,
   ChevronDown,
   ChevronRight,
+  QrCode,
 } from 'lucide-react';
 import type { SessionData } from '@/types';
 
@@ -39,8 +40,15 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Upload Files', href: '/dashboard/upload', icon: Upload, requiredPermission: 'canUpload' },
-  { label: 'All Files', href: '/dashboard/files', icon: FolderOpen },
+  {
+    label: 'Media',
+    icon: FolderOpen,
+    children: [
+      { label: 'Media Folders', href: '/dashboard/folders', icon: FolderOpen },
+      { label: 'Media Library', href: '/dashboard/files', icon: FolderOpen },
+      { label: 'Add New', href: '/dashboard/upload', icon: Upload, requiredPermission: 'canUpload' },
+    ],
+  },
   { label: 'Event Form', href: '/event/registration', icon: ClipboardList, adminOnly: true },
   {
     label: 'Event Management',
@@ -53,6 +61,7 @@ const navItems: NavItem[] = [
   },
   { label: 'Web Pages', href: '/dashboard/pages', icon: FileText, adminOnly: true },
   { label: 'TV Displays', href: '/dashboard/screens', icon: Tv, adminOnly: true },
+  { label: 'QR Maker', href: '/dashboard/qr', icon: QrCode, adminOnly: true },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings, adminOnly: true },
   { label: 'Users', href: '/dashboard/users', icon: UsersIcon, adminOnly: true },
 ];
@@ -169,10 +178,9 @@ export function Sidebar({ isOpen, onClose, session }: SidebarProps) {
                       className={`
                         w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium
                         transition-colors duration-150 rounded-md select-none
-                        ${
-                          isParentActive
-                            ? 'bg-blue-50/70 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
-                            : 'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
+                        ${isParentActive
+                          ? 'bg-blue-50/70 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
+                          : 'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
                         }
                       `}
                     >
@@ -204,10 +212,9 @@ export function Sidebar({ isOpen, onClose, session }: SidebarProps) {
                                 className={`
                                   flex items-center gap-2.5 px-3 py-2 text-xs font-medium
                                   transition-colors duration-150 rounded-md
-                                  ${
-                                    isChildActive
-                                      ? 'bg-blue-50 text-blue-700 font-semibold dark:bg-blue-900/30 dark:text-blue-400'
-                                      : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
+                                  ${isChildActive
+                                    ? 'bg-blue-50 text-blue-700 font-semibold dark:bg-blue-900/30 dark:text-blue-400'
+                                    : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
                                   }
                                 `}
                               >
@@ -236,10 +243,9 @@ export function Sidebar({ isOpen, onClose, session }: SidebarProps) {
                     className={`
                       flex items-center gap-3 px-3 py-2.5 text-sm font-medium
                       transition-colors duration-150 rounded-md
-                      ${
-                        isActive
-                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                          : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
+                      ${isActive
+                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
                       }
                     `}
                   >

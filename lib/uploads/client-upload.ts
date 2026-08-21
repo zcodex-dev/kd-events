@@ -5,6 +5,7 @@ type UploadOptions = {
   width?: number;
   height?: number;
   title?: string;
+  folder?: string;
 };
 
 /**
@@ -16,7 +17,7 @@ export async function directUploadSingleFile(
   file: File,
   options: UploadOptions = {}
 ): Promise<UploadResult> {
-  const { onProgress, width, height, title } = options;
+  const { onProgress, width, height, title, folder } = options;
 
   // 1. Get Presigned URL from server
   const presignRes = await fetch('/api/upload/presign', {
@@ -85,6 +86,7 @@ export async function directUploadSingleFile(
       width,
       height,
       title,
+      folder,
     }),
   });
 
@@ -102,13 +104,13 @@ export async function directUploadSingleFile(
  */
 export async function directUploadAlbum(
   files: Array<{ file: File; width?: number; height?: number }>,
-  options: { title?: string; onProgress?: (percent: number) => void } = {}
+  options: { title?: string; folder?: string; onProgress?: (percent: number) => void } = {}
 ): Promise<UploadResult> {
   if (files.length === 0) {
     throw new Error('No files provided');
   }
 
-  const { title, onProgress } = options;
+  const { title, folder, onProgress } = options;
   const primary = files[0];
 
   // 1. Presign and upload primary file
@@ -192,6 +194,7 @@ export async function directUploadAlbum(
       width: primary.width,
       height: primary.height,
       title,
+      folder,
       additionalImages,
     }),
   });

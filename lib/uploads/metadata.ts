@@ -230,6 +230,20 @@ export async function removeUser(id: string): Promise<boolean> {
   return true;
 }
 
+// ─── Folders ───────────────────────────────────────────────────────────────────
+
+export async function getAllFolders(): Promise<FolderConfig[]> {
+  const index = await readIndex();
+  return index.folders || [];
+}
+
+export async function addFolder(folder: FolderConfig): Promise<void> {
+  const index = await readIndex();
+  if (!index.folders) index.folders = [];
+  index.folders.push(folder);
+  await writeIndex(index);
+}
+
 // ─── Web Pages ───────────────────────────────────────────────────────────────
 
 export async function getAllWebPages(): Promise<WebPage[]> {

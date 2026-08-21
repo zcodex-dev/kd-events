@@ -26,6 +26,7 @@ export async function POST(request: Request) {
       width,
       height,
       title,
+      folder,
       additionalImages: rawAdditionals,
     } = body;
 
@@ -85,6 +86,7 @@ export async function POST(request: Request) {
       uploadedAt: now.toISOString(),
       viewCount: 0,
       additionalImages: additionalImages.length > 0 ? additionalImages : undefined,
+      folder: folder?.trim() || undefined,
     };
 
     await addFile(fileRecord);

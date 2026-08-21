@@ -32,6 +32,8 @@ export default function UsersPage() {
   
   // Form States
   const [username, setUsername] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'admin' | 'user'>('user');
   const [showPassword, setShowPassword] = useState(false);
@@ -64,6 +66,8 @@ export default function UsersPage() {
   const handleOpenAdd = () => {
     setEditingUser(null);
     setUsername('');
+    setNickname('');
+    setAvatarUrl('');
     setPassword('');
     setRole('user');
     setShowPassword(false);
@@ -73,6 +77,8 @@ export default function UsersPage() {
   const handleOpenEdit = (user: SubUser) => {
     setEditingUser(user);
     setUsername(user.username);
+    setNickname(user.nickname || '');
+    setAvatarUrl(user.avatarUrl || '');
     setPassword(user.password);
     setRole(user.role);
     setShowPassword(false);
@@ -89,6 +95,8 @@ export default function UsersPage() {
     setIsSubmitting(true);
     const payload = {
       username: username.trim(),
+      nickname: nickname.trim(),
+      avatarUrl: avatarUrl.trim(),
       password: password.trim(),
       role,
     };
@@ -219,10 +227,15 @@ export default function UsersPage() {
                   {users.map((u) => (
                     <tr key={u.id} className="hover:bg-neutral-50/50 transition-colors">
                       <td className="px-5 py-3.5 font-bold text-neutral-900 flex items-center gap-2">
-                        <div className="w-6.5 h-6.5 bg-neutral-100 border border-neutral-200 rounded-full flex items-center justify-center text-[10px] uppercase font-bold text-neutral-600">
-                          {u.username.slice(0, 2)}
-                        </div>
-                        {u.username}
+                        {u.avatarUrl ? (
+                          <img src={u.avatarUrl} alt={u.nickname || u.username} className="w-6.5 h-6.5 rounded-full object-cover border border-neutral-200" />
+                        ) : (
+                          <div className="w-6.5 h-6.5 bg-neutral-100 border border-neutral-200 rounded-full flex items-center justify-center text-[10px] uppercase font-bold text-neutral-600">
+                            {(u.nickname || u.username).slice(0, 2)}
+                          </div>
+                        )}
+                        {u.nickname || u.username}
+                        {u.nickname && <span className="text-[10px] text-neutral-400 font-normal">({u.username})</span>}
                       </td>
                       <td className="px-5 py-3.5">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
@@ -339,6 +352,35 @@ export default function UsersPage() {
                         className="w-full pl-9 pr-3 py-2 text-xs border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 disabled:bg-neutral-50 disabled:text-neutral-400 transition-colors uppercase"
                       />
                     </div>
+                  </div>
+
+                  {/* Nickname Field */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+                      Nickname / Display Name
+                    </label>
+                    <input
+                      type="text"
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value)}
+                      placeholder="e.g. John Doe"
+                      className="w-full px-3 py-2 text-xs border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 transition-colors"
+                    />
+                  </div>
+
+                  {/* Avatar URL Field */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
+                      Profile Picture URL
+                    </label>
+                    <input
+                      type="text"
+                      value={avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full px-3 py-2 text-xs border border-neutral-200 bg-white text-neutral-900 rounded-lg focus:outline-none focus:border-neutral-900 transition-colors"
+                    />
+                    <p className="text-[10px] text-neutral-500">Optional. Paste an image URL here.</p>
                   </div>
 
                   {/* Password Field */}

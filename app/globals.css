@@ -15,6 +15,29 @@
   --font-bebas: var(--font-bebas), sans-serif;
   --font-outfit: var(--font-outfit), sans-serif;
   --font-montserrat: var(--font-montserrat), sans-serif;
+
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-folder-back: var(--folder-back);
+  --color-folder-front: var(--folder-front);
+  --color-folder-tab: var(--folder-tab);
+}
+
+:root {
+  --folder-back: oklch(0.75 0.12 45);
+  --folder-front: oklch(0.8 0.14 50);
+  --folder-tab: oklch(0.7 0.1 40);
+  --card: oklch(1 0 0);
+  --border: oklch(0.9 0.01 260);
+  --accent: oklch(0.75 0.12 45);
+}
+
+.dark {
+  --folder-back: oklch(0.65 0.12 45);
+  --folder-front: oklch(0.7 0.14 50);
+  --folder-tab: oklch(0.6 0.1 40);
+  --card: oklch(0.16 0.01 260);
+  --border: oklch(0.25 0.01 260);
+  --accent: oklch(0.7 0.12 45);
 }
 
 /* ─── Base Styles ────────────────────────────────────────────────────────── */

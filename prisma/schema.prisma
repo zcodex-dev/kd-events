@@ -68,9 +68,29 @@ model AdminUser {
   id          String   @id @default(cuid())
   personnelId String   @unique // e.g., MK-C052
   name        String?
+  nickname    String?
+  avatarUrl   String?
   role        String   @default("ADMIN") // SUPERADMIN or ADMIN
   password    String   // Hashed or plain text
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model DynamicQR {
+  id             String   @id @default(cuid())
+  name           String   // Internal name for the admin (e.g. "Lobby Standee")
+  type           String   @default("URL") // "URL" or "CONTENT"
+  destinationUrl String?  // Where to redirect if type="URL"
+  content        String?  @db.Text // Rich HTML content if type="CONTENT"
+  scanCount      Int      @default(0)
+  
+  // Customization
+  fgColor        String   @default("#000000")
+  bgColor        String   @default("#ffffff")
+  logoUrl        String?
+  
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

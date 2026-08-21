@@ -11,6 +11,8 @@ function mapAdminUserToSubUser(user: any): SubUser {
     id: user.id,
     username: user.personnelId,
     password: user.password,
+    nickname: user.nickname,
+    avatarUrl: user.avatarUrl,
     role: isSuper ? 'admin' : 'user',
     permissions: {
       canUpload: true,
@@ -33,9 +35,12 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const { id } = await params;
     const body = await request.json();
-    const { username, password, role } = body;
+    const { username, password, role, nickname, avatarUrl } = body;
 
     const updates: any = {};
+
+    if (nickname !== undefined) updates.nickname = nickname?.trim() || null;
+    if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl?.trim() || null;
 
     if (username && username.trim()) {
       const personnelId = username.trim().toUpperCase();
