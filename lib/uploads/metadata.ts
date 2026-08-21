@@ -1,4 +1,4 @@
-import type { UploadedFile, MetadataIndex, AppConfig, SubUser, WebPage, TvScreen } from '@/types';
+import type { UploadedFile, MetadataIndex, AppConfig, SubUser, WebPage, TvScreen, FolderConfig } from '@/types';
 import { getFile, uploadFile, R2ApiError } from '@/lib/r2/client';
 
 // ─── Configuration ──────────────────────────────────────────────────────────

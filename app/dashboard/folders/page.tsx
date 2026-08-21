@@ -10,6 +10,7 @@ import { formatFileSize } from '@/lib/uploads/file-utils';
 import { EmptyState } from '@/components/shared/empty-state';
 import { AnimatedFolder } from '@/components/ui/3d-folder';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { resolveUrl } from '@/lib/uploads/file-utils';
 import { toast } from 'sonner';
 
