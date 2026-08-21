@@ -8,6 +8,7 @@ import { useDashboard } from '@/app/dashboard/layout';
 import { Edit, Ban, Trash2, X, Upload, Loader2, Image as ImageIcon, Calendar, Users, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { NationalitySelect } from '@/components/shared/nationality-select';
 
 export default function PlayersPage() {
   const { openSidebar } = useDashboard();
@@ -562,7 +563,11 @@ export default function PlayersPage() {
                     </div>
                     <div className="col-span-2">
                       <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1 block">Nationality</label>
-                      <input type="text" value={editForm.nationality} onChange={e => setEditForm({...editForm, nationality: e.target.value})} placeholder="e.g. Cambodian" className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 outline-none focus:border-[#c3943a]" />
+                      <NationalitySelect
+                        value={editForm.nationality}
+                        onChange={val => setEditForm({...editForm, nationality: val})}
+                        placeholder="Select nationality"
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -652,7 +657,11 @@ export default function PlayersPage() {
                     </div>
                     <div>
                       <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1 block">Nationality</label>
-                      <input type="text" value={addForm.nationality} onChange={e => setAddForm({...addForm, nationality: e.target.value})} placeholder="e.g. Cambodian" className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 outline-none focus:border-[#c3943a]" />
+                      <NationalitySelect
+                        value={addForm.nationality}
+                        onChange={val => setAddForm({...addForm, nationality: val})}
+                        placeholder="Select nationality"
+                      />
                     </div>
                   </div>
                 </form>

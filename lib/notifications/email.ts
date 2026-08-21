@@ -62,7 +62,7 @@ export async function sendConfirmationEmail(
             <!-- Verification Action Box -->
             <div style="margin: 24px 0; padding: 20px; background-color: #fafaf9; border: 1px solid #e7e5e4; border-radius: 10px; text-align: center;">
               <p style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; color: #1c1917;">
-                ⚡ Direct Verify Your Enrollment:
+                Direct Verify Your Enrollment:
               </p>
 
               <!-- Buttons Container -->

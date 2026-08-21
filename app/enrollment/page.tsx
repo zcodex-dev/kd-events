@@ -7,8 +7,8 @@ import CheckedIcon from '@/components/icons/checked-icon';
 import type { AnimatedIconHandle } from '@/components/icons/types';
 import { toast } from 'sonner';
 import Image from 'next/image';
-import Link from 'next/link';
 import Tesseract from 'tesseract.js';
+import { NationalitySelect } from '@/components/shared/nationality-select';
 
 
 
@@ -261,13 +261,11 @@ export default function EnrollmentPage() {
                     </div>
 
                     <div>
-                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Nationality</label>
-                      <input
-                        type="text"
+                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Nationality <span className="text-red-500">*</span></label>
+                      <NationalitySelect
                         value={nationality}
-                        onChange={(e) => setNationality(e.target.value)}
-                        placeholder="Enter your nationality"
-                        className="w-full bg-white border border-neutral-200 focus:border-[#c3943a] focus:ring-2 focus:ring-[#c3943a]/20 rounded-lg px-3.5 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-black placeholder:text-neutral-400 transition-all outline-none"
+                        onChange={setNationality}
+                        placeholder="Select your nationality"
                         required
                       />
                     </div>
