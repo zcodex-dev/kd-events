@@ -659,7 +659,7 @@ export function RecentUploadsTable({
                             icon={FolderInput}
                             label="Move to Folder"
                             onClick={() => {
-                              setMoveFile(file);
+                              setMoveFiles([file]);
                               setOpenMenuId(null);
                             }}
                           />
