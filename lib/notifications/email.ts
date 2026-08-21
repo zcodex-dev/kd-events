@@ -23,7 +23,7 @@ export async function sendConfirmationEmail(
     // Once your domain is verified in Resend, this will send official emails!
     const fromEmail = 'no-reply@kompongdewa.win';
 
-    const imageHtml = eventImageUrl 
+    const imageHtml = eventImageUrl
       ? `<div style="text-align: center; margin-bottom: 20px; background-color: #0b0b0b;"><img src="${eventImageUrl}" alt="Event Artwork" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px 8px 0 0; display: block;" /></div>`
       : '';
 
@@ -64,9 +64,6 @@ export async function sendConfirmationEmail(
               <p style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; color: #1c1917;">
                 ⚡ Direct Verify Your Enrollment:
               </p>
-              <p style="margin: 0 0 18px 0; font-size: 13px; color: #78716c; line-height: 1.4;">
-                Connect with our team directly via WhatsApp or Telegram for instant verification & event pass confirmation:
-              </p>
 
               <!-- Buttons Container -->
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto; width: 100%; max-width: 440px;">
@@ -76,7 +73,7 @@ export async function sendConfirmationEmail(
                       <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                         <tr>
                           <td style="vertical-align: middle; padding-right: 8px;">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18" height="18" alt="WhatsApp" style="display: block; filter: brightness(0) invert(1);" />
+                            <img src="https://cdn.simpleicons.org/whatsapp/ffffff" width="18" height="18" alt="WhatsApp" style="display: block; border: 0;" />
                           </td>
                           <td style="vertical-align: middle; color: #ffffff; font-size: 13px; font-weight: 700;">
                             Verify via WhatsApp
@@ -90,7 +87,7 @@ export async function sendConfirmationEmail(
                       <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                         <tr>
                           <td style="vertical-align: middle; padding-right: 8px;">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" width="18" height="18" alt="Telegram" style="display: block; filter: brightness(0) invert(1);" />
+                            <img src="https://cdn.simpleicons.org/telegram/ffffff" width="18" height="18" alt="Telegram" style="display: block; border: 0;" />
                           </td>
                           <td style="vertical-align: middle; color: #ffffff; font-size: 13px; font-weight: 700;">
                             Verify via Telegram
