@@ -74,6 +74,8 @@ export default function EventsManagementPage() {
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
   const [status, setStatus] = useState('ACTIVE');
+  const [orderIndex, setOrderIndex] = useState(0);
+  const [imageSlots, setImageSlots] = useState<ImageSlot[]>(emptySlots());
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [isAIPolishing, setIsAIPolishing] = useState(false);
   const [aiReviewData, setAiReviewData] = useState<{
