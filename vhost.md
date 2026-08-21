@@ -1,3 +1,7 @@
+#==================== Register ===========#
+# ==============================================================================
+# 1. Site: register.kompongdewa.win (CloudPanel Vhost)
+# ==============================================================================
 server {
   listen 80;
   listen [::]:80;
@@ -20,11 +24,152 @@ server {
   }
 
   location @reverse_proxy {
-    # 1. This wipes out the strict security headers inherited from global_settings
-    add_header Access-Control-Allow-Origin "*";
-    # 2. This explicitly tells the browser it is allowed to be embedded anywhere
-    add_header Content-Security-Policy "frame-ancestors *;";
+    # Allows iframe embedding on WordPress and other external domains
+    proxy_hide_header X-Frame-Options;
+    add_header Access-Control-Allow-Origin "*" always;
+    add_header Content-Security-Policy "frame-ancestors *" always;
 
+    proxy_pass {{reverse_proxy_url}};
+    proxy_http_version 1.1;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Server $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_ssl_server_name on;
+    proxy_ssl_name $host;
+    proxy_pass_request_headers on;
+    proxy_max_temp_file_size 0;
+    proxy_connect_timeout 900;
+    proxy_send_timeout 900;
+    proxy_read_timeout 900;
+    proxy_buffer_size 128k;
+    proxy_buffers 4 256k;
+    proxy_busy_buffers_size 256k;
+    proxy_temp_file_write_size 256k;
+  }
+
+  {{settings}}
+
+  include /etc/nginx/global_settings;
+
+  add_header Cache-Control no-transform;
+
+  index index.html;
+
+  location ^~ /.well-known {
+    auth_basic off;
+    allow all;
+    try_files $uri @reverse_proxy;
+  }
+
+  location / {
+    try_files $uri @reverse_proxy;
+  }
+}
+
+
+# ==============================================================================
+# 2. Site: enrollment.kompongdewa.win (CloudPanel Vhost)
+# ==============================================================================
+server {
+  listen 80;
+  listen [::]:80;
+  listen 443 quic;
+  listen 443 ssl;
+  listen [::]:443 quic;
+  listen [::]:443 ssl;
+  http2 on;
+  http3 off;
+  {{ssl_certificate_key}}
+  {{ssl_certificate}}
+  server_name enrollment.kompongdewa.win;
+  {{root}}
+
+  {{nginx_access_log}}
+  {{nginx_error_log}}
+
+  if ($scheme != "https") {
+    rewrite ^ https://$host$request_uri permanent;
+  }
+
+  location @reverse_proxy {
+    # Allows iframe embedding on WordPress and other external domains
+    proxy_hide_header X-Frame-Options;
+    add_header Access-Control-Allow-Origin "*" always;
+    add_header Content-Security-Policy "frame-ancestors *" always;
+
+    proxy_pass {{reverse_proxy_url}};
+    proxy_http_version 1.1;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Server $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_ssl_server_name on;
+    proxy_ssl_name $host;
+    proxy_pass_request_headers on;
+    proxy_max_temp_file_size 0;
+    proxy_connect_timeout 900;
+    proxy_send_timeout 900;
+    proxy_read_timeout 900;
+    proxy_buffer_size 128k;
+    proxy_buffers 4 256k;
+    proxy_busy_buffers_size 256k;
+    proxy_temp_file_write_size 256k;
+  }
+
+  {{settings}}
+
+  include /etc/nginx/global_settings;
+
+  add_header Cache-Control no-transform;
+
+  index index.html;
+
+  location ^~ /.well-known {
+    auth_basic off;
+    allow all;
+    try_files $uri @reverse_proxy;
+  }
+
+  location / {
+    try_files $uri @reverse_proxy;
+  }
+}
+
+
+
+#==================== Enrollments ===========#
+
+server {
+  listen 80;
+  listen [::]:80;
+  listen 443 quic;
+  listen 443 ssl;
+  listen [::]:443 quic;
+  listen [::]:443 ssl;
+  http2 on;
+  http3 off;
+  {{ssl_certificate_key}}
+  {{ssl_certificate}}
+  server_name enrollment.kompongdewa.win;
+  {{root}}
+
+  {{nginx_access_log}}
+  {{nginx_error_log}}
+
+  if ($scheme != "https") {
+    rewrite ^ https://$host$request_uri permanent;
+  }
+
+  location @reverse_proxy {
     proxy_pass {{reverse_proxy_url}};
     proxy_http_version 1.1;
     proxy_set_header X-Forwarded-Host $host;
