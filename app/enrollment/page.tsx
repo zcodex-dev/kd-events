@@ -13,14 +13,17 @@ import Tesseract from 'tesseract.js';
 
 
 export default function EnrollmentPage() {
-  const [isEmbed, setIsEmbed] = useState(false);
+  const [embedMode, setEmbedMode] = useState<'full' | 'form' | null>(null);
   const [bgImage, setBgImage] = useState('https://i.imgur.com/ETXgnCg.jpeg');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('embed') === 'true') {
-        setIsEmbed(true);
+      const embedParam = params.get('embed');
+      if (embedParam === 'form' || embedParam === 'minimal') {
+        setEmbedMode('form');
+      } else if (embedParam === 'true' || embedParam === 'full' || embedParam === 'all') {
+        setEmbedMode('full');
       }
     }
 
@@ -35,7 +38,9 @@ export default function EnrollmentPage() {
       .catch(err => console.error('Failed to load config:', err));
   }, []);
 
-
+  const isEmbed = embedMode !== null;
+  const showBanner = embedMode !== 'form';
+  const showTitle = embedMode !== 'form';
 
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -115,8 +120,6 @@ export default function EnrollmentPage() {
     }
   };
 
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -150,8 +153,6 @@ export default function EnrollmentPage() {
     }
   };
 
-
-
   const handleReset = () => {
     setResult(null);
     setName('');
@@ -161,8 +162,6 @@ export default function EnrollmentPage() {
     setScanSuccess('');
     setScanError('');
   };
-
-
 
   return (
     <>
@@ -187,9 +186,9 @@ export default function EnrollmentPage() {
 
       {/* Centered layout */}
       <div className={`flex flex-col items-center relative ${isEmbed ? "w-full min-h-0 bg-transparent p-0" : "min-h-[100dvh] overflow-y-auto bg-white md:bg-[#F4F4F5] pt-16 md:pt-24 md:pb-12"}`}>
-        {/* Left Side: Static Background Image (Hidden on Embed) */}
-        {!isEmbed && (
-          <div className="relative w-full max-w-[728px] aspect-[4/3] md:aspect-[16/9] overflow-hidden shrink-0 md:rounded-t-2xl">
+        {/* Left Side: Static Background Image (Included on full embed & normal view) */}
+        {showBanner && (
+          <div className={`relative w-full max-w-[728px] aspect-[4/3] md:aspect-[16/9] overflow-hidden shrink-0 ${isEmbed ? "rounded-t-2xl border-t border-x border-neutral-200" : "md:rounded-t-2xl"}`}>
             <Image
               src={bgImage}
               alt="Kompong Dewa Integrated Resort"
@@ -217,15 +216,21 @@ export default function EnrollmentPage() {
         )}
 
         {/* Main Content Area */}
-        <div className={`w-full flex flex-col items-center ${isEmbed ? "w-full max-w-xl mx-auto p-0" : "max-w-[728px] mt-0"}`}>
+        <div className={`w-full flex flex-col items-center ${embedMode === 'form' ? "w-full max-w-xl mx-auto p-0" : "max-w-[728px] mt-0"}`}>
           
           {/* Form Area */}
-          <div className={`w-full relative z-30 flex flex-col justify-start bg-white ${isEmbed ? "p-4 sm:p-6 rounded-2xl border border-neutral-200/80 shadow-xs" : "px-5 md:px-8 pt-6 md:pt-8 pb-8 md:pb-10 shadow-none md:shadow-xl md:rounded-b-2xl md:border-x md:border-b border-neutral-200"}`}>
+          <div className={`w-full relative z-30 flex flex-col justify-start bg-white ${
+            embedMode === 'form' 
+              ? "p-4 sm:p-6 rounded-2xl border border-neutral-200/80 shadow-xs" 
+              : isEmbed
+                ? "px-5 md:px-8 pt-6 md:pt-8 pb-8 md:pb-10 rounded-b-2xl border-x border-b border-neutral-200 shadow-sm"
+                : "px-5 md:px-8 pt-6 md:pt-8 pb-8 md:pb-10 shadow-none md:shadow-xl md:rounded-b-2xl md:border-x md:border-b border-neutral-200"
+          }`}>
             <div className="w-full relative z-10 max-w-[480px] mx-auto">
 
             {!result ? (
               <>
-                {!isEmbed && (
+                {showTitle && (
                   <h2 className="text-xl font-black text-neutral-800 tracking-tight mb-4">Membership Enrollment</h2>
                 )}
 
