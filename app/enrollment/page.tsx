@@ -166,25 +166,28 @@ export default function EnrollmentPage() {
 
   return (
     <>
-      {/* Navigation / Header */}
-      <header className="fixed top-0 left-0 w-full bg-black backdrop-blur-md border-b border-white/10 z-50">
-        <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center">
-          <div className="py-1 md:py-2">
-            <Image
-              src="/logo-v2.png"
-              alt="Kompong Dewa Logo"
-              width={300}
-              height={64}
-              className="h-12 md:h-16 w-auto shrink-0 object-contain"
-              unoptimized
-              priority
-            />
+      {/* Navigation / Header (Hidden on Embed) */}
+      {!isEmbed && (
+        <header className="fixed top-0 left-0 w-full bg-black backdrop-blur-md border-b border-white/10 z-50">
+          <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center">
+            <div className="py-1 md:py-2">
+              <Image
+                src="/logo-v2.png"
+                alt="Kompong Dewa Logo"
+                width={300}
+                height={64}
+                className="h-12 md:h-16 w-auto shrink-0 object-contain"
+                unoptimized
+                priority
+              />
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Centered layout */}
-      <div className={`min-h-[100dvh] overflow-y-auto flex flex-col items-center relative ${isEmbed ? "bg-transparent pt-4 pb-4" : "bg-white md:bg-[#F4F4F5] pt-16 md:pt-24 md:pb-12"}`}>        {/* Left Side: Static Background Image (Hidden on Embed) */}
+      <div className={`flex flex-col items-center relative ${isEmbed ? "w-full min-h-0 bg-transparent p-0" : "min-h-[100dvh] overflow-y-auto bg-white md:bg-[#F4F4F5] pt-16 md:pt-24 md:pb-12"}`}>
+        {/* Left Side: Static Background Image (Hidden on Embed) */}
         {!isEmbed && (
           <div className="relative w-full max-w-[728px] aspect-[4/3] md:aspect-[16/9] overflow-hidden shrink-0 md:rounded-t-2xl">
             <Image
@@ -214,15 +217,17 @@ export default function EnrollmentPage() {
         )}
 
         {/* Main Content Area */}
-        <div className={`w-full flex flex-col items-center ${isEmbed ? "mt-0 max-w-md mx-auto px-4" : "max-w-[728px] mt-0"}`}>
+        <div className={`w-full flex flex-col items-center ${isEmbed ? "w-full max-w-xl mx-auto p-0" : "max-w-[728px] mt-0"}`}>
           
           {/* Form Area */}
-          <div className={`w-full relative z-30 flex flex-col justify-start bg-white px-5 md:px-8 pt-6 md:pt-8 pb-8 md:pb-10 ${isEmbed ? "shadow-none border-none" : "shadow-none md:shadow-xl md:rounded-b-2xl md:border-x md:border-b border-neutral-200"}`}>
+          <div className={`w-full relative z-30 flex flex-col justify-start bg-white ${isEmbed ? "p-4 sm:p-6 rounded-2xl border border-neutral-200/80 shadow-xs" : "px-5 md:px-8 pt-6 md:pt-8 pb-8 md:pb-10 shadow-none md:shadow-xl md:rounded-b-2xl md:border-x md:border-b border-neutral-200"}`}>
             <div className="w-full relative z-10 max-w-[480px] mx-auto">
 
             {!result ? (
               <>
-                <h2 className="text-xl font-black text-neutral-800 tracking-tight mb-4">Membership Enrollment</h2>
+                {!isEmbed && (
+                  <h2 className="text-xl font-black text-neutral-800 tracking-tight mb-4">Membership Enrollment</h2>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-4 flex flex-col min-h-[340px] md:min-h-[380px]">
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 flex-1">
