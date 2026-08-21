@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
@@ -77,6 +77,7 @@ export default function EventsManagementPage() {
   const [orderIndex, setOrderIndex] = useState(0);
   const [imageSlots, setImageSlots] = useState<ImageSlot[]>(emptySlots());
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [isAIPolishing, setIsAIPolishing] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -130,6 +131,43 @@ export default function EventsManagementPage() {
     setOrderIndex(event.orderIndex || 0);
     setImageSlots(slotsFromImages(imagesOf(event)));
     setIsModalOpen(true);
+  };
+
+  const handleAIPolish = async () => {
+    const currentDesc = activeLangTab === 'en' ? description : activeLangTab === 'id' ? descriptionId : descriptionZh;
+    if (!currentDesc || !currentDesc.trim() || currentDesc === '<p><br></p>') {
+      toast.error('Please type some content in the description before using AI polish.');
+      return;
+    }
+
+    setIsAIPolishing(true);
+    const toastId = toast.loading('Gemini AI is analyzing and fixing word spacing & formatting...');
+    try {
+      const res = await fetch('/api/admin/ai/polish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: currentDesc,
+          language: activeLangTab,
+          field: 'description',
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.data?.polishedContent) {
+        const polished = data.data.polishedContent;
+        if (activeLangTab === 'en') setDescription(polished);
+        if (activeLangTab === 'id') setDescriptionId(polished);
+        if (activeLangTab === 'zh') setDescriptionZh(polished);
+        toast.success('Description polished & word spacing fixed with Gemini AI!', { id: toastId });
+      } else {
+        toast.error(data.error || 'Failed to polish content with AI', { id: toastId });
+      }
+    } catch (err: any) {
+      toast.error('Network error while communicating with AI service', { id: toastId });
+    } finally {
+      setIsAIPolishing(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -478,9 +516,30 @@ export default function EventsManagementPage() {
                     </div>
 
                     <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                        Description
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                          Description ({activeLangTab.toUpperCase()})
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleAIPolish}
+                          disabled={isAIPolishing}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 text-[#c3943a] dark:text-[#e5ac53] border border-[#c3943a]/30 hover:border-[#c3943a] rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Auto-correct missing word spacing (e.g., '5thandgame' -> '5th and game'), spelling, and grammar without breaking tables or HTML formatting"
+                        >
+                          {isAIPolishing ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#c3943a]" />
+                              <span>AI Polishing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-3.5 h-3.5 text-[#c3943a]" />
+                              <span>AI Fix Spacing & Polish</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                       <div className="event-description-editor bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg overflow-hidden">
                         <RichTextEditor
                           key={activeLangTab} // Force remount on tab change to reset editor state cleanly
