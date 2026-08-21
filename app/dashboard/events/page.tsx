@@ -74,10 +74,16 @@ export default function EventsManagementPage() {
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
   const [status, setStatus] = useState('ACTIVE');
-  const [orderIndex, setOrderIndex] = useState(0);
-  const [imageSlots, setImageSlots] = useState<ImageSlot[]>(emptySlots());
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [isAIPolishing, setIsAIPolishing] = useState(false);
+  const [aiReviewData, setAiReviewData] = useState<{
+    original: string;
+    polished: string;
+    changes: Array<{ original: string; fixed: string; reason: string }>;
+    summary: string;
+    lang: 'en' | 'id' | 'zh';
+  } | null>(null);
+  const [aiPreviewTab, setAiPreviewTab] = useState<'changes' | 'preview'>('changes');
 
   useEffect(() => {
     fetchEvents();
@@ -141,7 +147,7 @@ export default function EventsManagementPage() {
     }
 
     setIsAIPolishing(true);
-    const toastId = toast.loading('Gemini AI is analyzing and fixing word spacing & formatting...');
+    const toastId = toast.loading('Gemini AI is analyzing and detecting spacing & typos...');
     try {
       const res = await fetch('/api/admin/ai/polish', {
         method: 'POST',
@@ -156,10 +162,19 @@ export default function EventsManagementPage() {
       const data = await res.json();
       if (data.success && data.data?.polishedContent) {
         const polished = data.data.polishedContent;
-        if (activeLangTab === 'en') setDescription(polished);
-        if (activeLangTab === 'id') setDescriptionId(polished);
-        if (activeLangTab === 'zh') setDescriptionZh(polished);
-        toast.success('Description polished & word spacing fixed with Gemini AI!', { id: toastId });
+        const changes = data.data.changes || [];
+        const summary = data.data.summary || 'Content polished successfully.';
+
+        toast.dismiss(toastId);
+
+        setAiReviewData({
+          original: currentDesc,
+          polished: polished,
+          changes: changes,
+          summary: summary,
+          lang: activeLangTab,
+        });
+        setAiPreviewTab('changes');
       } else {
         toast.error(data.error || 'Failed to polish content with AI', { id: toastId });
       }
@@ -168,6 +183,15 @@ export default function EventsManagementPage() {
     } finally {
       setIsAIPolishing(false);
     }
+  };
+
+  const handleApplyAIFixes = () => {
+    if (!aiReviewData) return;
+    if (aiReviewData.lang === 'en') setDescription(aiReviewData.polished);
+    if (aiReviewData.lang === 'id') setDescriptionId(aiReviewData.polished);
+    if (aiReviewData.lang === 'zh') setDescriptionZh(aiReviewData.polished);
+    toast.success('AI corrections applied to description!');
+    setAiReviewData(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -716,6 +740,148 @@ export default function EventsManagementPage() {
                     {hasCopiedEmbed ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* AI Polish Review Panel Modal */}
+      <AnimatePresence>
+        {aiReviewData && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setAiReviewData(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col max-h-[88vh]"
+            >
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-950">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                      AI Review & Spacing Analysis
+                    </h3>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      Language: {aiReviewData.lang.toUpperCase()} • Review detected issues before applying
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setAiReviewData(null)}
+                  className="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <Plus className="w-5 h-5 rotate-45" />
+                </button>
+              </div>
+
+              {/* Summary Banner */}
+              <div className="px-6 py-3 bg-amber-500/10 dark:bg-amber-500/5 border-b border-amber-500/20 flex items-start gap-2.5">
+                <span className="text-base leading-none mt-0.5">💡</span>
+                <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed font-medium">
+                  {aiReviewData.summary}
+                </p>
+              </div>
+
+              {/* Nav Tabs */}
+              <div className="px-6 pt-3 flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setAiPreviewTab('changes')}
+                  className={`pb-2 text-xs font-bold transition-colors border-b-2 flex items-center gap-1.5 ${
+                    aiPreviewTab === 'changes'
+                      ? 'border-[#c3943a] text-[#c3943a]'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                  }`}
+                >
+                  Issues Found ({aiReviewData.changes.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiPreviewTab('preview')}
+                  className={`pb-2 text-xs font-bold transition-colors border-b-2 flex items-center gap-1.5 ${
+                    aiPreviewTab === 'preview'
+                      ? 'border-[#c3943a] text-[#c3943a]'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                  }`}
+                >
+                  Polished HTML Preview
+                </button>
+              </div>
+
+              {/* Body Content */}
+              <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                {aiPreviewTab === 'changes' ? (
+                  aiReviewData.changes.length > 0 ? (
+                    <div className="space-y-3">
+                      {aiReviewData.changes.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-950/60 space-y-2"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                              Issue #{idx + 1}
+                            </span>
+                            <span className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md font-semibold">
+                              {item.reason}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <div className="p-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50">
+                              <span className="text-[10px] font-bold text-red-600 dark:text-red-400 block mb-0.5">Original (Wrong):</span>
+                              <span className="line-through text-red-700 dark:text-red-300 font-mono break-all">{item.original}</span>
+                            </div>
+                            <div className="p-2 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50">
+                              <span className="text-[10px] font-bold text-green-600 dark:text-green-400 block mb-0.5">Fixed (Suggested):</span>
+                              <span className="text-green-700 dark:text-green-300 font-bold font-mono break-all">{item.fixed}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center text-xs text-neutral-400">
+                      No explicit word changes were required; the formatting and markup were verified clean.
+                    </div>
+                  )
+                ) : (
+                  <div className="border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 bg-white dark:bg-neutral-950 max-h-[350px] overflow-y-auto">
+                    <div
+                      className="prose prose-sm dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: aiReviewData.polished }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Actions */}
+              <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setAiReviewData(null)}
+                  className="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                >
+                  Discard / Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyAIFixes}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white bg-[#c3943a] hover:bg-[#b08534] rounded-lg shadow-sm transition-all cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  Apply Fixes to Editor
+                </button>
               </div>
             </motion.div>
           </div>

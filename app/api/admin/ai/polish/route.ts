@@ -28,22 +28,32 @@ export async function POST(request: Request) {
 
     const prompt = `You are a professional multilingual editor and proofreader for an international luxury resort & casino event management system.
 
-Your task is to fix spelling errors, grammatical mistakes, missing word spacing (e.g., words merged without spaces like "5thandgame" -> "5th and game", "8thand 15th" -> "8th and 15th", "GameStarts" -> "Game Starts"), punctuation, and formatting in the provided text.
+Your task:
+1. Fix missing word spacing (e.g., words merged without spaces like "5thandgame" -> "5th and game", "8thand 15th" -> "8th and 15th", "GameStarts" -> "Game Starts", "communicationor" -> "communication or"), spelling errors, grammatical mistakes, punctuation, and formatting in the provided text.
+2. PRESERVE all HTML tags (<table>, <tr>, <td>, <th>, <p>, <br>, <strong>, <em>, <ul>, <li>, <div>, or styling attributes) and structure exactly. Only correct the inner human text. Do NOT strip or change table formatting.
+3. List all specific issues and corrections you made so the user can review what was wrong and what was fixed.
 
-Target Language Context: ${language === 'id' ? 'Bahasa Indonesia' : language === 'zh' ? 'Chinese (Simplified/Traditional)' : 'English'}.
+Target Language Context: ${language === 'id' ? 'Bahasa Indonesia' : language === 'zh' ? 'Chinese' : 'English'}.
 
-CRITICAL REQUIREMENTS:
-1. If the input contains HTML tags (such as <table>, <tr>, <td>, <th>, <p>, <br>, <strong>, <em>, <ul>, <li>, <div>, or styling attributes), you MUST PRESERVE all HTML tags, table structures, and attributes EXACTLY as they are. Do NOT remove, rename, or strip any HTML tags.
-2. Only correct and refine the readable human text content inside the tags.
-3. Fix all missing spaces between numbers, words, conjunctions, and prepositions (e.g., "5thround" -> "5th round", "15hands" -> "15 hands").
-4. Return ONLY the polished text/HTML directly. Do NOT wrap your output in markdown code blocks (\`\`\`html or \`\`\`), and do not include any conversational preamble or notes.
+Return a valid JSON object with the following exact schema:
+{
+  "polishedContent": "The fully corrected HTML string with all tags preserved",
+  "changes": [
+    {
+      "original": "exact word/phrase that had an issue or missing space",
+      "fixed": "corrected word/phrase",
+      "reason": "short explanation, e.g. 'Missing space between words' or 'Spelling fix'"
+    }
+  ],
+  "summary": "Brief 1-sentence summary of the fixes found and made"
+}
 
 Text to polish:
 ${content}`;
 
     const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-3.7-flash'];
     let lastError: any = null;
-    let polishedResult: string | null = null;
+    let parsedResult: { polishedContent: string; changes: any[]; summary: string } | null = null;
 
     for (const model of models) {
       try {
@@ -63,6 +73,7 @@ ${content}`;
               generationConfig: {
                 temperature: 0.1,
                 maxOutputTokens: 8192,
+                responseMimeType: 'application/json',
               },
             }),
           }
@@ -79,22 +90,32 @@ ${content}`;
         const generatedText = candidate?.content?.parts?.[0]?.text;
 
         if (generatedText && typeof generatedText === 'string') {
-          // Clean any markdown backticks if Gemini wrapped it
-          let cleaned = generatedText.trim();
-          if (cleaned.startsWith('```html')) {
-            cleaned = cleaned.replace(/^```html\s*/i, '').replace(/```$/i, '').trim();
-          } else if (cleaned.startsWith('```')) {
-            cleaned = cleaned.replace(/^```\w*\s*/, '').replace(/```$/, '').trim();
+          try {
+            const parsed = JSON.parse(generatedText);
+            if (parsed && parsed.polishedContent) {
+              parsedResult = {
+                polishedContent: parsed.polishedContent,
+                changes: Array.isArray(parsed.changes) ? parsed.changes : [],
+                summary: parsed.summary || 'Content polished successfully.',
+              };
+              break;
+            }
+          } catch (jsonErr) {
+            // Fallback if raw text returned
+            parsedResult = {
+              polishedContent: generatedText,
+              changes: [],
+              summary: 'Content polished successfully.',
+            };
+            break;
           }
-          polishedResult = cleaned;
-          break;
         }
       } catch (err: any) {
         lastError = err?.message || String(err);
       }
     }
 
-    if (!polishedResult) {
+    if (!parsedResult) {
       return NextResponse.json<ApiResponse>(
         { 
           success: false, 
@@ -106,9 +127,7 @@ ${content}`;
 
     return NextResponse.json({
       success: true,
-      data: {
-        polishedContent: polishedResult,
-      },
+      data: parsedResult,
     }, { status: 200 });
 
   } catch (error: any) {
