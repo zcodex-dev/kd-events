@@ -68,21 +68,21 @@ export default function WebPagesPage() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6"
+        className="p-4 sm:p-6 w-full space-y-6"
       >
         {/* Header Bar */}
-        <div className="flex justify-between items-center bg-white border border-neutral-200 p-4 rounded-xl shadow-xs">
+        <div className="flex justify-between items-center bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl shadow-sm">
           <div className="flex items-center gap-2.5">
-            <FileText className="w-5 h-5 text-neutral-700" />
+            <FileText className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
             <div>
-              <h2 className="text-sm font-bold text-neutral-800">Custom Web Pages</h2>
-              <p className="text-[11px] text-neutral-400">Total pages: {pages.length}</p>
+              <h2 className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Custom Web Pages</h2>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500">Total pages: {pages.length}</p>
             </div>
           </div>
           {isAdmin && (
             <Link
               href="/dashboard/pages/create"
-              className="px-3.5 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors rounded-lg flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors rounded-lg flex items-center gap-1.5 shadow-sm"
             >
               <Plus className="w-3.5 h-3.5" />
               Create New Page
@@ -92,19 +92,19 @@ export default function WebPagesPage() {
 
         {/* Pages List */}
         {isLoading ? (
-          <div className="bg-white border border-neutral-200 rounded-xl p-12 flex flex-col items-center justify-center gap-2 shadow-xs">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-12 flex flex-col items-center justify-center gap-2 shadow-sm">
             <LoadingSpinner size={24} />
             <span className="text-xs text-neutral-500 font-medium">Loading pages...</span>
           </div>
         ) : pages.length === 0 ? (
-          <div className="bg-white border border-neutral-200 rounded-xl p-12 text-center shadow-xs">
-            <FileText className="w-8 h-8 text-neutral-300 mx-auto mb-3" />
-            <p className="text-sm font-medium text-neutral-800">No web pages yet</p>
-            <p className="text-xs text-neutral-400 mt-1 mb-4">Create your first Terms & Conditions page to share.</p>
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-12 text-center shadow-sm">
+            <FileText className="w-8 h-8 text-neutral-300 dark:text-neutral-700 mx-auto mb-3" />
+            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">No web pages yet</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 mb-4">Create your first Terms & Conditions page to share.</p>
             {isAdmin && (
               <Link
                 href="/dashboard/pages/create"
-                className="px-3 py-1.5 text-xs text-neutral-700 border border-neutral-200 hover:bg-neutral-50 transition-colors rounded-lg font-medium inline-block"
+                className="px-3 py-1.5 text-xs text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors rounded-lg font-medium inline-block"
               >
                 Create New Page
               </Link>
@@ -113,35 +113,35 @@ export default function WebPagesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pages.map((page) => (
-              <div key={page.id} className="bg-white border border-neutral-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+              <div key={page.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-3">
                     {page.featureIconUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={page.featureIconUrl} alt="" className="w-8 h-8 object-contain rounded" />
                     ) : (
-                      <div className="w-8 h-8 bg-neutral-100 rounded flex items-center justify-center">
-                        <FileText className="w-4 h-4 text-neutral-400" />
+                      <div className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-neutral-400 dark:text-neutral-500" />
                       </div>
                     )}
                     <div>
-                      <h3 className="text-sm font-bold text-neutral-900 line-clamp-1">{page.title}</h3>
-                      <p className="text-[10px] text-neutral-400">/{page.slug}</p>
+                      <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 line-clamp-1">{page.title}</h3>
+                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500">/{page.slug}</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-xs text-neutral-500 mb-4">
+                  <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400 mb-4">
                     <span>{page.viewCount} views</span>
                     <span>{new Date(page.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-neutral-100">
+                <div className="flex items-center justify-between pt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <a
                     href={page.shareUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     View Page

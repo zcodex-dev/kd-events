@@ -171,20 +171,20 @@ export default function UsersPage() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6"
+        className="p-4 sm:p-6 w-full space-y-6"
       >
         {/* Header Bar */}
-        <div className="flex justify-between items-center bg-white p-4 border border-neutral-200 rounded-xl shadow-xs">
+        <div className="flex justify-between items-center bg-white dark:bg-neutral-900 p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-sm">
           <div className="flex items-center gap-2.5">
-            <UsersIcon className="w-5 h-5 text-neutral-700" />
+            <UsersIcon className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
             <div>
-              <h2 className="text-sm font-bold text-neutral-800">Events Personnel</h2>
-              <p className="text-[11px] text-neutral-400">Total sub-users registered: {users.length}</p>
+              <h2 className="text-sm font-bold text-neutral-800 dark:text-neutral-100">Events Personnel</h2>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500">Total sub-users registered: {users.length}</p>
             </div>
           </div>
           <button
             onClick={handleOpenAdd}
-            className="px-3.5 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors rounded-lg flex items-center gap-1.5 cursor-pointer shadow-sm"
+            className="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors rounded-lg flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             <UserPlus className="w-3.5 h-3.5" />
             Add Account
@@ -193,28 +193,28 @@ export default function UsersPage() {
 
         {/* Users Table / List */}
         {isLoading ? (
-          <div className="bg-white border border-neutral-200 rounded-xl p-12 flex flex-col items-center justify-center gap-2 shadow-xs">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-12 flex flex-col items-center justify-center gap-2 shadow-sm">
             <LoadingSpinner size={24} />
             <span className="text-xs text-neutral-500 font-medium">Querying users list...</span>
           </div>
         ) : users.length === 0 ? (
-          <div className="bg-white border border-neutral-200 rounded-xl p-12 text-center shadow-xs">
-            <UsersIcon className="w-8 h-8 text-neutral-300 mx-auto mb-3" />
-            <p className="text-sm font-medium text-neutral-800">No sub-accounts yet</p>
-            <p className="text-xs text-neutral-400 mt-1 mb-4">Create accounts to allow others to upload or view event posters.</p>
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-12 text-center shadow-sm">
+            <UsersIcon className="w-8 h-8 text-neutral-300 dark:text-neutral-700 mx-auto mb-3" />
+            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">No sub-accounts yet</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 mb-4">Create accounts to allow others to upload or view event posters.</p>
             <button
               onClick={handleOpenAdd}
-              className="px-3 py-1.5 text-xs text-neutral-700 border border-neutral-200 hover:bg-neutral-50 transition-colors rounded-lg font-medium cursor-pointer"
+              className="px-3 py-1.5 text-xs text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors rounded-lg font-medium cursor-pointer"
             >
               Register First User
             </button>
           </div>
         ) : (
-          <div className="bg-white border border-neutral-200 rounded-xl shadow-xs overflow-hidden">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-neutral-50 border-b border-neutral-200 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  <tr className="bg-neutral-50 dark:bg-neutral-900/50 border-b border-neutral-200 dark:border-neutral-800 text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                     <th className="px-5 py-3">Personnel ID</th>
                     <th className="px-5 py-3">Role</th>
                     <th className="px-5 py-3 text-center">Uploads</th>
@@ -223,14 +223,14 @@ export default function UsersPage() {
                     <th className="px-5 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100 text-xs">
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 text-xs">
                   {users.map((u) => (
-                    <tr key={u.id} className="hover:bg-neutral-50/50 transition-colors">
-                      <td className="px-5 py-3.5 font-bold text-neutral-900 flex items-center gap-2">
+                    <tr key={u.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                      <td className="px-5 py-3.5 font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                         {u.avatarUrl ? (
-                          <img src={u.avatarUrl} alt={u.nickname || u.username} className="w-6.5 h-6.5 rounded-full object-cover border border-neutral-200" />
+                          <img src={u.avatarUrl} alt={u.nickname || u.username} className="w-6.5 h-6.5 rounded-full object-cover border border-neutral-200 dark:border-neutral-700" />
                         ) : (
-                          <div className="w-6.5 h-6.5 bg-neutral-100 border border-neutral-200 rounded-full flex items-center justify-center text-[10px] uppercase font-bold text-neutral-600">
+                          <div className="w-6.5 h-6.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full flex items-center justify-center text-[10px] uppercase font-bold text-neutral-600 dark:text-neutral-400">
                             {(u.nickname || u.username).slice(0, 2)}
                           </div>
                         )}
@@ -239,7 +239,9 @@ export default function UsersPage() {
                       </td>
                       <td className="px-5 py-3.5">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                          u.role === 'admin' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-neutral-100 text-neutral-600 border-neutral-200'
+                          u.role === 'admin' 
+                            ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-500 border-amber-200 dark:border-amber-500/20' 
+                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'
                         }`}>
                           {u.role}
                         </span>
