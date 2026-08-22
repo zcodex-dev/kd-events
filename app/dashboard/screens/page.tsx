@@ -388,7 +388,7 @@ export default function TvScreensPage() {
                             <span>Edit Overlay Text / Numbers</span>
                           </div>
                           <span className="text-[11px] font-semibold underline">
-                            Quick Edit ✎
+                            Quick Edit
                           </span>
                         </button>
                       )}

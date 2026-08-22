@@ -829,7 +829,7 @@ export default function EventsManagementPage() {
 
               {/* Summary Banner */}
               <div className="px-6 py-3 bg-amber-500/10 dark:bg-amber-500/5 border-b border-amber-500/20 flex items-start gap-2.5">
-                <span className="text-base leading-none mt-0.5">💡</span>
+                <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed font-medium">
                   {aiReviewData.summary}
                 </p>
