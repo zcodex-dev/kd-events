@@ -11,6 +11,9 @@ import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox-1';
 import { Label } from '@/components/ui/label';
 import { SmartContactInput } from '@/components/shared/smart-contact-input';
+import { NationalitySelect } from '@/components/shared/nationality-select';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
+import { TRANSLATIONS, type Locale } from '@/lib/i18n/translations';
 import { validateRealName, validateRealContact } from '@/lib/validation/spam-detector';
 
 const defaultEvents = [
@@ -25,6 +28,8 @@ const defaultEvents = [
 ];
 
 export default function EventRegistrationPage() {
+  const [lang, setLang] = useState<Locale>('en');
+  const t = TRANSLATIONS[lang];
   const [isEmbed, setIsEmbed] = useState(false);
 
   useEffect(() => {
@@ -48,6 +53,8 @@ export default function EventRegistrationPage() {
   // Non-member fields
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [nationality, setNationality] = useState('');
+  const [contactMode, setContactMode] = useState<'phone' | 'email'>('phone');
   const [memberStatus, setMemberStatus] = useState<'member' | 'non-member' | null>(null);
   const [wantsMembership, setWantsMembership] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -149,6 +156,10 @@ export default function EventRegistrationPage() {
     const contactCheck = validateRealContact(phoneNumber);
     if (!contactCheck.isValid) return toast.error(contactCheck.error);
 
+    if (contactMode === 'email' && !nationality.trim()) {
+      return toast.error('Please select your nationality');
+    }
+
     if (!memberStatus) return toast.error('Please select your membership status');
     setIsSubmitting(true);
     try {
@@ -159,6 +170,9 @@ export default function EventRegistrationPage() {
       }
       formData.append('name', name);
       formData.append('phoneNumber', phoneNumber);
+      if (nationality.trim()) {
+        formData.append('nationality', nationality.trim());
+      }
 
       appendCurrentEvent(formData);
 
@@ -199,7 +213,7 @@ export default function EventRegistrationPage() {
       {/* Navigation / Header */}
       {!isEmbed && (
         <header className="fixed top-0 left-0 w-full bg-black backdrop-blur-md border-b border-white/10 z-50">
-          <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center">
+          <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center justify-between">
             <div className="py-1 md:py-2">
               <Image
                 src="/logo-v2.png"
@@ -211,6 +225,8 @@ export default function EventRegistrationPage() {
                 priority
               />
             </div>
+            
+            <LanguageSwitcher currentLang={lang} onLanguageChange={setLang} />
           </div>
         </header>
       )}
@@ -296,11 +312,11 @@ export default function EventRegistrationPage() {
                     {detailHref ? (
                       <Link href={detailHref} className="group inline-block">
                         <h1 className="text-2xl md:text-3xl font-black text-black leading-tight group-hover:text-[#c3943a] transition-colors">
-                          {currentEvent?.title || 'Upcoming Event'}
+                          {lang === 'id' && currentEvent?.titleId ? currentEvent.titleId : lang === 'zh' && currentEvent?.titleZh ? currentEvent.titleZh : currentEvent?.title || 'Upcoming Event'}
                         </h1>
                         <div className="flex flex-wrap items-center gap-3 mt-2">
                           <span className="inline-flex items-center gap-1 text-[11px] md:text-sm font-semibold text-[#c3943a]">
-                            Read details
+                            {t.readDetails}
                             <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                           </span>
                           
@@ -347,24 +363,23 @@ export default function EventRegistrationPage() {
                     )}
                     
                     <div className="flex flex-col gap-2 text-xs md:text-sm text-neutral-600 font-medium">
-                      {events[currentEventIndex]?.date && (
+                      {(lang === 'id' && currentEvent?.dateId ? currentEvent.dateId : lang === 'zh' && currentEvent?.dateZh ? currentEvent.dateZh : events[currentEventIndex]?.date) && (
                         <div className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 rounded-full bg-[#c3943a]" />
-                          {events[currentEventIndex].date}
+                          {lang === 'id' && currentEvent?.dateId ? currentEvent.dateId : lang === 'zh' && currentEvent?.dateZh ? currentEvent.dateZh : events[currentEventIndex].date}
                         </div>
                       )}
-                      {events[currentEventIndex]?.location && (
+                      {(lang === 'id' && currentEvent?.locationId ? currentEvent.locationId : lang === 'zh' && currentEvent?.locationZh ? currentEvent.locationZh : events[currentEventIndex]?.location) && (
                         <div className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 rounded-full bg-[#c3943a]" />
-                          {events[currentEventIndex].location}
+                          {lang === 'id' && currentEvent?.locationId ? currentEvent.locationId : lang === 'zh' && currentEvent?.locationZh ? currentEvent.locationZh : events[currentEventIndex].location}
                         </div>
                       )}
                     </div>
                     
                     {!detailHref && !isLoadingEvents && (
                       <p className="text-sm text-neutral-600 leading-relaxed font-normal pt-4 border-t border-neutral-200">
-                        A seamless ecosystem of luxury, leisure, and entertainment.
-                        Experience Sihanoukville’s new standard of a life well-lived. Kompong Dewa is an integrated luxury destination redefining Sihanoukville’s landscape. A bold fusion of high-octane excitement and serene tranquility, we stand as the new pulse of Cambodia’s rising coastal city.
+                        {t.resortDesc}
                       </p>
                     )}
                   </motion.div>
@@ -373,8 +388,8 @@ export default function EventRegistrationPage() {
             </div>
           )}
 
-          {/* Right Side: Form Area */}
-          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start ${isEmbed ? "max-w-xl mx-auto bg-transparent shadow-none border-none p-0" : "bg-white md:rounded-2xl md:shadow-xl border-none md:border border-neutral-200 px-5 pt-0 md:pt-6 pb-8 md:w-[340px]"}`}>
+          {/* Right Side: Form Area (Increased 20% width on desktop) */}
+          <div className={`w-full shrink-0 relative z-30 flex flex-col justify-start ${isEmbed ? "max-w-xl mx-auto bg-transparent shadow-none border-none p-0" : "bg-white md:rounded-2xl md:shadow-xl border-none md:border border-neutral-200 px-5 md:px-7 pt-0 md:pt-6 pb-8 md:w-[415px] lg:w-[420px]"}`}>
             <div className="w-full relative z-10">
 
             {!hasActiveEvents && !isLoadingEvents ? (
@@ -398,18 +413,20 @@ export default function EventRegistrationPage() {
                     />
                   </div>
                 )}
-                <h2 className="text-xl font-black text-neutral-800 tracking-tight mb-4">Event Registration</h2>
+                <h2 className="text-xl font-black text-neutral-800 tracking-tight mb-4">{t.eventRegistration}</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4 flex flex-col min-h-[340px] md:min-h-[380px]">
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 flex-1">
                     <div>
-                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Full Name</label>
+                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">
+                        {t.fullName} <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter your full name"
-                        className="w-full bg-white border border-neutral-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg px-3.5 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-black placeholder:text-neutral-400 transition-all outline-none"
+                        placeholder={t.fullNamePlaceholder}
+                        className="w-full bg-white border border-neutral-200 focus:border-[#c3943a] focus:ring-2 focus:ring-[#c3943a]/20 rounded-lg px-3.5 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-black placeholder:text-neutral-400 transition-all outline-none"
                         required
                       />
                     </div>
@@ -418,12 +435,49 @@ export default function EventRegistrationPage() {
                       <SmartContactInput
                         value={phoneNumber}
                         onChange={setPhoneNumber}
+                        nationality={nationality}
+                        onCountryChange={(country) => {
+                          if (country.nationality) {
+                            setNationality(country.nationality);
+                          }
+                        }}
+                        onModeChange={setContactMode}
+                        phoneLabel={t.phoneNumber}
+                        emailLabel={t.emailAddress}
+                        phoneTabLabel={t.phoneTab}
+                        emailTabLabel={t.emailTab}
+                        placeholder={t.phonePlaceholder}
+                        emailPlaceholder={t.emailPlaceholder}
                         required
                       />
                     </div>
 
+                    <AnimatePresence>
+                      {contactMode === 'email' && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="overflow-hidden"
+                        >
+                          <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">
+                            {t.nationality} <span className="text-red-500">*</span>
+                          </label>
+                          <NationalitySelect
+                            value={nationality}
+                            onChange={setNationality}
+                            placeholder={t.selectNationality}
+                            required
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     <div className="pt-2">
-                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-3">Membership Status</label>
+                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-3">
+                        {t.membershipStatus}
+                      </label>
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center space-x-3">
                           <Checkbox 
@@ -436,7 +490,7 @@ export default function EventRegistrationPage() {
                             htmlFor="statusMember" 
                             className="text-[13px] md:text-sm font-medium text-neutral-800 cursor-pointer"
                           >
-                            Member
+                            {t.member}
                           </Label>
                         </div>
 
@@ -451,7 +505,7 @@ export default function EventRegistrationPage() {
                             htmlFor="statusNonMember" 
                             className="text-[13px] md:text-sm font-medium text-neutral-800 cursor-pointer"
                           >
-                            Non-Member
+                            {t.nonMember}
                           </Label>
                         </div>
 
@@ -474,7 +528,7 @@ export default function EventRegistrationPage() {
                                   htmlFor="wantsMembership" 
                                   className="text-[13px] md:text-sm text-neutral-600 leading-snug font-medium cursor-pointer"
                                 >
-                                  I want to become a Kompong Dewa member to enjoy exclusive perks and rewards.
+                                  {t.wantsMembershipText}
                                 </Label>
                               </div>
                             </motion.div>
@@ -494,7 +548,7 @@ export default function EventRegistrationPage() {
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       <span className="flex items-center gap-2 relative z-10">
-                        Submit Registration
+                        {t.submitRegistration}
                         <Send className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </span>
                     )}

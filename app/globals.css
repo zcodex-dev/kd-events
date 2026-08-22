@@ -40,6 +40,31 @@
   --accent: oklch(0.7 0.12 45);
 }
 
+/* ─── Custom Brand Gold Scrollbar ────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c3943a rgba(195, 148, 58, 0.08);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(195, 148, 58, 0.05);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c3943a;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a87b28;
+}
+
 /* ─── Base Styles ────────────────────────────────────────────────────────── */
 
 /* Force rich-text tables to fit the screen width and break words instead of scrolling horizontally */

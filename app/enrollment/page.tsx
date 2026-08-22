@@ -10,11 +10,15 @@ import Image from 'next/image';
 import Tesseract from 'tesseract.js';
 import { NationalitySelect } from '@/components/shared/nationality-select';
 import { SmartContactInput } from '@/components/shared/smart-contact-input';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
+import { TRANSLATIONS, type Locale } from '@/lib/i18n/translations';
 import { validateRealName, validateRealContact } from '@/lib/validation/spam-detector';
 
 
 
 export default function EnrollmentPage() {
+  const [lang, setLang] = useState<Locale>('en');
+  const t = TRANSLATIONS[lang];
   const [embedMode, setEmbedMode] = useState<'full' | 'form' | null>(null);
   const [bgImage, setBgImage] = useState('https://i.imgur.com/ETXgnCg.jpeg');
 
@@ -174,7 +178,7 @@ export default function EnrollmentPage() {
       {/* Navigation / Header (Hidden on Embed) */}
       {!isEmbed && (
         <header className="fixed top-0 left-0 w-full bg-black backdrop-blur-md border-b border-white/10 z-50">
-          <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center">
+          <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center justify-between">
             <div className="py-1 md:py-2">
               <Image
                 src="/logo-v2.png"
@@ -186,6 +190,8 @@ export default function EnrollmentPage() {
                 priority
               />
             </div>
+            
+            <LanguageSwitcher currentLang={lang} onLanguageChange={setLang} />
           </div>
         </header>
       )}
@@ -205,17 +211,16 @@ export default function EnrollmentPage() {
             <div className="absolute inset-0 z-10 pointer-events-none bg-[linear-gradient(to_top,rgba(0,0,0,0.95)_0%,rgba(0,0,0,0.6)_55%,rgba(0,0,0,0)_100%)]" />
             <div className="absolute inset-x-0 bottom-0 z-20 px-5 pb-5 sm:px-8 sm:pb-7 flex flex-col items-start justify-end gap-1.5 sm:gap-2 text-left">
               <h1 className="text-xl sm:text-3xl md:text-4xl font-black text-white leading-tight">
-                Kompong Dewa Integrated Resort
+                {t.resortTitle}
               </h1>
               
               <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-300 font-medium mb-0.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#c3943a]" />
-                Sihanoukville, Cambodia
+                {t.resortLocation}
               </div>
               
               <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal max-w-[620px] line-clamp-3 sm:line-clamp-none block">
-                A seamless ecosystem of luxury, leisure, and entertainment.
-                Experience Sihanoukville’s new standard of a life well-lived. Kompong Dewa is an integrated luxury destination redefining Sihanoukville’s landscape.
+                {t.resortDesc}
               </p>
             </div>
           </div>
@@ -237,19 +242,21 @@ export default function EnrollmentPage() {
             {!result ? (
               <>
                 {showTitle && (
-                  <h2 className="text-xl font-black text-neutral-800 tracking-tight mb-4">Membership Enrollment</h2>
+                  <h2 className="text-xl font-black text-neutral-800 tracking-tight mb-4">{t.membershipEnrollment}</h2>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4 flex flex-col min-h-[340px] md:min-h-[380px]">
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 flex-1">
                     <div>
-                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Full Name</label>
+                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">
+                        {t.fullName} <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter your full name"
-                        className="w-full bg-white border border-neutral-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg px-3.5 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-black placeholder:text-neutral-400 transition-all outline-none"
+                        placeholder={t.fullNamePlaceholder}
+                        className="w-full bg-white border border-neutral-200 focus:border-[#c3943a] focus:ring-2 focus:ring-[#c3943a]/20 rounded-lg px-3.5 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-black placeholder:text-neutral-400 transition-all outline-none"
                         required
                       />
                     </div>
@@ -259,27 +266,42 @@ export default function EnrollmentPage() {
                         value={phoneNumber}
                         onChange={setPhoneNumber}
                         nationality={nationality}
+                        onCountryChange={(country) => {
+                          if (country.nationality) {
+                            setNationality(country.nationality);
+                          }
+                        }}
+                        phoneLabel={t.phoneNumber}
+                        emailLabel={t.emailAddress}
+                        phoneTabLabel={t.phoneTab}
+                        emailTabLabel={t.emailTab}
+                        placeholder={t.phonePlaceholder}
+                        emailPlaceholder={t.emailPlaceholder}
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Nationality <span className="text-red-500">*</span></label>
+                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">
+                        {t.nationality} <span className="text-red-500">*</span>
+                      </label>
                       <NationalitySelect
                         value={nationality}
                         onChange={setNationality}
-                        placeholder="Select your nationality"
+                        placeholder={t.selectNationality}
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Upload ID/Passport <span className="text-red-500">*</span></label>
+                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">
+                        {t.uploadPassport} <span className="text-red-500">*</span>
+                      </label>
                       <label className={`w-full flex flex-row items-center justify-center gap-2 h-[44px] md:h-[50px] border-2 ${scanError ? 'border-red-400 bg-red-50' : 'border-dashed border-neutral-300 bg-white hover:bg-neutral-50'} rounded-lg transition-colors relative overflow-hidden cursor-pointer`}>
                         {isScanning ? (
                           <>
                             <Loader2 className="w-4 h-4 text-[#c3943a] animate-spin shrink-0" />
-                            <span className="text-[10px] md:text-xs font-medium text-[#c3943a]">Scanning ID...</span>
+                            <span className="text-[10px] md:text-xs font-medium text-[#c3943a]">{t.scanningId}</span>
                           </>
                         ) : passportFile ? (
                           <>
@@ -289,7 +311,7 @@ export default function EnrollmentPage() {
                         ) : (
                           <>
                             <Upload className={`w-4 h-4 ${scanError ? 'text-red-500' : 'text-neutral-400'} shrink-0`} />
-                            <span className={`text-[10px] md:text-xs font-medium ${scanError ? 'text-red-500' : 'text-neutral-400'}`}>Click to upload (Required)</span>
+                            <span className={`text-[10px] md:text-xs font-medium ${scanError ? 'text-red-500' : 'text-neutral-400'}`}>{t.clickToUpload}</span>
                           </>
                         )}
                         <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" required disabled={isScanning} />
@@ -316,7 +338,7 @@ export default function EnrollmentPage() {
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       <span className="flex items-center gap-2 relative z-10">
-                        Submit Registration
+                        {t.submitRegistration}
                         <Send className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </span>
                     )}
