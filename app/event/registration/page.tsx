@@ -310,9 +310,13 @@ export default function EventRegistrationPage() {
                                 {events[currentEventIndex].tag}
                               </span>
                             )}
-                            {hasActiveEvents && (
-                              <span className={`px-2 md:px-3 py-0.5 md:py-1 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-sm whitespace-nowrap ${currentEvent?.status === 'UPCOMING' ? 'bg-amber-600' : 'bg-[#c3943a]'}`}>
-                                {currentEvent?.status === 'UPCOMING' ? 'Coming Soon' : 'Live Event'}
+                            {hasActiveEvents && currentEvent?.status && (
+                              <span className={`px-2 md:px-3 py-0.5 md:py-1 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-sm whitespace-nowrap ${
+                                currentEvent.status.toUpperCase() === 'UPCOMING' || currentEvent.status.toUpperCase().includes('SOON')
+                                  ? 'bg-amber-600'
+                                  : 'bg-[#c3943a]'
+                              }`}>
+                                {currentEvent.status}
                               </span>
                             )}
                           </div>
@@ -329,9 +333,13 @@ export default function EventRegistrationPage() {
                               {events[currentEventIndex].tag}
                             </span>
                           )}
-                          {hasActiveEvents && (
-                            <span className={`px-2 md:px-3 py-0.5 md:py-1 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-sm whitespace-nowrap ${currentEvent?.status === 'UPCOMING' ? 'bg-amber-600' : 'bg-[#c3943a]'}`}>
-                              {currentEvent?.status === 'UPCOMING' ? 'Coming Soon' : 'Live Event'}
+                          {hasActiveEvents && currentEvent?.status && (
+                            <span className={`px-2 md:px-3 py-0.5 md:py-1 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full shadow-sm whitespace-nowrap ${
+                              currentEvent.status.toUpperCase() === 'UPCOMING' || currentEvent.status.toUpperCase().includes('SOON')
+                                ? 'bg-amber-600'
+                                : 'bg-[#c3943a]'
+                            }`}>
+                              {currentEvent.status}
                             </span>
                           )}
                         </div>

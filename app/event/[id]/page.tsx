@@ -26,7 +26,17 @@ function wrapTables(html: string) {
 
 async function getEvent(id: string) {
   try {
-    return await prisma.event.findFirst({ where: { id, status: { in: ['ACTIVE', 'UPCOMING'] } } });
+    return await prisma.event.findFirst({
+      where: {
+        id,
+        NOT: {
+          status: {
+            equals: 'HIDDEN',
+            mode: 'insensitive'
+          }
+        }
+      }
+    });
   } catch (error) {
     console.error('Failed to load event:', error);
     return null;
