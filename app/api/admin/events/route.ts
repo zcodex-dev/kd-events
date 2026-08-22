@@ -34,6 +34,10 @@ export async function POST(request: Request) {
     const tag = formData.get('tag') as string;
     const date = formData.get('date') as string;
     const location = formData.get('location') as string;
+    const dateZh = formData.get('dateZh') as string;
+    const dateId = formData.get('dateId') as string;
+    const locationZh = formData.get('locationZh') as string;
+    const locationId = formData.get('locationId') as string;
     const status = formData.get('status') as string || 'ACTIVE';
     const orderIndex = parseInt(formData.get('orderIndex') as string || '0', 10);
 
@@ -54,6 +58,10 @@ export async function POST(request: Request) {
         descriptionZh: descriptionZh || null,
         titleId: titleId || null,
         descriptionId: descriptionId || null,
+        dateZh: dateZh || null,
+        dateId: dateId || null,
+        locationZh: locationZh || null,
+        locationId: locationId || null,
         tag: tag || null,
         date: date || null,
         location: location || null,

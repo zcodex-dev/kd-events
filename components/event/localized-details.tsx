@@ -14,7 +14,11 @@ type LocalizedEventDetailsProps = {
     titleId: string | null;
     descriptionId: string | null;
     date: string | null;
+    dateZh?: string | null;
+    dateId?: string | null;
     location: string | null;
+    locationZh?: string | null;
+    locationId?: string | null;
     tag: string | null;
   };
   cover: string;
@@ -33,9 +37,13 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
   const currentTitle = lang === 'en' ? event.title : lang === 'id' ? (event.titleId || event.title) : (event.titleZh || event.title);
   
   const descSource = lang === 'en' ? event.description : lang === 'id' ? (event.descriptionId || event.description) : (event.descriptionZh || event.description);
+
+  const currentDate = lang === 'en' ? event.date : lang === 'id' ? (event.dateId || event.date) : (event.dateZh || event.date);
+
+  const currentLocation = lang === 'en' ? event.location : lang === 'id' ? (event.locationId || event.location) : (event.locationZh || event.location);
   
-  const hasId = !!(event.descriptionId || event.titleId);
-  const hasZh = !!(event.descriptionZh || event.titleZh);
+  const hasId = !!(event.descriptionId || event.titleId || event.dateId || event.locationId);
+  const hasZh = !!(event.descriptionZh || event.titleZh || event.dateZh || event.locationZh);
   const hasMultipleLangs = hasId || hasZh;
 
   return (
@@ -61,19 +69,19 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
       </div>
 
       <div className="max-w-4xl mx-auto px-6 md:px-8">
-        {(event.date || event.location) && (
+        {(currentDate || currentLocation || hasMultipleLangs) && (
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-5 border-b border-white/10 text-xs md:text-sm text-neutral-300 font-medium">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 flex-1">
-              {event.date && (
+              {currentDate && (
                 <div className="flex items-start sm:items-center gap-2">
                   <Calendar className="w-4 h-4 text-[#c3943a] shrink-0 mt-0.5 sm:mt-0" />
-                  <span>{event.date}</span>
+                  <span>{currentDate}</span>
                 </div>
               )}
-              {event.location && (
+              {currentLocation && (
                 <div className="flex items-start sm:items-center gap-2">
                   <MapPin className="w-4 h-4 text-[#c3943a] shrink-0 mt-0.5 sm:mt-0" />
-                  <span className="max-w-xl">{event.location}</span>
+                  <span className="max-w-xl">{currentLocation}</span>
                 </div>
               )}
             </div>

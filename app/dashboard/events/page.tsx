@@ -43,7 +43,11 @@ type Event = {
   imageUrl: string | null;
   tag: string | null;
   date: string | null;
+  dateZh?: string | null;
+  dateId?: string | null;
   location: string | null;
+  locationZh?: string | null;
+  locationId?: string | null;
   status: string;
   orderIndex: number;
   createdAt: string;
@@ -72,7 +76,11 @@ export default function EventsManagementPage() {
   const [descriptionId, setDescriptionId] = useState('');
   const [tag, setTag] = useState('');
   const [date, setDate] = useState('');
+  const [dateZh, setDateZh] = useState('');
+  const [dateId, setDateId] = useState('');
   const [location, setLocation] = useState('');
+  const [locationZh, setLocationZh] = useState('');
+  const [locationId, setLocationId] = useState('');
   const [status, setStatus] = useState('ACTIVE');
   const [orderIndex, setOrderIndex] = useState(0);
   const [imageSlots, setImageSlots] = useState<ImageSlot[]>(emptySlots());
@@ -116,7 +124,11 @@ export default function EventsManagementPage() {
     setDescriptionId('');
     setTag('');
     setDate('');
+    setDateZh('');
+    setDateId('');
     setLocation('');
+    setLocationZh('');
+    setLocationId('');
     setStatus('ACTIVE');
     setOrderIndex(0);
     setImageSlots(emptySlots());
@@ -134,7 +146,11 @@ export default function EventsManagementPage() {
     setDescriptionId(event.descriptionId || '');
     setTag(event.tag || '');
     setDate(event.date || '');
+    setDateZh(event.dateZh || '');
+    setDateId(event.dateId || '');
     setLocation(event.location || '');
+    setLocationZh(event.locationZh || '');
+    setLocationId(event.locationId || '');
     setStatus(event.status);
     setOrderIndex(event.orderIndex || 0);
     setImageSlots(slotsFromImages(imagesOf(event)));
@@ -218,7 +234,11 @@ export default function EventsManagementPage() {
       formData.append('descriptionId', stripHtml(descriptionId) ? descriptionId : '');
       formData.append('tag', tag);
       formData.append('date', date);
+      formData.append('dateZh', dateZh);
+      formData.append('dateId', dateId);
       formData.append('location', location);
+      formData.append('locationZh', locationZh);
+      formData.append('locationId', locationId);
       formData.append('status', status);
       formData.append('orderIndex', orderIndex.toString());
       // One set of fields per slot. A slot the server hears nothing about is
@@ -600,26 +620,46 @@ export default function EventsManagementPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                        Date & Time
+                        Date & Time ({activeLangTab.toUpperCase()})
                       </label>
                       <input
                         type="text"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        placeholder="e.g. Oct 12, 2026 - 8 PM"
+                        value={activeLangTab === 'en' ? date : activeLangTab === 'id' ? dateId : dateZh}
+                        onChange={(e) => {
+                          if (activeLangTab === 'en') setDate(e.target.value);
+                          if (activeLangTab === 'id') setDateId(e.target.value);
+                          if (activeLangTab === 'zh') setDateZh(e.target.value);
+                        }}
+                        placeholder={
+                          activeLangTab === 'en'
+                            ? "e.g. 27-29 August 2026 · Game Starts at 5:00 PM"
+                            : activeLangTab === 'id'
+                            ? "e.g. 27-29 Agustus 2026 · Permainan Mulai Pukul 17:00 WIB"
+                            : "e.g. 2026年8月27日至29日 · 下午5:00开始"
+                        }
                         className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
                       />
                     </div>
 
                     <div className="sm:col-span-2">
                       <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                        Location
+                        Location ({activeLangTab.toUpperCase()})
                       </label>
                       <input
                         type="text"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="e.g. VIP Room 1, Kompong Dewa"
+                        value={activeLangTab === 'en' ? location : activeLangTab === 'id' ? locationId : locationZh}
+                        onChange={(e) => {
+                          if (activeLangTab === 'en') setLocation(e.target.value);
+                          if (activeLangTab === 'id') setLocationId(e.target.value);
+                          if (activeLangTab === 'zh') setLocationZh(e.target.value);
+                        }}
+                        placeholder={
+                          activeLangTab === 'en'
+                            ? "e.g. Casino, 1st Floor - Kompong Dewa Resort..."
+                            : activeLangTab === 'id'
+                            ? "e.g. Kasino, Lantai 1 - Kompong Dewa Resort..."
+                            : "e.g. 赌场1楼 - 贡布德瓦综合度假村..."
+                        }
                         className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
                       />
                     </div>

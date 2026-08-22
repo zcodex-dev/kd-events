@@ -50,6 +50,10 @@ model Event {
   descriptionZh String?
   titleId       String?
   descriptionId String?
+  dateZh        String?
+  dateId        String?
+  locationZh    String?
+  locationId    String?
 
   /// Up to 3 images, in slot order. `imageUrl` is kept in sync with images[0]
   /// so rows created before this field still render.
