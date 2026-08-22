@@ -10,6 +10,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox-1';
 import { Label } from '@/components/ui/label';
+import { SmartContactInput } from '@/components/shared/smart-contact-input';
 import { validateRealName, validateRealContact } from '@/lib/validation/spam-detector';
 
 const defaultEvents = [
@@ -406,13 +407,9 @@ export default function EventRegistrationPage() {
                     </div>
 
                     <div>
-                      <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">Phone Number / Email</label>
-                      <input
-                        type="text"
+                      <SmartContactInput
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        placeholder="+62 812... or name@email.com"
-                        className="w-full bg-white border border-neutral-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-lg px-3.5 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-black placeholder:text-neutral-400 transition-all outline-none"
+                        onChange={setPhoneNumber}
                         required
                       />
                     </div>
