@@ -10,6 +10,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox-1';
 import { Label } from '@/components/ui/label';
+import { validateRealName, validateRealContact } from '@/lib/validation/spam-detector';
 
 const defaultEvents = [
   {
@@ -141,8 +142,12 @@ export default function EventRegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) return toast.error('Please enter your full name');
-    if (!phoneNumber.trim()) return toast.error('Please enter your phone number or email');
+    const nameCheck = validateRealName(name);
+    if (!nameCheck.isValid) return toast.error(nameCheck.error);
+
+    const contactCheck = validateRealContact(phoneNumber);
+    if (!contactCheck.isValid) return toast.error(contactCheck.error);
+
     if (!memberStatus) return toast.error('Please select your membership status');
     setIsSubmitting(true);
     try {

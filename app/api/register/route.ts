@@ -6,6 +6,7 @@ import { validateFileSize, MAX_FILE_SIZE } from '@/lib/validation/schemas';
 import { getAppConfig } from '@/lib/uploads/metadata';
 import { sendTelegramAlert } from '@/lib/notifications/telegram';
 import { isEmail, sendConfirmationEmail } from '@/lib/notifications/email';
+import { validateRealName, validateRealContact } from '@/lib/validation/spam-detector';
 
 export async function POST(request: Request) {
   try {
@@ -21,21 +22,26 @@ export async function POST(request: Request) {
     const eventId = (formData.get('eventId') as string) || null;
     const eventTitle = (formData.get('eventTitle') as string) || null;
 
+    // Strict validation to prevent spam, random text, and test entries
+    const nameCheck = validateRealName(name);
+    if (!nameCheck.isValid) {
+      return NextResponse.json({ success: false, error: nameCheck.error }, { status: 400 });
+    }
+
+    const contactVal = contact || phoneNumber;
+    const contactCheck = validateRealContact(contactVal);
+    if (!contactCheck.isValid) {
+      return NextResponse.json({ success: false, error: contactCheck.error }, { status: 400 });
+    }
+
     let status = { isMember: false, memberData: null as any, error: null };
-    let finalName = name;
+    let finalName = name.trim();
     let finalMemberId: string | null = memberId;
 
     if (!isNonMemberTab) {
-      if (!name || name.trim() === '') {
-        return NextResponse.json({ success: false, error: 'Name is required' }, { status: 400 });
-      }
       status.isMember = true;
-      finalName = name;
+      finalName = name.trim();
       finalMemberId = null;
-    } else {
-      if (!name || name.trim() === '') {
-        return NextResponse.json({ success: false, error: 'Name is required' }, { status: 400 });
-      }
     }
 
     let passportImageUrl = null;

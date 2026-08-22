@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import Image from 'next/image';
 import Tesseract from 'tesseract.js';
 import { NationalitySelect } from '@/components/shared/nationality-select';
+import { validateRealName, validateRealContact } from '@/lib/validation/spam-detector';
 
 
 
@@ -123,8 +124,12 @@ export default function EnrollmentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) return toast.error('Please enter your full name');
-    if (!phoneNumber.trim()) return toast.error('Please enter your phone number or email');
+    const nameCheck = validateRealName(name);
+    if (!nameCheck.isValid) return toast.error(nameCheck.error);
+
+    const contactCheck = validateRealContact(phoneNumber);
+    if (!contactCheck.isValid) return toast.error(contactCheck.error);
+
     if (!passportFile) return toast.error('Please upload your ID/Passport image');
 
     setIsSubmitting(true);
