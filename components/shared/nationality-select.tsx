@@ -202,7 +202,8 @@ export function NationalitySelect({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search country or nationality..."
-                className="w-full pl-9 pr-3 py-2 bg-white border border-neutral-200 rounded-lg text-xs md:text-sm text-black placeholder:text-neutral-400 outline-none focus:border-[#c3943a] focus:ring-1 focus:ring-[#c3943a]"
+                className="w-full pl-9 pr-3 py-2 bg-white border border-neutral-200 rounded-lg text-xs md:text-sm text-black placeholder:text-neutral-400 outline-none focus:border-[#c3943a]"
+                style={{ outline: 'none', boxShadow: 'none' }}
               />
             </div>
           </div>

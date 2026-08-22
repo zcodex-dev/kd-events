@@ -455,11 +455,11 @@ export default function EventRegistrationPage() {
                     <AnimatePresence>
                       {contactMode === 'email' && (
                         <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.25 }}
-                          className="overflow-hidden"
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.2 }}
+                          className="relative z-30"
                         >
                           <label className="text-[11px] md:text-xs font-semibold text-neutral-600 block mb-1">
                             {t.nationality} <span className="text-red-500">*</span>
