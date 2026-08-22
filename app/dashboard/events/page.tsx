@@ -409,15 +409,19 @@ export default function EventsManagementPage() {
                     </span>
                   )}
                   <div className="absolute top-3 right-3 flex flex-col gap-2">
-                    <select
-                      value={event.status}
-                      onChange={(e) => updateStatus(event.id, e.target.value)}
-                      className={`px-2.5 py-1 text-xs font-bold rounded-full shadow-sm border transition-colors outline-none cursor-pointer appearance-none text-center ${event.status === 'ACTIVE' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' : event.status === 'UPCOMING' ? 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800' : 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700'}`}
+                    <span
+                      className={`px-2.5 py-1 text-[11px] font-bold rounded-full shadow-sm border transition-colors text-center ${
+                        event.status?.toUpperCase() === 'ACTIVE' || event.status?.toUpperCase().includes('LIVE') || event.status?.toUpperCase().includes('OPEN')
+                          ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-300 dark:border-green-800'
+                          : event.status?.toUpperCase() === 'UPCOMING' || event.status?.toUpperCase().includes('SOON')
+                          ? 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800'
+                          : event.status?.toUpperCase() === 'HIDDEN'
+                          ? 'bg-neutral-100 text-neutral-500 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700'
+                          : 'bg-[#c3943a]/15 text-[#c3943a] border-[#c3943a]/30 dark:bg-[#c3943a]/20 dark:text-[#e5ac53]'
+                      }`}
                     >
-                      <option value="ACTIVE">Active</option>
-                      <option value="UPCOMING">Upcoming</option>
-                      <option value="HIDDEN">Hidden</option>
-                    </select>
+                      {event.status || 'ACTIVE'}
+                    </span>
                   </div>
                 </div>
 
@@ -673,17 +677,31 @@ export default function EventsManagementPage() {
 
                     <div className="sm:col-span-1">
                       <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                        Event Status
+                        Event Status (Custom Text)
                       </label>
-                      <select
+                      <input
+                        type="text"
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
+                        placeholder="e.g. LIVE EVENT, UPCOMING, ACTIVE, HIDDEN"
                         className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
-                      >
-                        <option value="ACTIVE">Active (Live)</option>
-                        <option value="UPCOMING">Upcoming (Coming Soon)</option>
-                        <option value="HIDDEN">Hidden</option>
-                      </select>
+                      />
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {['LIVE EVENT', 'ACTIVE', 'UPCOMING', 'REGISTRATION OPEN', 'HIDDEN'].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setStatus(preset)}
+                            className={`px-2 py-0.5 text-[10px] font-bold rounded-md border transition-all cursor-pointer ${
+                              status === preset
+                                ? 'bg-[#c3943a] text-white border-[#c3943a]'
+                                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
+                            }`}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="sm:col-span-1">
