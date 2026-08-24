@@ -220,7 +220,7 @@ export default function EventsManagementPage() {
       (slot) => !slot.file && slot.url.trim() && !isHttpUrl(slot.url)
     );
     if (badUrlSlot !== -1) {
-      return toast.error(`Image URL ${badUrlSlot + 1} must start with http:// or https://`);
+      return toast.error(`Image URL ${badUrlSlot + 1} must be a valid link (http://, https://) or library path (/api/raw...)`);
     }
 
     setIsSubmitting(true);

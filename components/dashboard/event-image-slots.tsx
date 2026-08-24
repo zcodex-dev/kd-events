@@ -26,7 +26,7 @@ export const slotsFromImages = (images: string[]): ImageSlot[] =>
     images[i] ? { file: null, url: images[i], existing: images[i] } : emptySlot()
   );
 
-export const isHttpUrl = (value: string) => /^https?:\/\//i.test(value.trim());
+export const isHttpUrl = (value: string) => /^(https?:\/\/|\/)/i.test(value.trim());
 
 /** What a slot should show as its preview, if anything. */
 function slotPreview(slot: ImageSlot, objectUrl: string | null): string | null {
@@ -164,11 +164,12 @@ export function EventImageSlots({ slots, onChange }: Props) {
                 <div className="relative">
                   <Link2 className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
                   <input
-                    type="url"
+                    type="text"
                     value={slot.file ? '' : slot.url}
                     disabled={Boolean(slot.file)}
                     onChange={(e) => update(index, { url: e.target.value, existing: null })}
-                    placeholder="https://example.com/image.jpg"
+                    placeholder="https://example.com/image.jpg or /api/raw?key=..."
+                    spellCheck={false}
                     className="w-full pl-8 pr-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>

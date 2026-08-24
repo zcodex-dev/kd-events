@@ -15,8 +15,13 @@ export function eventImages(event: { images?: string[] | null; imageUrl?: string
 }
 
 function normalizeUrl(raw: string): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (trimmed.startsWith('/')) {
+    return trimmed;
+  }
   try {
-    const parsed = new URL(raw);
+    const parsed = new URL(trimmed);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
     return parsed.toString();
   } catch {
