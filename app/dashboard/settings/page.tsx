@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Save, Check, FileCode2, ShieldAlert, ImageIcon, UploadCloud } from 'lucide-react';
+import { Save, Check, FileCode2, ShieldAlert, ImageIcon, UploadCloud, Images } from 'lucide-react';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
 import { LoadingSpinner } from '@/components/shared/loading';
+import { MediaLibraryModal } from '@/components/dashboard/media-library-modal';
 
 // Define the available extensions
 const IMAGE_TYPES = [
@@ -28,6 +29,7 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingBg, setIsUploadingBg] = useState(false);
+  const [libraryTarget, setLibraryTarget] = useState<'login' | 'enrollment' | null>(null);
 
   // Fetch the configuration on mount
   useEffect(() => {
@@ -250,19 +252,33 @@ export default function SettingsPage() {
               </div>
             )}
             
-            <label className="flex items-center justify-center w-full h-24 px-4 transition bg-white dark:bg-neutral-950 border-2 border-neutral-300 dark:border-neutral-800 border-dashed rounded-lg appearance-none cursor-pointer hover:border-neutral-400 dark:hover:border-neutral-700 focus:outline-none">
-              <span className="flex flex-col items-center space-y-2">
-                {isUploadingBg ? (
-                  <LoadingSpinner size={20} />
-                ) : (
-                  <UploadCloud className="w-6 h-6 text-neutral-400" />
-                )}
-                <span className="font-medium text-xs text-neutral-600 dark:text-neutral-400">
-                  {isUploadingBg ? 'Uploading...' : 'Click to select image to upload'}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <label className="flex-1 flex items-center justify-center h-24 px-4 transition bg-white dark:bg-neutral-950 border-2 border-neutral-300 dark:border-neutral-800 border-dashed rounded-lg appearance-none cursor-pointer hover:border-neutral-400 dark:hover:border-neutral-700 focus:outline-none">
+                <span className="flex flex-col items-center space-y-1.5">
+                  {isUploadingBg ? (
+                    <LoadingSpinner size={20} />
+                  ) : (
+                    <UploadCloud className="w-5 h-5 text-neutral-400" />
+                  )}
+                  <span className="font-medium text-xs text-neutral-600 dark:text-neutral-400">
+                    {isUploadingBg ? 'Uploading...' : 'Click to upload from device'}
+                  </span>
                 </span>
-              </span>
-              <input type="file" name="file_upload" className="hidden" accept="image/*" onChange={handleBgUpload} disabled={isUploadingBg} />
-            </label>
+                <input type="file" name="file_upload" className="hidden" accept="image/*" onChange={handleBgUpload} disabled={isUploadingBg} />
+              </label>
+
+              <button
+                type="button"
+                onClick={() => setLibraryTarget('login')}
+                className="flex flex-col items-center justify-center h-24 px-6 bg-neutral-50 dark:bg-neutral-950 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 rounded-lg transition-colors cursor-pointer group"
+              >
+                <Images className="w-6 h-6 text-[#c3943a] mb-1.5 transition-transform group-hover:scale-110" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  Choose from Library
+                </span>
+                <span className="text-[10px] text-neutral-400">Browse uploaded files</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -289,7 +305,17 @@ export default function SettingsPage() {
             )}
             
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 block">Image URL</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 block">Image URL</label>
+                <button
+                  type="button"
+                  onClick={() => setLibraryTarget('enrollment')}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#c3943a] hover:underline cursor-pointer"
+                >
+                  <Images className="w-3.5 h-3.5" />
+                  <span>Choose from Library</span>
+                </button>
+              </div>
               <input
                 type="text"
                 value={enrollmentBgUrl || ''}
@@ -297,10 +323,40 @@ export default function SettingsPage() {
                 placeholder="https://example.com/image.jpg"
                 className="w-full bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg px-3.5 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 transition-all outline-none"
               />
-              <p className="text-[11px] text-neutral-500 mt-1">Paste a URL for the image. Click "Save Settings" above to apply.</p>
+              <p className="text-[11px] text-neutral-500 mt-1">Paste a URL or choose from library. Click "Save Settings" above to apply.</p>
             </div>
           </div>
         </div>
+
+        {/* Media Library Modal */}
+        <MediaLibraryModal
+          isOpen={libraryTarget !== null}
+          onClose={() => setLibraryTarget(null)}
+          onSelect={async (url) => {
+            if (libraryTarget === 'login') {
+              setLoginBgUrl(url);
+              // Save login background to server config
+              try {
+                const res = await fetch('/api/config/login-bg', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ url }),
+                });
+                const data = await res.json();
+                if (data.success) {
+                  toast.success('Login background updated!');
+                }
+              } catch {
+                toast.error('Failed to update login background');
+              }
+            } else if (libraryTarget === 'enrollment') {
+              setEnrollmentBgUrl(url);
+            }
+            setLibraryTarget(null);
+          }}
+          title={libraryTarget === 'login' ? 'Choose Login Background' : 'Choose Enrollment Background'}
+          fileType="image"
+        />
       </motion.div>
     </>
   );

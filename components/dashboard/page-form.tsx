@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Save, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Save, Image as ImageIcon, Loader2, Images } from 'lucide-react';
 import type { WebPage } from '@/types';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
+import { MediaLibraryModal } from '@/components/dashboard/media-library-modal';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
@@ -30,6 +31,7 @@ export function PageForm({ initialData, isEdit }: PageFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingBg, setIsUploadingBg] = useState(false);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const [mediaLibraryTarget, setMediaLibraryTarget] = useState<'bg' | 'icon' | null>(null);
 
   const handleUpload = async (file: File, type: 'bg' | 'icon') => {
     if (type === 'bg') setIsUploadingBg(true);
@@ -185,12 +187,22 @@ export function PageForm({ initialData, isEdit }: PageFormProps) {
                   className="hidden"
                   onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'icon')}
                 />
-                <label 
-                  htmlFor="icon-upload"
-                  className="px-3 py-1.5 text-xs font-semibold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-2 max-w-fit"
-                >
-                  {isUploadingIcon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload Icon'}
-                </label>
+                <div className="flex items-center gap-2">
+                  <label 
+                    htmlFor="icon-upload"
+                    className="px-3 py-1.5 text-xs font-semibold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isUploadingIcon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload'}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setMediaLibraryTarget('icon')}
+                    className="px-2.5 py-1.5 text-xs font-semibold text-[#c3943a] bg-[#c3943a]/10 hover:bg-[#c3943a]/20 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Images className="w-3.5 h-3.5" />
+                    Library
+                  </button>
+                </div>
                 {featureIconUrl && (
                   <button type="button" onClick={() => setFeatureIconUrl('')} className="text-[10px] text-red-500 hover:underline mt-1 block">Remove</button>
                 )}
@@ -219,12 +231,22 @@ export function PageForm({ initialData, isEdit }: PageFormProps) {
                   className="hidden"
                   onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'bg')}
                 />
-                <label 
-                  htmlFor="bg-upload"
-                  className="px-3 py-1.5 text-xs font-semibold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-2 max-w-fit"
-                >
-                  {isUploadingBg ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload Background'}
-                </label>
+                <div className="flex items-center gap-2">
+                  <label 
+                    htmlFor="bg-upload"
+                    className="px-3 py-1.5 text-xs font-semibold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isUploadingBg ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload'}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setMediaLibraryTarget('bg')}
+                    className="px-2.5 py-1.5 text-xs font-semibold text-[#c3943a] bg-[#c3943a]/10 hover:bg-[#c3943a]/20 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Images className="w-3.5 h-3.5" />
+                    Library
+                  </button>
+                </div>
                 {bgImageUrl && (
                   <button type="button" onClick={() => setBgImageUrl('')} className="text-[10px] text-red-500 hover:underline mt-1 block">Remove</button>
                 )}
@@ -232,6 +254,19 @@ export function PageForm({ initialData, isEdit }: PageFormProps) {
             </div>
           </div>
         </div>
+
+        {/* Media Library Modal */}
+        <MediaLibraryModal
+          isOpen={mediaLibraryTarget !== null}
+          onClose={() => setMediaLibraryTarget(null)}
+          onSelect={(url) => {
+            if (mediaLibraryTarget === 'bg') setBgImageUrl(url);
+            else if (mediaLibraryTarget === 'icon') setFeatureIconUrl(url);
+            setMediaLibraryTarget(null);
+          }}
+          title={mediaLibraryTarget === 'bg' ? 'Choose Background Image' : 'Choose Feature Icon'}
+          fileType="image"
+        />
       </div>
 
       {/* Editor */}

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Image as ImageIcon, Upload, X, Link2 } from 'lucide-react';
+import { Image as ImageIcon, Upload, X, Link2, Images } from 'lucide-react';
+import { MediaLibraryModal } from '@/components/dashboard/media-library-modal';
 
 export const MAX_EVENT_IMAGES = 3;
 
@@ -45,6 +46,7 @@ type Props = {
 
 export function EventImageSlots({ slots, onChange }: Props) {
   const [dragSlot, setDragSlot] = useState<number | null>(null);
+  const [librarySlotIndex, setLibrarySlotIndex] = useState<number | null>(null);
   // Object URLs for locally-picked files, keyed by slot index.
   const [objectUrls, setObjectUrls] = useState<Record<number, string>>({});
 
@@ -98,16 +100,26 @@ export function EventImageSlots({ slots, onChange }: Props) {
                 Image {index + 1}
                 {index === 0 && <span className="ml-1.5 font-normal text-neutral-400">(cover)</span>}
               </span>
-              {filled && (
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => clear(index)}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-neutral-500 hover:text-red-500 transition-colors"
+                  onClick={() => setLibrarySlotIndex(index)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-[#c3943a] bg-[#c3943a]/10 hover:bg-[#c3943a]/20 rounded-md transition-colors cursor-pointer"
                 >
-                  <X className="w-3.5 h-3.5" />
-                  Remove
+                  <Images className="w-3.5 h-3.5" />
+                  <span>Choose from Library</span>
                 </button>
-              )}
+                {filled && (
+                  <button
+                    type="button"
+                    onClick={() => clear(index)}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-neutral-500 hover:text-red-500 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    Remove
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-3">
@@ -144,9 +156,11 @@ export function EventImageSlots({ slots, onChange }: Props) {
 
               {/* URL field */}
               <div className="flex-1 min-w-0 flex flex-col justify-center">
-                <label className="block text-[11px] font-medium text-neutral-500 dark:text-neutral-400 mb-1">
-                  Image URL {index + 1}
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                    Image URL {index + 1}
+                  </label>
+                </div>
                 <div className="relative">
                   <Link2 className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
                   <input
@@ -161,13 +175,33 @@ export function EventImageSlots({ slots, onChange }: Props) {
                 <p className="mt-1 text-[10px] text-neutral-400 truncate">
                   {slot.file
                     ? `Uploading: ${slot.file.name}`
-                    : 'Paste a direct link, or drop a file on the left.'}
+                    : 'Paste a direct link, drop a file, or choose from your library.'}
                 </p>
               </div>
             </div>
           </div>
         );
       })}
+
+      {/* Media Library Modal */}
+      <MediaLibraryModal
+        isOpen={librarySlotIndex !== null}
+        onClose={() => setLibrarySlotIndex(null)}
+        onSelect={(imageUrl) => {
+          if (librarySlotIndex !== null) {
+            setObjectUrls((prev) => {
+              if (prev[librarySlotIndex]) URL.revokeObjectURL(prev[librarySlotIndex]);
+              const next = { ...prev };
+              delete next[librarySlotIndex];
+              return next;
+            });
+            update(librarySlotIndex, { file: null, url: imageUrl, existing: imageUrl });
+            setLibrarySlotIndex(null);
+          }
+        }}
+        title={`Choose Image for Slot ${librarySlotIndex !== null ? librarySlotIndex + 1 : ''}`}
+        fileType="image"
+      />
 
       <p className="text-xs text-neutral-500 dark:text-neutral-500 flex items-start gap-1.5">
         <ImageIcon className="w-3.5 h-3.5 mt-0.5 shrink-0" />

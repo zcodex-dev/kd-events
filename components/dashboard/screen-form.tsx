@@ -20,11 +20,13 @@ import {
   Film,
   AlignCenter,
   SlidersHorizontal,
-  CaseSensitive
+  CaseSensitive,
+  Images
 } from 'lucide-react';
 import type { TvScreen, TextOverlayConfig } from '@/types';
 import { TvDisplayCanvas } from '@/components/tv/tv-display-canvas';
 import { directUploadSingleFile } from '@/lib/uploads/client-upload';
+import { MediaLibraryModal } from '@/components/dashboard/media-library-modal';
 
 type ScreenFormProps = {
   initialData?: TvScreen;
@@ -178,6 +180,7 @@ export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
   // Uploading & Submitting
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
   // Apply style preset
   const handleApplyPreset = (preset: typeof TEXT_STYLES[number]) => {
@@ -462,7 +465,40 @@ export function ScreenForm({ initialData, isEdit }: ScreenFormProps) {
                     </p>
                   </div>
                 </label>
+
+                <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsLibraryOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#c3943a] bg-[#c3943a]/10 hover:bg-[#c3943a]/20 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <Images className="w-4 h-4" />
+                    <span>Choose from Library</span>
+                  </button>
+                </div>
               </div>
+
+              {/* Media Library Modal */}
+              <MediaLibraryModal
+                isOpen={isLibraryOpen}
+                onClose={() => setIsLibraryOpen(false)}
+                onSelect={(url, file) => {
+                  setMediaUrl(url);
+                  if (file.mimeType.startsWith('video/')) {
+                    setMediaType('video');
+                  } else if (file.mimeType === 'image/gif') {
+                    setMediaType('gif');
+                  } else {
+                    setMediaType('image');
+                  }
+                  if (!title) {
+                    setTitle(file.originalName.replace(/\.[^/.]+$/, ''));
+                  }
+                  setIsLibraryOpen(false);
+                }}
+                title="Choose Media for TV Screen"
+                fileType="all"
+              />
 
               {/* URL fallback */}
               <div className="space-y-1">
