@@ -43,7 +43,7 @@ export const TRANSLATIONS = {
     // Buttons & Actions
     submitRegistration: 'Submit Registration',
     submitting: 'Submitting...',
-    scanningId: 'Scanning ID with AI OCR...',
+    scanningId: 'Scanning ID...',
     registerAnother: 'Register Another Person',
     enrollAnother: 'Enroll Another Member',
 
@@ -95,7 +95,7 @@ export const TRANSLATIONS = {
     // Buttons & Actions
     submitRegistration: 'Kirim Pendaftaran',
     submitting: 'Mengirim...',
-    scanningId: 'Memindai ID dengan AI OCR...',
+    scanningId: 'Memindai ID dengan...',
     registerAnother: 'Daftarkan Orang Lain',
     enrollAnother: 'Daftarkan Anggota Baru',
 

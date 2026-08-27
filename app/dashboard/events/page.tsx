@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2 } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
+import { EventQrModal } from '@/components/dashboard/event-qr-modal';
 import {
   EventImageSlots,
   emptySlots,
@@ -64,6 +65,7 @@ export default function EventsManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [embedModalEvent, setEmbedModalEvent] = useState<Event | null>(null);
+  const [qrModalEvent, setQrModalEvent] = useState<Event | null>(null);
   const [hasCopiedEmbed, setHasCopiedEmbed] = useState(false);
 
   // Form State
@@ -463,7 +465,14 @@ export default function EventsManagementPage() {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800/50">
+                  <div className="flex items-center justify-end gap-1.5 mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800/50">
+                    <button
+                      onClick={() => setQrModalEvent(event)}
+                      className="p-2 text-neutral-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 rounded-lg transition-colors cursor-pointer"
+                      title="Generate QR Code (Registration Form / Terms)"
+                    >
+                      <QrCode className="w-4 h-4" />
+                    </button>
                     <Link
                       href={`/event/${event.id}`}
                       target="_blank"
@@ -947,6 +956,13 @@ export default function EventsManagementPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Event QR Code Generator Modal */}
+      <EventQrModal
+        event={qrModalEvent}
+        isOpen={Boolean(qrModalEvent)}
+        onClose={() => setQrModalEvent(null)}
+      />
     </div>
   );
 }
