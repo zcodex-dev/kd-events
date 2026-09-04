@@ -2,12 +2,19 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Plus, Edit2, Trash2, QrCode, Download, ExternalLink, Link as LinkIcon, FileText, X } from 'lucide-react';
+import { Loader2, Plus, Edit2, Trash2, QrCode, Download, ExternalLink, Link as LinkIcon, FileText, X, Copy, Check, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
 import RichTextEditor from '@/components/shared/rich-text-editor';
 import { MediaLibraryPicker } from '@/components/shared/media-library-picker';
 import Link from 'next/link';
+
+const COLOR_PRESETS = [
+  { name: 'Classic Black', fg: '#000000', bg: '#ffffff' },
+  { name: 'KD Gold', fg: '#c3943a', bg: '#ffffff' },
+  { name: 'Luxury Dark', fg: '#e5ac53', bg: '#121212' },
+  { name: 'Royal Blue', fg: '#1d4ed8', bg: '#ffffff' },
+];
 
 type DynamicQR = {
   id: string;
@@ -43,6 +50,8 @@ export default function QrMakerDashboard() {
   // View Modal State
   const [viewQr, setViewQr] = useState<DynamicQR | null>(null);
   const qrRef = useRef<SVGSVGElement>(null);
+  const editorQrRef = useRef<SVGSVGElement>(null);
+  const [hasCopiedView, setHasCopiedView] = useState(false);
 
   useEffect(() => {
     fetchQrs();
@@ -141,32 +150,51 @@ export default function QrMakerDashboard() {
     }
   };
 
-  const handleDownloadQr = () => {
-    if (!qrRef.current) return;
-    const svg = qrRef.current;
-    const svgData = new XMLSerializer().serializeToString(svg);
+  const handleDownloadSvg = (targetSvg: SVGSVGElement | null, defaultName: string) => {
+    if (!targetSvg) return;
+    const svgData = new XMLSerializer().serializeToString(targetSvg);
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const downloadLink = document.createElement('a');
+    const safeName = (defaultName || 'qr-code')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .slice(0, 40);
+    downloadLink.download = `${safeName}.svg`;
+    downloadLink.href = url;
+    downloadLink.click();
+    URL.revokeObjectURL(url);
+    toast.success('QR Code SVG downloaded!');
+  };
+
+  const handleDownloadQr = (targetSvg: SVGSVGElement | null, defaultName: string, backgroundCol: string) => {
+    if (!targetSvg) return;
+    const svgData = new XMLSerializer().serializeToString(targetSvg);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
     
     img.onload = () => {
-      // Create high-res canvas
-      const padding = 20;
+      // Create high-res canvas with padding
+      const padding = 24;
       canvas.width = img.width + (padding * 2);
       canvas.height = img.height + (padding * 2);
       
       if (ctx) {
-        // Fill background
-        ctx.fillStyle = viewQr?.bgColor || '#ffffff';
+        ctx.fillStyle = backgroundCol || '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        // Draw QR
         ctx.drawImage(img, padding, padding);
         
         const pngFile = canvas.toDataURL('image/png');
         const downloadLink = document.createElement('a');
-        downloadLink.download = `${viewQr?.name || 'qr-code'}.png`;
-        downloadLink.href = `${pngFile}`;
+        const safeName = (defaultName || 'qr-code')
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '-')
+          .slice(0, 40);
+        downloadLink.download = `${safeName}.png`;
+        downloadLink.href = pngFile;
         downloadLink.click();
+        toast.success('QR Code PNG downloaded!');
       }
     };
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
@@ -387,6 +415,40 @@ export default function QrMakerDashboard() {
 
                   <div className="border-t border-neutral-200 dark:border-neutral-800 pt-6">
                     <h4 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">Appearance Settings</h4>
+                    
+                    {/* Color Presets */}
+                    <div className="mb-4">
+                      <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                        Color Presets
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {COLOR_PRESETS.map((p) => {
+                          const isSelected = fgColor === p.fg && bgColor === p.bg;
+                          return (
+                            <button
+                              key={p.name}
+                              type="button"
+                              onClick={() => {
+                                setFgColor(p.fg);
+                                setBgColor(p.bg);
+                              }}
+                              className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
+                                isSelected
+                                  ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-xs'
+                                  : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400'
+                              }`}
+                            >
+                              <span
+                                className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0"
+                                style={{ backgroundColor: p.fg }}
+                              />
+                              <span>{p.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
@@ -435,15 +497,84 @@ export default function QrMakerDashboard() {
                             type="url"
                             value={logoUrl}
                             onChange={(e) => setLogoUrl(e.target.value)}
-                            placeholder="https://.../logo.png"
+                            placeholder="https://.../logo.png or /icon.png"
                             className="flex-1 px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg outline-none dark:text-white"
                           />
                           <button
                             type="button"
                             onClick={() => setIsMediaLibraryOpen(true)}
-                            className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-sm font-medium rounded-lg transition-colors border border-neutral-200 dark:border-neutral-700 whitespace-nowrap"
+                            className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-sm font-medium rounded-lg transition-colors border border-neutral-200 dark:border-neutral-700 whitespace-nowrap cursor-pointer"
                           >
                             Browse Library
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Live Interactive Preview Box Inside Editor */}
+                  <div className="border-t border-neutral-200 dark:border-neutral-800 pt-6">
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">
+                      Live QR Preview & Quick Export
+                    </h4>
+                    <div className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800">
+                      <div
+                        className="p-3.5 rounded-xl border border-neutral-200/80 shadow-xs flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: bgColor }}
+                      >
+                        <QRCodeSVG
+                          ref={editorQrRef}
+                          value={
+                            type === 'URL'
+                              ? destinationUrl || 'https://kompongdewa.win'
+                              : (typeof window !== 'undefined' ? window.location.origin : '') + '/qr/preview'
+                          }
+                          size={150}
+                          fgColor={fgColor}
+                          bgColor={bgColor}
+                          level="Q"
+                          includeMargin={false}
+                          imageSettings={
+                            logoUrl
+                              ? {
+                                  src: logoUrl,
+                                  x: undefined,
+                                  y: undefined,
+                                  height: 32,
+                                  width: 32,
+                                  excavate: true,
+                                }
+                              : undefined
+                          }
+                        />
+                      </div>
+
+                      <div className="flex-1 space-y-3 text-center sm:text-left w-full">
+                        <div>
+                          <span className="text-xs font-bold text-neutral-900 dark:text-white block truncate">
+                            {name || 'Untitled QR'}
+                          </span>
+                          <span className="text-[11px] text-neutral-400 block font-mono truncate">
+                            {type === 'URL' ? (destinationUrl || 'Enter URL above') : 'Custom Content Page'}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadSvg(editorQrRef.current, name || 'qr-code')}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-neutral-800 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Save as SVG</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadQr(editorQrRef.current, name || 'qr-code', bgColor)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Save as PNG</span>
                           </button>
                         </div>
                       </div>
@@ -521,23 +652,47 @@ export default function QrMakerDashboard() {
                 />
               </div>
 
-              <div className="flex gap-3 w-full">
-                <button
-                  onClick={handleDownloadQr}
-                  className="flex-1 inline-flex justify-center items-center gap-2 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Download PNG
-                </button>
-                <a
-                  href={getFullUrl(viewQr.id)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-none p-2.5 bg-neutral-100 text-neutral-700 hover:bg-neutral-200 rounded-lg transition-colors"
-                  title="Open Link"
-                >
-                  <ExternalLink className="w-5 h-5" />
-                </a>
+              <div className="flex flex-col gap-2.5 w-full">
+                <div className="flex gap-2 w-full">
+                  <button
+                    onClick={() => handleDownloadSvg(qrRef.current, viewQr.name)}
+                    className="flex-1 inline-flex justify-center items-center gap-1.5 py-2.5 bg-neutral-900 dark:bg-neutral-800 text-white rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-700 font-bold text-xs transition-colors cursor-pointer border border-neutral-700 shadow-xs"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download SVG
+                  </button>
+                  <button
+                    onClick={() => handleDownloadQr(qrRef.current, viewQr.name, viewQr.bgColor)}
+                    className="flex-1 inline-flex justify-center items-center gap-1.5 py-2.5 bg-[#c3943a] text-white rounded-lg hover:bg-[#a87b28] font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download PNG
+                  </button>
+                </div>
+
+                <div className="flex gap-2 w-full">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(getFullUrl(viewQr.id));
+                      setHasCopiedView(true);
+                      toast.success('Link copied to clipboard!');
+                      setTimeout(() => setHasCopiedView(false), 2000);
+                    }}
+                    className="flex-1 inline-flex justify-center items-center gap-1.5 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    {hasCopiedView ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{hasCopiedView ? 'Copied' : 'Copy Link'}</span>
+                  </button>
+                  <a
+                    href={getFullUrl(viewQr.id)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+                    title="Open Link"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
               </div>
             </motion.div>
           </div>
