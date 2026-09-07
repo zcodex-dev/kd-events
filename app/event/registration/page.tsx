@@ -15,6 +15,7 @@ import { NationalitySelect } from '@/components/shared/nationality-select';
 import { LanguageSwitcher } from '@/components/shared/language-switcher';
 import { TRANSLATIONS, type Locale } from '@/lib/i18n/translations';
 import { validateRealName, validateRealContact } from '@/lib/validation/spam-detector';
+import { isVideoFile } from '@/lib/uploads/file-utils';
 
 const defaultEvents = [
   {
@@ -261,6 +262,15 @@ export default function EventRegistrationPage() {
                     />
                     <Loader2 className="w-8 h-8 text-neutral-300 animate-spin z-10" />
                   </div>
+                ) : isVideoFile(events[currentEventIndex]?.image) ? (
+                  <video
+                    src={events[currentEventIndex]?.image}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <Image
                     src={events[currentEventIndex]?.image || defaultEvents[0].image}

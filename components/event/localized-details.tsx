@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Calendar, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { isVideoFile } from '@/lib/uploads/file-utils';
 
 type LocalizedEventDetailsProps = {
   event: {
@@ -48,12 +49,23 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
 
   return (
     <>
-      <div className="relative w-full bg-black flex justify-center">
-        <img
-          src={cover}
-          alt=""
-          className="w-full h-auto max-h-[60vh] md:max-h-[75vh] object-contain opacity-90"
-        />
+      <div className="relative w-full bg-black flex justify-center overflow-hidden">
+        {isVideoFile(cover) ? (
+          <video
+            src={cover}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto max-h-[60vh] md:max-h-[75vh] object-contain opacity-95"
+          />
+        ) : (
+          <img
+            src={cover}
+            alt=""
+            className="w-full h-auto max-h-[60vh] md:max-h-[75vh] object-contain opacity-90"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-[#0b0b0b]/40 to-transparent pointer-events-none" />
 
         <div className="absolute inset-x-0 bottom-0 max-w-4xl mx-auto px-6 md:px-8 pb-6 md:pb-10 z-10 pointer-events-none">
@@ -147,14 +159,25 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
                   key={`${src}-${i}`}
                   className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/40 border border-white/10"
                 >
-                  <Image
-                    src={src}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 50vw, 33vw"
-                    unoptimized
-                  />
+                  {isVideoFile(src) ? (
+                    <video
+                      src={src}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, 33vw"
+                      unoptimized
+                    />
+                  )}
                 </div>
               ))}
             </div>

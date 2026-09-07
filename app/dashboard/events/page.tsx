@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode, Film } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
 import { EventQrModal } from '@/components/dashboard/event-qr-modal';
+import { isVideoFile } from '@/lib/uploads/file-utils';
 import {
   EventImageSlots,
   emptySlots,
@@ -398,16 +399,33 @@ export default function EventsManagementPage() {
                     <span className="text-xs">{imagesOf(event).length ? 'Image unavailable' : 'No image'}</span>
                   </div>
                   {imagesOf(event)[0] && (
-                    <img
-                      src={imagesOf(event)[0]}
-                      alt=""
-                      className="relative w-full h-full object-cover"
-                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                    />
+                    isVideoFile(imagesOf(event)[0]) ? (
+                      <video
+                        src={imagesOf(event)[0]}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="relative w-full h-full object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={imagesOf(event)[0]}
+                        alt=""
+                        className="relative w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                      />
+                    )
+                  )}
+                  {imagesOf(event)[0] && isVideoFile(imagesOf(event)[0]) && (
+                    <span className="absolute top-3 left-3 px-2 py-0.5 text-[10px] font-bold rounded-full bg-black/75 text-[#e5ac53] backdrop-blur-sm flex items-center gap-1 border border-[#c3943a]/30 z-10">
+                      <Film className="w-3 h-3" />
+                      MOTION / MP4
+                    </span>
                   )}
                   {imagesOf(event).length > 1 && (
-                    <span className="absolute bottom-3 left-3 px-2 py-0.5 text-[10px] font-bold rounded-full bg-black/70 text-white backdrop-blur-sm">
-                      {imagesOf(event).length} images
+                    <span className="absolute bottom-3 left-3 px-2 py-0.5 text-[10px] font-bold rounded-full bg-black/70 text-white backdrop-blur-sm z-10">
+                      {imagesOf(event).length} media items
                     </span>
                   )}
                   <div className="absolute top-3 right-3 flex flex-col gap-2">

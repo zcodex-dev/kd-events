@@ -132,13 +132,12 @@ export function isVideoFile(mimeOrUrl?: string | null): boolean {
   const lower = mimeOrUrl.toLowerCase();
   return (
     lower.startsWith('video/') ||
-    lower.endsWith('.mp4') ||
-    lower.endsWith('.webm') ||
-    lower.endsWith('.mov') ||
-    lower.endsWith('.m4v') ||
     lower.includes('video/mp4') ||
     lower.includes('video/webm') ||
-    lower.includes('video/quicktime')
+    lower.includes('video/quicktime') ||
+    lower.includes('data:video/') ||
+    /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(lower) ||
+    /(\.mp4|\.webm|\.mov|\.m4v|\.ogg)/i.test(lower)
   );
 }
 

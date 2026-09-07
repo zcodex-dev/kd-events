@@ -1,8 +1,7 @@
-'use client';
-
 import { useState } from 'react';
-import { Image as ImageIcon, Upload, X, Link2, Images } from 'lucide-react';
+import { Image as ImageIcon, Upload, X, Link2, Images, Film } from 'lucide-react';
 import { MediaLibraryModal } from '@/components/dashboard/media-library-modal';
+import { isVideoFile } from '@/lib/uploads/file-utils';
 
 export const MAX_EVENT_IMAGES = 3;
 
@@ -79,7 +78,7 @@ export function EventImageSlots({ slots, onChange }: Props) {
   const handleDrop = (index: number, e: React.DragEvent) => {
     e.preventDefault();
     setDragSlot(null);
-    const file = Array.from(e.dataTransfer.files).find((f) => f.type.startsWith('image/'));
+    const file = Array.from(e.dataTransfer.files).find((f) => f.type.startsWith('image/') || f.type.startsWith('video/'));
     if (file) setFile(index, file);
   };
 
@@ -135,12 +134,23 @@ export function EventImageSlots({ slots, onChange }: Props) {
                 }`}
               >
                 {preview ? (
-                  <img src={preview} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                  isVideoFile(slot.file?.type || preview) ? (
+                    <video
+                      src={preview}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    />
+                  ) : (
+                    <img src={preview} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                  )
                 ) : (
                   <>
                     <Upload className="w-4 h-4 text-neutral-400 mb-1" />
                     <span className="text-[10px] leading-tight text-neutral-500 px-2">
-                      Drop image here
+                      Drop image or video
                       <br />
                       or click to browse
                     </span>
@@ -148,7 +158,7 @@ export function EventImageSlots({ slots, onChange }: Props) {
                 )}
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/mp4,video/webm,video/quicktime,video/*"
                   className="sr-only"
                   onChange={(e) => setFile(index, e.target.files?.[0] ?? null)}
                 />
@@ -168,7 +178,7 @@ export function EventImageSlots({ slots, onChange }: Props) {
                     value={slot.file ? '' : slot.url}
                     disabled={Boolean(slot.file)}
                     onChange={(e) => update(index, { url: e.target.value, existing: null })}
-                    placeholder="https://example.com/image.jpg or /api/raw?key=..."
+                    placeholder="https://example.com/media.mp4 or /api/raw?key=..."
                     spellCheck={false}
                     className="w-full pl-8 pr-3 py-2 text-sm bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   />
@@ -176,7 +186,7 @@ export function EventImageSlots({ slots, onChange }: Props) {
                 <p className="mt-1 text-[10px] text-neutral-400 truncate">
                   {slot.file
                     ? `Uploading: ${slot.file.name}`
-                    : 'Paste a direct link, drop a file, or choose from your library.'}
+                    : 'Paste a direct link, drop a file, or choose from your library (Images & MP4 supported).'}
                 </p>
               </div>
             </div>
@@ -200,8 +210,8 @@ export function EventImageSlots({ slots, onChange }: Props) {
             setLibrarySlotIndex(null);
           }
         }}
-        title={`Choose Image for Slot ${librarySlotIndex !== null ? librarySlotIndex + 1 : ''}`}
-        fileType="image"
+        title={`Choose Media for Slot ${librarySlotIndex !== null ? librarySlotIndex + 1 : ''}`}
+        fileType="all"
       />
 
       <p className="text-xs text-neutral-500 dark:text-neutral-500 flex items-start gap-1.5">
