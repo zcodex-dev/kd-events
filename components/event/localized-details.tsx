@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { isVideoFile } from '@/lib/uploads/file-utils';
@@ -20,6 +20,9 @@ type LocalizedEventDetailsProps = {
     location: string | null;
     locationZh?: string | null;
     locationId?: string | null;
+    concept?: string | null;
+    conceptZh?: string | null;
+    conceptId?: string | null;
     tag: string | null;
   };
   cover: string;
@@ -42,9 +45,11 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
   const currentDate = lang === 'en' ? event.date : lang === 'id' ? (event.dateId || event.date) : (event.dateZh || event.date);
 
   const currentLocation = lang === 'en' ? event.location : lang === 'id' ? (event.locationId || event.location) : (event.locationZh || event.location);
+
+  const currentConcept = lang === 'en' ? event.concept : lang === 'id' ? (event.conceptId || event.concept) : (event.conceptZh || event.concept);
   
-  const hasId = !!(event.descriptionId || event.titleId || event.dateId || event.locationId);
-  const hasZh = !!(event.descriptionZh || event.titleZh || event.dateZh || event.locationZh);
+  const hasId = !!(event.descriptionId || event.titleId || event.dateId || event.locationId || event.conceptId);
+  const hasZh = !!(event.descriptionZh || event.titleZh || event.dateZh || event.locationZh || event.conceptZh);
   const hasMultipleLangs = hasId || hasZh;
 
   return (
@@ -81,7 +86,7 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
       </div>
 
       <div className="max-w-4xl mx-auto px-6 md:px-8">
-        {(currentDate || currentLocation || hasMultipleLangs) && (
+        {(currentDate || currentLocation || currentConcept || hasMultipleLangs) && (
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-5 border-b border-white/10 text-xs md:text-sm text-neutral-300 font-medium">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 flex-1">
               {currentDate && (
@@ -94,6 +99,12 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
                 <div className="flex items-start sm:items-center gap-2">
                   <MapPin className="w-4 h-4 text-[#c3943a] shrink-0 mt-0.5 sm:mt-0" />
                   <span className="max-w-xl">{currentLocation}</span>
+                </div>
+              )}
+              {currentConcept && (
+                <div className="flex items-start sm:items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#c3943a] shrink-0 mt-0.5 sm:mt-0" />
+                  <span className="max-w-xl">{currentConcept}</span>
                 </div>
               )}
             </div>
@@ -116,8 +127,8 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
           </div>
         )}
 
-        {/* If there are no dates/locations but we have a language switcher to show */}
-        {!(event.date || event.location) && (
+        {/* If there are no dates/locations/concepts but we have a language switcher to show */}
+        {!(event.date || event.location || event.concept) && (
           <div className="py-5 border-b border-white/10">
             <div className="flex bg-white/5 backdrop-blur border border-white/10 p-1 rounded-lg w-full max-w-[300px]">
                 <button type="button" onClick={() => setLang('en')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>

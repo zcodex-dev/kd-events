@@ -23,6 +23,7 @@ const defaultEvents = [
     title: 'Kompong Dewa Integrated Resort',
     date: '',
     location: 'Sihanoukville, Cambodia',
+    concept: '',
     image: 'https://i.imgur.com/ykQuk5a.jpeg',
     tag: 'Resort & Casino',
   }
@@ -92,11 +93,15 @@ export default function EventRegistrationPage() {
                 : [defaultEvents[0].image];
 
             return images.map((image, i) => ({
+              ...ev,
               id: ev.id,
               slideKey: `${ev.id}-${i}`,
               title: ev.title,
               date: ev.date,
               location: ev.location,
+              concept: ev.concept,
+              conceptZh: ev.conceptZh,
+              conceptId: ev.conceptId,
               image,
               tag: ev.tag,
               status: ev.status,
@@ -383,6 +388,12 @@ export default function EventRegistrationPage() {
                         <div className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 rounded-full bg-[#c3943a]" />
                           {lang === 'id' && currentEvent?.locationId ? currentEvent.locationId : lang === 'zh' && currentEvent?.locationZh ? currentEvent.locationZh : events[currentEventIndex].location}
+                        </div>
+                      )}
+                      {(lang === 'id' && currentEvent?.conceptId ? currentEvent.conceptId : lang === 'zh' && currentEvent?.conceptZh ? currentEvent.conceptZh : (events[currentEventIndex]?.concept || currentEvent?.concept)) && (
+                        <div className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#c3943a]" />
+                          {lang === 'id' && currentEvent?.conceptId ? currentEvent.conceptId : lang === 'zh' && currentEvent?.conceptZh ? currentEvent.conceptZh : (events[currentEventIndex]?.concept || currentEvent?.concept)}
                         </div>
                       )}
                     </div>

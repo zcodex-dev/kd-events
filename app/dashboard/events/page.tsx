@@ -50,6 +50,9 @@ type Event = {
   location: string | null;
   locationZh?: string | null;
   locationId?: string | null;
+  concept?: string | null;
+  conceptZh?: string | null;
+  conceptId?: string | null;
   status: string;
   orderIndex: number;
   createdAt: string;
@@ -84,6 +87,9 @@ export default function EventsManagementPage() {
   const [location, setLocation] = useState('');
   const [locationZh, setLocationZh] = useState('');
   const [locationId, setLocationId] = useState('');
+  const [concept, setConcept] = useState('');
+  const [conceptZh, setConceptZh] = useState('');
+  const [conceptId, setConceptId] = useState('');
   const [status, setStatus] = useState('ACTIVE');
   const [orderIndex, setOrderIndex] = useState(0);
   const [imageSlots, setImageSlots] = useState<ImageSlot[]>(emptySlots());
@@ -132,6 +138,9 @@ export default function EventsManagementPage() {
     setLocation('');
     setLocationZh('');
     setLocationId('');
+    setConcept('');
+    setConceptZh('');
+    setConceptId('');
     setStatus('ACTIVE');
     setOrderIndex(0);
     setImageSlots(emptySlots());
@@ -154,6 +163,9 @@ export default function EventsManagementPage() {
     setLocation(event.location || '');
     setLocationZh(event.locationZh || '');
     setLocationId(event.locationId || '');
+    setConcept(event.concept || '');
+    setConceptZh(event.conceptZh || '');
+    setConceptId(event.conceptId || '');
     setStatus(event.status);
     setOrderIndex(event.orderIndex || 0);
     setImageSlots(slotsFromImages(imagesOf(event)));
@@ -242,6 +254,9 @@ export default function EventsManagementPage() {
       formData.append('location', location);
       formData.append('locationZh', locationZh);
       formData.append('locationId', locationId);
+      formData.append('concept', concept);
+      formData.append('conceptZh', conceptZh);
+      formData.append('conceptId', conceptId);
       formData.append('status', status);
       formData.append('orderIndex', orderIndex.toString());
       // One set of fields per slot. A slot the server hears nothing about is
@@ -481,6 +496,12 @@ export default function EventsManagementPage() {
                         {event.location}
                       </div>
                     )}
+                    {event.concept && (
+                      <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                        <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{event.concept}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-end gap-1.5 mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800/50">
@@ -690,6 +711,29 @@ export default function EventsManagementPage() {
                             : activeLangTab === 'id'
                             ? "e.g. Kasino, Lantai 1 - Kompong Dewa Resort..."
                             : "e.g. 赌场1楼 - 贡布德瓦综合度假村..."
+                        }
+                        className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                        Event Concept ({activeLangTab.toUpperCase()})
+                      </label>
+                      <input
+                        type="text"
+                        value={activeLangTab === 'en' ? concept : activeLangTab === 'id' ? conceptId : conceptZh}
+                        onChange={(e) => {
+                          if (activeLangTab === 'en') setConcept(e.target.value);
+                          if (activeLangTab === 'id') setConceptId(e.target.value);
+                          if (activeLangTab === 'zh') setConceptZh(e.target.value);
+                        }}
+                        placeholder={
+                          activeLangTab === 'en'
+                            ? "e.g. Traditional Mid-Autumn Celebration & High Stakes Tournament..."
+                            : activeLangTab === 'id'
+                            ? "e.g. Perayaan Tradisional Musim Gugur & Turnamen..."
+                            : "e.g. 中秋传统庆典与高额锦标赛..."
                         }
                         className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
                       />

@@ -54,6 +54,8 @@ model Event {
   dateId        String?
   locationZh    String?
   locationId    String?
+  conceptZh     String?
+  conceptId     String?
 
   /// Up to 3 images, in slot order. `imageUrl` is kept in sync with images[0]
   /// so rows created before this field still render.
@@ -62,6 +64,7 @@ model Event {
   tag         String?
   date        String?
   location    String?
+  concept     String?
   status      String   @default("ACTIVE")
   orderIndex  Int      @default(0)
   createdAt   DateTime @default(now())
