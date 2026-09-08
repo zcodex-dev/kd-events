@@ -104,7 +104,7 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
               {currentConcept && (
                 <div className="flex items-start sm:items-center gap-2">
                   <Sparkles className="w-4 h-4 text-[#c3943a] shrink-0 mt-0.5 sm:mt-0" />
-                  <span className="max-w-xl">{currentConcept}</span>
+                  <span className="max-w-xl text-[#c3943a]">{currentConcept}</span>
                 </div>
               )}
             </div>

@@ -391,10 +391,9 @@ export default function EventRegistrationPage() {
                         </div>
                       )}
                       {(lang === 'id' && currentEvent?.conceptId ? currentEvent.conceptId : lang === 'zh' && currentEvent?.conceptZh ? currentEvent.conceptZh : (events[currentEventIndex]?.concept || currentEvent?.concept)) && (
-                        <div className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#c3943a]" />
+                        <p className="text-xs md:text-sm font-medium text-[#c3943a] leading-relaxed pt-1">
                           {lang === 'id' && currentEvent?.conceptId ? currentEvent.conceptId : lang === 'zh' && currentEvent?.conceptZh ? currentEvent.conceptZh : (events[currentEventIndex]?.concept || currentEvent?.concept)}
-                        </div>
+                        </p>
                       )}
                     </div>
                     
