@@ -9,7 +9,10 @@ import { LocalizedEventDetails } from '@/components/event/localized-details';
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop';
 
-type PageProps = { params: Promise<{ id: string }> };
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ lang?: string }>;
+};
 
 /** Rows saved before the `images` array only carry `imageUrl`. */
 function eventImages(event: { images?: string[] | null; imageUrl?: string | null }): string[] {
@@ -57,8 +60,9 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-export default async function EventDetailPage({ params }: PageProps) {
+export default async function EventDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const sp = searchParams ? await searchParams : {};
   const event = await getEvent(id);
 
   if (!event) notFound();
@@ -96,6 +100,7 @@ export default async function EventDetailPage({ params }: PageProps) {
           event={event} 
           cover={cover || FALLBACK_IMAGE}
           gallery={gallery}
+          initialLang={(sp?.lang as 'en' | 'id' | 'zh') || undefined}
         />
       </main>
     </>

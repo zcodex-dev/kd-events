@@ -56,6 +56,7 @@ model Event {
   locationId    String?
   conceptZh     String?
   conceptId     String?
+  defaultLang   String?  @default("en")
 
   /// Up to 3 images, in slot order. `imageUrl` is kept in sync with images[0]
   /// so rows created before this field still render.

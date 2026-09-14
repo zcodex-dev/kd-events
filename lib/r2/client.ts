@@ -151,6 +151,51 @@ export async function getFile(key: string): Promise<{ content: Buffer; contentTy
 }
 
 /**
+ * Stream a file's content from R2 with HTTP Range support for video seeking on mobile devices.
+ */
+export async function getFileStream(
+  key: string,
+  range?: string | null
+): Promise<{
+  body: any;
+  contentType?: string;
+  contentLength?: number;
+  contentRange?: string;
+  isPartial: boolean;
+  status: number;
+}> {
+  const { bucketName } = getConfig();
+  const client = getS3Client();
+
+  try {
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+      Range: range || undefined,
+    });
+    const response = await client.send(command);
+    if (!response.Body) {
+      throw new R2ApiError('Object body is empty', 404);
+    }
+    const isPartial = !!range && !!response.ContentRange;
+    return {
+      body: response.Body.transformToWebStream(),
+      contentType: response.ContentType,
+      contentLength: response.ContentLength,
+      contentRange: response.ContentRange,
+      isPartial,
+      status: isPartial ? 206 : 200,
+    };
+  } catch (error: any) {
+    if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
+      throw new R2ApiError('File not found in R2', 404);
+    }
+    console.error('R2 stream error:', error);
+    throw new R2ApiError(error.message || 'Failed to stream file from R2', 500);
+  }
+}
+
+/**
  * Check if a file exists at the given key.
  */
 export async function fileExists(key: string): Promise<boolean> {

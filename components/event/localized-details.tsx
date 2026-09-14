@@ -8,12 +8,14 @@ import { isVideoFile } from '@/lib/uploads/file-utils';
 
 type LocalizedEventDetailsProps = {
   event: {
+    id?: string;
     title: string;
     description: string | null;
     titleZh: string | null;
     descriptionZh: string | null;
     titleId: string | null;
     descriptionId: string | null;
+    defaultLang?: string | null;
     date: string | null;
     dateZh?: string | null;
     dateId?: string | null;
@@ -24,6 +26,7 @@ type LocalizedEventDetailsProps = {
   };
   cover: string;
   gallery: string[];
+  initialLang?: 'en' | 'id' | 'zh';
 };
 
 function wrapTables(html: string) {
@@ -32,8 +35,15 @@ function wrapTables(html: string) {
     .replace(/<\/table>/gi, '</table></div>');
 }
 
-export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventDetailsProps) {
-  const [lang, setLang] = useState<'en' | 'id' | 'zh'>('en');
+export function LocalizedEventDetails({ event, cover, gallery, initialLang }: LocalizedEventDetailsProps) {
+  const [lang, setLang] = useState<'en' | 'id' | 'zh'>(() => {
+    if (initialLang) return initialLang;
+    if (typeof window !== 'undefined') {
+      const q = new URLSearchParams(window.location.search).get('lang');
+      if (q === 'en' || q === 'id' || q === 'zh') return q;
+    }
+    return (event.defaultLang as 'en' | 'id' | 'zh') || 'en';
+  });
 
   const currentTitle = lang === 'en' ? event.title : lang === 'id' ? (event.titleId || event.title) : (event.titleZh || event.title);
   
@@ -45,18 +55,26 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
   
   const hasId = !!(event.descriptionId || event.titleId || event.dateId || event.locationId);
   const hasZh = !!(event.descriptionZh || event.titleZh || event.dateZh || event.locationZh);
-  const hasMultipleLangs = hasId || hasZh;
+  const hasMultipleLangs = true; // Always allow toggling between English & Bahasa
 
   return (
     <>
       <div className="relative w-full bg-black flex justify-center overflow-hidden">
         {isVideoFile(cover) ? (
           <video
+            ref={(el) => {
+              if (el) {
+                el.muted = true;
+                el.defaultMuted = true;
+                el.play().catch(() => {});
+              }
+            }}
             src={cover}
             autoPlay
             loop
             muted
             playsInline
+            preload="auto"
             className="w-full h-auto max-h-[60vh] md:max-h-[75vh] object-contain opacity-95"
           />
         ) : (
@@ -99,16 +117,32 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
             </div>
             
             <div className="flex bg-white/5 backdrop-blur border border-white/10 p-1 rounded-lg w-full sm:w-auto overflow-hidden shrink-0">
-              <button type="button" onClick={() => setLang('en')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+              <button
+                type="button"
+                onClick={() => setLang('en')}
+                className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-md transition-all ${
+                  lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'
+                }`}
+              >
                 <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm opacity-90" /> EN
               </button>
-              {hasId && (
-                <button type="button" onClick={() => setLang('id')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                  <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setLang('id')}
+                className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-md transition-all ${
+                  lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
+              </button>
               {hasZh && (
-                <button type="button" onClick={() => setLang('zh')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
+                <button
+                  type="button"
+                  onClick={() => setLang('zh')}
+                  className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-md transition-all ${
+                    lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
                   <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
                 </button>
               )}
@@ -120,19 +154,35 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
         {!(event.date || event.location) && (
           <div className="py-5 border-b border-white/10">
             <div className="flex bg-white/5 backdrop-blur border border-white/10 p-1 rounded-lg w-full max-w-[300px]">
-                <button type="button" onClick={() => setLang('en')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                  <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm opacity-90" /> EN
+              <button
+                type="button"
+                onClick={() => setLang('en')}
+                className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-md transition-all ${
+                  lang === 'en' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-4 h-auto rounded-sm opacity-90" /> EN
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang('id')}
+                className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-md transition-all ${
+                  lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
+              </button>
+              {hasZh && (
+                <button
+                  type="button"
+                  onClick={() => setLang('zh')}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-md transition-all ${
+                    lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
                 </button>
-                {hasId && (
-                  <button type="button" onClick={() => setLang('id')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'id' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                    <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto rounded-sm opacity-90" /> ID
-                  </button>
-                )}
-                {hasZh && (
-                  <button type="button" onClick={() => setLang('zh')} className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${lang === 'zh' ? 'bg-[#c3943a] shadow-sm text-white' : 'text-neutral-400 hover:text-white'}`}>
-                    <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm opacity-90" /> 中文
-                  </button>
-                )}
+              )}
             </div>
           </div>
         )}
@@ -161,11 +211,19 @@ export function LocalizedEventDetails({ event, cover, gallery }: LocalizedEventD
                 >
                   {isVideoFile(src) ? (
                     <video
+                      ref={(el) => {
+                        if (el) {
+                          el.muted = true;
+                          el.defaultMuted = true;
+                          el.play().catch(() => {});
+                        }
+                      }}
                       src={src}
                       autoPlay
                       loop
                       muted
                       playsInline
+                      preload="auto"
                       className="w-full h-full object-cover"
                     />
                   ) : (

@@ -41,6 +41,7 @@ type Event = {
   descriptionZh: string | null;
   titleId: string | null;
   descriptionId: string | null;
+  defaultLang?: string | null;
   images: string[];
   imageUrl: string | null;
   tag: string | null;
@@ -74,6 +75,7 @@ export default function EventsManagementPage() {
 
   // Form State
   const [activeLangTab, setActiveLangTab] = useState<'en' | 'id' | 'zh'>('en');
+  const [defaultLang, setDefaultLang] = useState<'en' | 'id'>('en');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [titleZh, setTitleZh] = useState('');
@@ -125,6 +127,7 @@ export default function EventsManagementPage() {
   const handleOpenModal = () => {
     setEditingEvent(null);
     setActiveLangTab('en');
+    setDefaultLang('en');
     setTitle('');
     setDescription('');
     setTitleZh('');
@@ -150,6 +153,7 @@ export default function EventsManagementPage() {
   const handleOpenEditModal = (event: Event) => {
     setEditingEvent(event);
     setActiveLangTab('en');
+    setDefaultLang((event.defaultLang as 'en' | 'id') || 'en');
     setTitle(event.title);
     setDescription(event.description || '');
     setTitleZh(event.titleZh || '');
@@ -247,6 +251,7 @@ export default function EventsManagementPage() {
       formData.append('descriptionZh', stripHtml(descriptionZh) ? descriptionZh : '');
       formData.append('titleId', titleId);
       formData.append('descriptionId', stripHtml(descriptionId) ? descriptionId : '');
+      formData.append('defaultLang', defaultLang);
       formData.append('tag', tag);
       formData.append('date', date);
       formData.append('dateZh', dateZh);
@@ -592,6 +597,45 @@ export default function EventsManagementPage() {
                         <button type="button" onClick={() => setActiveLangTab('zh')} className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-md transition-all ${activeLangTab === 'zh' ? 'bg-white dark:bg-neutral-900 shadow text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}>
                           <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm" /> 中文
                         </button>
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-2 bg-neutral-50 dark:bg-neutral-950/60 p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                            Reading Page Default Language
+                          </label>
+                          <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                            Visitors opening this event will see this language by default.
+                          </p>
+                        </div>
+                        <div className="flex bg-neutral-200/80 dark:bg-neutral-800 p-1 rounded-lg shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setDefaultLang('en')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                              defaultLang === 'en'
+                                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                            }`}
+                          >
+                            <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-3.5 h-auto rounded-[2px]" />
+                            English (Default)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDefaultLang('id')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                              defaultLang === 'id'
+                                ? 'bg-[#c3943a] text-white shadow-sm'
+                                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                            }`}
+                          >
+                            <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-3.5 h-auto rounded-[2px]" />
+                            Bahasa (Default)
+                          </button>
+                        </div>
                       </div>
                     </div>
 

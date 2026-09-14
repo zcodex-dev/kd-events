@@ -50,7 +50,7 @@ export default function EventRegistrationPage() {
 
   // The placeholder events above aren't real records, so they have no detail page.
   const currentEvent = events[currentEventIndex] || defaultEvents[0];
-  const detailHref = typeof currentEvent?.id === 'string' ? `/event/${currentEvent.id}` : null;
+  const detailHref = typeof currentEvent?.id === 'string' ? `/event/${currentEvent.id}?lang=${lang}` : null;
 
   // Non-member fields
   const [name, setName] = useState('');
@@ -269,11 +269,19 @@ export default function EventRegistrationPage() {
                   </div>
                 ) : isVideoFile(events[currentEventIndex]?.image) ? (
                   <video
+                    ref={(el) => {
+                      if (el) {
+                        el.muted = true;
+                        el.defaultMuted = true;
+                        el.play().catch(() => {});
+                      }
+                    }}
                     src={events[currentEventIndex]?.image}
                     autoPlay
                     loop
                     muted
                     playsInline
+                    preload="auto"
                     className="w-full h-full object-cover"
                   />
                 ) : (

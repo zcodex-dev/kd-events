@@ -103,5 +103,14 @@ The following fixes have been successfully implemented and tested locally. They 
 7. **Mobile Header & Poster Adjustments**: 
    - Changed the header background from `bg-black/80` to a solid `bg-black` to stop it from looking gray on light backgrounds.
    - Deepened the gradient overlay at the bottom of the poster image (starting from solid `rgba(0,0,0,1)`) to heavily increase the contrast for the white event title text.
+8. **Default Language Toggle (English or Bahasa)**:
+   - Added `defaultLang String? @default("en")` to `Event` model in `prisma/schema.prisma` and safely synced to PostgreSQL without touching existing data.
+   - Added `defaultLang` handling in `app/api/admin/events/route.ts` and `app/api/admin/events/[id]/route.ts`.
+   - Added a soft UI segmented toggle in `app/dashboard/events/page.tsx` under "Reading Page Default Language" ([English (Default)] / [Bahasa (Default)]).
+   - Updated `components/event/localized-details.tsx` and `app/event/[id]/page.tsx` to initialize language from `event.defaultLang` or `?lang=` query param, and provide dedicated EN / ID buttons.
+9. **Mobile Video Playback Fix**:
+   - **Root Cause**: Mobile browsers (especially iOS Safari) strictly require HTTP 206 Partial Content (HTTP Range requests) with `Accept-Ranges: bytes` and `Content-Range` headers to buffer and play HTML5 videos. The `/api/raw` route was previously responding with standard 200 OK and buffering the full file into memory, causing mobile Safari to abort video playback.
+   - **Fix**: Added `getFileStream` to `lib/r2/client.ts` passing `Range` to Cloudflare R2 and streaming via Web streams. Updated `app/api/raw/route.ts` to return HTTP 206 with `Content-Range` and `Accept-Ranges: bytes`.
+   - **Frontend Video Resilience**: Added `preload="auto"`, `defaultMuted`, `playsInline`, and autoplay fallback refs to `<video>` elements in `app/event/registration/page.tsx` and `components/event/localized-details.tsx`.
 
 *(Next Agent: Read the above summary. If the user approves, run a `git commit` and `git push origin main` to deploy these local changes to the live server.)*

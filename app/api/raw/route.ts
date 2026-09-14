@@ -1,5 +1,4 @@
-import { NextResponse } from 'next/server';
-import { getFile, R2ApiError } from '@/lib/r2/client';
+import { getFileStream, R2ApiError } from '@/lib/r2/client';
 
 export async function GET(request: Request) {
   try {
@@ -15,14 +14,25 @@ export async function GET(request: Request) {
       return new Response('Forbidden path', { status: 403 });
     }
 
-    const file = await getFile(key);
+    const range = request.headers.get('range');
+    const { body, contentType, contentLength, contentRange, status } = await getFileStream(key, range);
 
-    return new Response(new Uint8Array(file.content), {
-      status: 200,
-      headers: {
-        'Content-Type': file.contentType || 'application/octet-stream',
-        'Cache-Control': 'public, max-age=31536000, immutable',
-      },
+    const headers: Record<string, string> = {
+      'Content-Type': contentType || 'application/octet-stream',
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    };
+
+    if (contentLength !== undefined) {
+      headers['Content-Length'] = String(contentLength);
+    }
+    if (contentRange) {
+      headers['Content-Range'] = contentRange;
+    }
+
+    return new Response(body, {
+      status,
+      headers,
     });
   } catch (error) {
     if (error instanceof R2ApiError && error.status === 404) {

@@ -47,6 +47,7 @@ export async function PUT(request: Request, { params }: RouteContext) {
     const conceptId = formData.get('conceptId') as string;
     const status = formData.get('status') as string || 'ACTIVE';
     const orderIndex = parseInt(formData.get('orderIndex') as string || '0', 10);
+    const defaultLang = (formData.get('defaultLang') as string) || 'en';
 
     if (!title) {
       return NextResponse.json({ success: false, error: 'Title is required' }, { status: 400 });
@@ -78,6 +79,7 @@ export async function PUT(request: Request, { params }: RouteContext) {
         location: location || null,
         status,
         orderIndex,
+        defaultLang: defaultLang === 'id' ? 'id' : 'en',
         images: resolved.images,
         imageUrl: resolved.images[0] ?? null,
       }
