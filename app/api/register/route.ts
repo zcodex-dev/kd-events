@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { uploadFile } from '@/lib/r2/client';
-import { generateUniqueFileName, generateUploadPath } from '@/lib/uploads/file-utils';
+import { generateUniqueFileName, generateUploadPath, isVideoFile } from '@/lib/uploads/file-utils';
 import { validateFileSize, MAX_FILE_SIZE } from '@/lib/validation/schemas';
 import { getAppConfig } from '@/lib/uploads/metadata';
 import { sendTelegramAlert } from '@/lib/notifications/telegram';
@@ -145,11 +145,32 @@ export async function POST(request: Request) {
     // Fire notifications and wait for them to ensure they complete before response ends
     const contactInfo = contact || phoneNumber || 'N/A';
     
-    let eventImageUrl = 'https://i.imgur.com/ykQuk5a.jpeg'; // default
+    const DEFAULT_RESORT_IMAGE = 'https://i.imgur.com/ykQuk5a.jpeg';
+    let alertImageUrl: string = DEFAULT_RESORT_IMAGE;
+    
     if (eventId) {
       const eventRecord = await prisma.event.findUnique({ where: { id: eventId } });
       if (eventRecord) {
-        eventImageUrl = eventRecord.imageUrl || (eventRecord.images && eventRecord.images[0]) || eventImageUrl;
+        // 1. Dedicated Telegram thumbnail if provided and not a video
+        if (eventRecord.telegramImageUrl && !isVideoFile(eventRecord.telegramImageUrl)) {
+          alertImageUrl = eventRecord.telegramImageUrl;
+        } 
+        // 2. Main cover image if not a video
+        else if (eventRecord.imageUrl && !isVideoFile(eventRecord.imageUrl)) {
+          alertImageUrl = eventRecord.imageUrl;
+        } 
+        // 3. Any non-video image from the event's gallery slots
+        else if (eventRecord.images && eventRecord.images.length > 0) {
+          const nonVideo = eventRecord.images.find((img) => !isVideoFile(img));
+          if (nonVideo) {
+            alertImageUrl = nonVideo;
+          }
+        }
+      }
+    } else {
+      // Membership enrollment: use avatar if not placeholder and not video
+      if (finalAvatarUrl && !finalAvatarUrl.includes('placeholder.svg') && !isVideoFile(finalAvatarUrl)) {
+        alertImageUrl = finalAvatarUrl;
       }
     }
     
@@ -168,17 +189,13 @@ export async function POST(request: Request) {
       alertMessage += `<b>Contact Info:</b> ${contactInfo}\n`;
       alertMessage += `<b>Nationality:</b> ${nationality || 'N/A'}`;
     }
-
-    const alertImageUrl = eventId 
-      ? (eventImageUrl !== 'https://i.imgur.com/ykQuk5a.jpeg' ? eventImageUrl : undefined)
-      : ((finalAvatarUrl && !finalAvatarUrl.includes('placeholder.svg')) ? finalAvatarUrl : undefined);
       
     await sendTelegramAlert(alertMessage, alertImageUrl);
 
     // If contact or phoneNumber is an email, send confirmation email
     const emailAddress = (contact && isEmail(contact)) ? contact : (phoneNumber && isEmail(phoneNumber)) ? phoneNumber : null;
     if (emailAddress) {
-      await sendConfirmationEmail(emailAddress, eventTitle || 'Kompong Dewa Integrated Resort Event', finalName, eventImageUrl);
+      await sendConfirmationEmail(emailAddress, eventTitle || 'Kompong Dewa Integrated Resort Event', finalName, alertImageUrl);
     }
 
     return NextResponse.json({

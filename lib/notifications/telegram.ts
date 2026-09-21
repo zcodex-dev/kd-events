@@ -1,3 +1,5 @@
+import { isVideoFile } from '@/lib/uploads/file-utils';
+
 export async function sendTelegramAlert(message: string, imageUrl?: string) {
   try {
     const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -35,6 +37,11 @@ export async function sendTelegramAlert(message: string, imageUrl?: string) {
       if (imageUrl.startsWith('/')) {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'http://localhost:3000';
         imageUrl = `${baseUrl}${imageUrl}`;
+      }
+
+      // If a video URL is passed, replace it with resort image fallback so Telegram sendPhoto never fails
+      if (isVideoFile(imageUrl)) {
+        imageUrl = 'https://i.imgur.com/ykQuk5a.jpeg';
       }
 
       try {

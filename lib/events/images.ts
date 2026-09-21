@@ -95,3 +95,44 @@ export async function resolveEventImages(
 
   return { images };
 }
+
+/**
+ * Resolves the dedicated Telegram alert thumbnail image from the multipart form.
+ * Precedence:
+ *   telegramImageUrl      — a pasted link or library URL
+ *   telegramImage         — an uploaded file (must be image, not video)
+ *   existingTelegramImage — an already-saved URL the editor left untouched
+ */
+export async function resolveTelegramImage(
+  formData: FormData
+): Promise<{ url: string | null } | { error: string }> {
+  const url = ((formData.get('telegramImageUrl') as string) || '').trim();
+  const file = formData.get('telegramImage') as File | null;
+  const existing = ((formData.get('existingTelegramImage') as string) || '').trim();
+
+  if (url) {
+    const normalized = normalizeUrl(url);
+    if (!normalized) {
+      return { error: 'Telegram Image: URL must be a valid http:// or https:// link' };
+    }
+    return { url: normalized };
+  }
+
+  if (file && file.size > 0) {
+    if (!file.type.startsWith('image/')) {
+      return { error: 'Telegram thumbnail must be an image file (e.g. JPG, PNG, WEBP)' };
+    }
+    if (!validateFileSize(file.size, MAX_FILE_SIZE)) {
+      return { error: 'Telegram image is too large' };
+    }
+    const uploadedUrl = await storeFile(file);
+    return { url: uploadedUrl };
+  }
+
+  if (existing) {
+    const normalized = normalizeUrl(existing);
+    if (normalized) return { url: normalized };
+  }
+
+  return { url: null };
+}

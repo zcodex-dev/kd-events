@@ -10,9 +10,11 @@ import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
 import { EventQrModal } from '@/components/dashboard/event-qr-modal';
 import { isVideoFile } from '@/lib/uploads/file-utils';
+import { TelegramImageSlot } from '@/components/dashboard/telegram-image-slot';
 import {
   EventImageSlots,
   emptySlots,
+  emptySlot,
   slotsFromImages,
   slotIsFilled,
   isHttpUrl,
@@ -44,6 +46,7 @@ type Event = {
   defaultLang?: string | null;
   images: string[];
   imageUrl: string | null;
+  telegramImageUrl?: string | null;
   tag: string | null;
   date: string | null;
   dateZh?: string | null;
@@ -95,6 +98,7 @@ export default function EventsManagementPage() {
   const [status, setStatus] = useState('ACTIVE');
   const [orderIndex, setOrderIndex] = useState(0);
   const [imageSlots, setImageSlots] = useState<ImageSlot[]>(emptySlots());
+  const [telegramSlot, setTelegramSlot] = useState<ImageSlot>(emptySlot());
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [isAIPolishing, setIsAIPolishing] = useState(false);
   const [aiReviewData, setAiReviewData] = useState<{
@@ -147,6 +151,7 @@ export default function EventsManagementPage() {
     setStatus('ACTIVE');
     setOrderIndex(0);
     setImageSlots(emptySlots());
+    setTelegramSlot(emptySlot());
     setIsModalOpen(true);
   };
 
@@ -173,6 +178,11 @@ export default function EventsManagementPage() {
     setStatus(event.status);
     setOrderIndex(event.orderIndex || 0);
     setImageSlots(slotsFromImages(imagesOf(event)));
+    setTelegramSlot(
+      event.telegramImageUrl
+        ? { file: null, url: event.telegramImageUrl, existing: event.telegramImageUrl }
+        : emptySlot()
+    );
     setIsModalOpen(true);
   };
 
@@ -242,6 +252,10 @@ export default function EventsManagementPage() {
       return toast.error(`Image URL ${badUrlSlot + 1} must be a valid link (http://, https://) or library path (/api/raw...)`);
     }
 
+    if (!telegramSlot.file && telegramSlot.url.trim() && !isHttpUrl(telegramSlot.url)) {
+      return toast.error('Telegram Image URL must be a valid link (http://, https://) or library path (/api/raw...)');
+    }
+
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -276,6 +290,14 @@ export default function EventsManagementPage() {
           formData.append(`existingImage${n}`, slot.existing);
         }
       });
+
+      if (telegramSlot.file) {
+        formData.append('telegramImage', telegramSlot.file);
+      } else if (telegramSlot.url.trim()) {
+        formData.append('telegramImageUrl', telegramSlot.url.trim());
+      } else if (telegramSlot.existing) {
+        formData.append('existingTelegramImage', telegramSlot.existing);
+      }
 
       const res = await fetch(
         editingEvent ? `/api/admin/events/${editingEvent.id}` : '/api/admin/events',
@@ -446,6 +468,11 @@ export default function EventsManagementPage() {
                   {imagesOf(event).length > 1 && (
                     <span className="absolute bottom-3 left-3 px-2 py-0.5 text-[10px] font-bold rounded-full bg-black/70 text-white backdrop-blur-sm z-10">
                       {imagesOf(event).length} media items
+                    </span>
+                  )}
+                  {event.telegramImageUrl && (
+                    <span className="absolute bottom-3 right-3 px-2 py-0.5 text-[10px] font-medium rounded-full bg-black/75 text-sky-300 backdrop-blur-sm z-10 flex items-center gap-1 border border-sky-500/30">
+                      Telegram Thumb
                     </span>
                   )}
                   <div className="absolute top-3 right-3 flex flex-col gap-2">
@@ -788,6 +815,21 @@ export default function EventsManagementPage() {
                         Cover Images
                       </label>
                       <EventImageSlots slots={imageSlots} onChange={setImageSlots} />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <TelegramImageSlot
+                        slot={telegramSlot}
+                        onChange={setTelegramSlot}
+                        hasVideoCover={Boolean(
+                          imageSlots.some(
+                            (s) =>
+                              (s.file && isVideoFile(s.file.name)) ||
+                              (s.url && isVideoFile(s.url)) ||
+                              (s.existing && isVideoFile(s.existing))
+                          )
+                        )}
+                      />
                     </div>
 
                     <div className="sm:col-span-1">

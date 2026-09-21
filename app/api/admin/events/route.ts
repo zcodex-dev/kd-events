@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { resolveEventImages } from '@/lib/events/images';
+import { resolveEventImages, resolveTelegramImage } from '@/lib/events/images';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,6 +54,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: resolved.error }, { status: 400 });
     }
 
+    const resolvedTelegram = await resolveTelegramImage(formData);
+    if ('error' in resolvedTelegram) {
+      return NextResponse.json({ success: false, error: resolvedTelegram.error }, { status: 400 });
+    }
+
     const event = await prisma.event.create({
       data: {
         title,
@@ -75,6 +80,7 @@ export async function POST(request: Request) {
         images: resolved.images,
         // Kept in sync so anything still reading the single-image field works.
         imageUrl: resolved.images[0] ?? null,
+        telegramImageUrl: resolvedTelegram.url,
         status,
         orderIndex,
         defaultLang: defaultLang === 'id' ? 'id' : 'en',

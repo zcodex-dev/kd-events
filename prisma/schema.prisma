@@ -62,6 +62,7 @@ model Event {
   /// so rows created before this field still render.
   images      String[] @default([])
   imageUrl    String?
+  telegramImageUrl String?
   tag         String?
   date        String?
   location    String?

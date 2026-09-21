@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { resolveEventImages } from '@/lib/events/images';
+import { resolveEventImages, resolveTelegramImage } from '@/lib/events/images';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -58,6 +58,11 @@ export async function PUT(request: Request, { params }: RouteContext) {
       return NextResponse.json({ success: false, error: resolved.error }, { status: 400 });
     }
 
+    const resolvedTelegram = await resolveTelegramImage(formData);
+    if ('error' in resolvedTelegram) {
+      return NextResponse.json({ success: false, error: resolvedTelegram.error }, { status: 400 });
+    }
+
     const event = await prisma.event.update({
       where: { id },
       data: {
@@ -82,6 +87,7 @@ export async function PUT(request: Request, { params }: RouteContext) {
         defaultLang: defaultLang === 'id' ? 'id' : 'en',
         images: resolved.images,
         imageUrl: resolved.images[0] ?? null,
+        telegramImageUrl: resolvedTelegram.url,
       }
     });
 
