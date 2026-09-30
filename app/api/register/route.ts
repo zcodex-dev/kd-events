@@ -161,7 +161,7 @@ export async function POST(request: Request) {
         } 
         // 3. Any non-video image from the event's gallery slots
         else if (eventRecord.images && eventRecord.images.length > 0) {
-          const nonVideo = eventRecord.images.find((img) => !isVideoFile(img));
+          const nonVideo = eventRecord.images.find((img: string) => !isVideoFile(img));
           if (nonVideo) {
             alertImageUrl = nonVideo;
           }

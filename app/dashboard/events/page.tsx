@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode, Film } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode, Film, BookOpen, ClipboardList, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
@@ -73,6 +73,7 @@ export default function EventsManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [embedModalEvent, setEmbedModalEvent] = useState<Event | null>(null);
+  const [embedTarget, setEmbedTarget] = useState<'register' | 'detail'>('register');
   const [qrModalEvent, setQrModalEvent] = useState<Event | null>(null);
   const [hasCopiedEmbed, setHasCopiedEmbed] = useState(false);
 
@@ -930,33 +931,100 @@ export default function EventsManagementPage() {
               </div>
 
               <div className="p-6">
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-                  Copy the code below to embed the registration form for <strong>{embedModalEvent.title}</strong> directly into your WordPress site or any other webpage.
-                </p>
-                
-                <div className="relative group">
-                  <pre className="p-4 bg-neutral-100 dark:bg-neutral-950 rounded-xl text-xs text-neutral-800 dark:text-neutral-300 font-mono whitespace-pre-wrap break-all border border-neutral-200 dark:border-neutral-800">
-{`<iframe 
-  src="https://register.kompongdewa.win/?eventId=${embedModalEvent.id}&embed=true" 
-  width="100%" 
-  height="600" 
-  style="border:none; border-radius: 12px; overflow: hidden;" 
-  title="${embedModalEvent.title} Registration"
-></iframe>`}
-                  </pre>
+                {/* Embed Target Selection Tabs */}
+                <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl mb-4">
                   <button
+                    type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(`<iframe src="https://register.kompongdewa.win/?eventId=${embedModalEvent.id}&embed=true" width="100%" height="600" style="border:none; border-radius: 12px; overflow: hidden;" title="${embedModalEvent.title} Registration"></iframe>`);
-                      setHasCopiedEmbed(true);
-                      toast.success("Embed code copied to clipboard!");
-                      setTimeout(() => setHasCopiedEmbed(false), 2000);
+                      setEmbedTarget('register');
+                      setHasCopiedEmbed(false);
                     }}
-                    className="absolute top-2 right-2 p-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm text-neutral-600 dark:text-neutral-300 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-neutral-50 dark:hover:bg-neutral-700"
-                    title="Copy Code"
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
+                      embedTarget === 'register'
+                        ? 'bg-white dark:bg-neutral-900 text-purple-600 dark:text-purple-400 shadow-sm'
+                        : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                    }`}
                   >
-                    {hasCopiedEmbed ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                    <ClipboardList className="w-4 h-4" />
+                    Register Form
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmbedTarget('detail');
+                      setHasCopiedEmbed(false);
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
+                      embedTarget === 'detail'
+                        ? 'bg-white dark:bg-neutral-900 text-purple-600 dark:text-purple-400 shadow-sm'
+                        : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    Read Detail Page
                   </button>
                 </div>
+
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                  {embedTarget === 'register' ? (
+                    <>
+                      Copy the code below to embed the registration form for <strong>{embedModalEvent.title}</strong> directly into your WordPress site or any other webpage.
+                    </>
+                  ) : (
+                    <>
+                      Copy the code below to embed the full tournament details, rules, and prize structure for <strong>{embedModalEvent.title}</strong> directly into your WordPress site or any other webpage.
+                    </>
+                  )}
+                </p>
+
+                {(() => {
+                  const embedSrc =
+                    embedTarget === 'register'
+                      ? `https://register.kompongdewa.win/?eventId=${embedModalEvent.id}&embed=true`
+                      : `https://register.kompongdewa.win/event/${embedModalEvent.id}?embed=true`;
+                  const embedHeight = embedTarget === 'register' ? '650' : '850';
+                  const embedTitle =
+                    embedTarget === 'register'
+                      ? `${embedModalEvent.title} Registration`
+                      : `${embedModalEvent.title} Details`;
+                  const iframeCode = `<iframe \n  src="${embedSrc}" \n  width="100%" \n  height="${embedHeight}" \n  style="border:none; border-radius: 12px; overflow: hidden;" \n  title="${embedTitle}"\n></iframe>`;
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="relative group">
+                        <pre className="p-4 bg-neutral-100 dark:bg-neutral-950 rounded-xl text-xs text-neutral-800 dark:text-neutral-300 font-mono whitespace-pre-wrap break-all border border-neutral-200 dark:border-neutral-800">
+                          {iframeCode}
+                        </pre>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(iframeCode);
+                            setHasCopiedEmbed(true);
+                            toast.success("Embed code copied to clipboard!");
+                            setTimeout(() => setHasCopiedEmbed(false), 2000);
+                          }}
+                          className="absolute top-2 right-2 p-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm text-neutral-600 dark:text-neutral-300 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-neutral-50 dark:hover:bg-neutral-700 cursor-pointer"
+                          title="Copy Code"
+                        >
+                          {hasCopiedEmbed ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-neutral-500 pt-1">
+                        <span className="flex items-center gap-1.5 font-medium text-neutral-600 dark:text-neutral-400">
+                          Recommended height: <span className="font-mono text-purple-600 dark:text-purple-400">{embedHeight}px</span>
+                        </span>
+                        <a
+                          href={embedSrc}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:underline font-medium"
+                        >
+                          Preview embed URL <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </motion.div>
           </div>

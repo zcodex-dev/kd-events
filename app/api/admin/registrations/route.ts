@@ -11,16 +11,16 @@ export async function GET() {
 
     // Nationality lives on Member; fold it onto each row so the players table
     // and its edit form can read it without a second request.
-    const nationalityByMemberId = new Map(members.map((m) => [m.memberId, m.nationality]));
-    const rows = registrations.map((r) => ({
+    const nationalityByMemberId = new Map(members.map((m: any) => [m.memberId, m.nationality]));
+    const rows = registrations.map((r: any) => ({
       ...r,
       nationality: r.nationality || (r.memberId ? nationalityByMemberId.get(r.memberId) ?? null : null),
     }));
 
     const stats = {
       total: registrations.length,
-      registeredEvents: registrations.filter(r => !!r.eventId).length,
-      enrollments: registrations.filter(r => !r.eventId).length,
+      registeredEvents: registrations.filter((r: any) => !!r.eventId).length,
+      enrollments: registrations.filter((r: any) => !r.eventId).length,
       totalRegisteredMembers: members.length,
     };
 

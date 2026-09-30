@@ -11,7 +11,7 @@ const FALLBACK_IMAGE =
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ lang?: string }>;
+  searchParams?: Promise<{ lang?: string; embed?: string }>;
 };
 
 /** Rows saved before the `images` array only carry `imageUrl`. */
@@ -63,6 +63,7 @@ export async function generateMetadata({ params }: PageProps) {
 export default async function EventDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
   const sp = searchParams ? await searchParams : {};
+  const isEmbed = sp?.embed === 'true';
   const event = await getEvent(id);
 
   if (!event) notFound();
@@ -72,30 +73,32 @@ export default async function EventDetailPage({ params, searchParams }: PageProp
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full bg-black backdrop-blur-md border-b border-white/10 z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <div className="py-1">
-            <Image
-              src="/logo-v2.png"
-              alt="Kompong Dewa Logo"
-              width={200}
-              height={48}
-              className="h-10 w-auto shrink-0 object-contain"
-              unoptimized
-              priority
-            />
+      {!isEmbed && (
+        <header className="fixed top-0 left-0 w-full bg-black backdrop-blur-md border-b border-white/10 z-50">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+            <div className="py-1">
+              <Image
+                src="/logo-v2.png"
+                alt="Kompong Dewa Logo"
+                width={200}
+                height={48}
+                className="h-10 w-auto shrink-0 object-contain"
+                unoptimized
+                priority
+              />
+            </div>
+            <Link
+              href="/event/registration"
+              className="flex items-center gap-1.5 text-xs md:text-sm font-medium text-neutral-300 hover:text-white transition-colors shrink-0"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Link>
           </div>
-          <Link
-            href="/event/registration"
-            className="flex items-center gap-1.5 text-xs md:text-sm font-medium text-neutral-300 hover:text-white transition-colors shrink-0"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Link>
-        </div>
-      </header>
+        </header>
+      )}
 
-      <main className="min-h-screen bg-[#0b0b0b] pt-16 pb-16">
+      <main className={`min-h-screen bg-[#0b0b0b] ${isEmbed ? 'pt-4 pb-12 px-2 sm:px-4' : 'pt-16 pb-16'}`}>
         <LocalizedEventDetails 
           event={event} 
           cover={cover || FALLBACK_IMAGE}
