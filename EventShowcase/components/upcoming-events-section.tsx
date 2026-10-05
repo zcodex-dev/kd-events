@@ -85,29 +85,29 @@ export function UpcomingEventsSection({ events, featuredEventId }: Props) {
                 )}
               </div>
 
-              <div className="absolute inset-x-0 bottom-5 sm:bottom-8 z-10 px-4 sm:px-8">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+              <div className="absolute inset-x-0 bottom-4 sm:bottom-8 z-10 px-3.5 sm:px-8">
+                <div className="flex flex-col gap-3.5 sm:gap-5 sm:flex-row sm:items-end sm:justify-between">
                   <EventCountdown
                     startAt={event.startAt}
                     endAt={event.endAt}
                     dateStr={event.date}
                   />
-                  <div className="flex w-full sm:w-auto items-center gap-3 sm:gap-4 sm:min-w-[36rem] sm:ml-auto">
+                  <div className="flex w-full sm:w-auto items-center gap-2 sm:gap-4 sm:min-w-[36rem] sm:ml-auto">
                     <Link
                       href={`/events/${getEventSlug(event)}`}
-                      className="flex-1 min-h-12 sm:min-h-14 inline-flex items-center justify-center gap-2.5 px-5 sm:px-8 py-3 sm:py-4 rounded-lg bg-white hover:bg-neutral-200 text-black text-sm sm:text-base font-bold tracking-wide transition-all shadow-lg active:scale-95 text-center whitespace-nowrap"
+                      className="flex-1 h-9 sm:h-12 md:h-14 inline-flex items-center justify-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 rounded-md sm:rounded-lg bg-white hover:bg-neutral-200 text-black text-xs sm:text-sm md:text-base font-bold tracking-normal sm:tracking-wide transition-all shadow-md active:scale-95 text-center whitespace-nowrap"
                     >
                       <span>Tournament Rules</span>
-                      <ArrowRight className="w-4 h-4 sm:w-[18px] sm:h-[18px] shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                     </Link>
                     <a
                       href="https://register.kompongdewa.win"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 min-h-12 sm:min-h-14 inline-flex items-center justify-center gap-2.5 px-5 sm:px-8 py-3 sm:py-4 rounded-lg bg-[#c3943a] hover:bg-[#e5ac53] text-black text-sm sm:text-base font-bold tracking-wide transition-all shadow-lg active:scale-95 text-center whitespace-nowrap"
+                      className="flex-1 h-9 sm:h-12 md:h-14 inline-flex items-center justify-center gap-1.5 sm:gap-2.5 px-3 sm:px-6 rounded-md sm:rounded-lg bg-[#c3943a] hover:bg-[#e5ac53] text-black text-xs sm:text-sm md:text-base font-bold tracking-normal sm:tracking-wide transition-all shadow-md active:scale-95 text-center whitespace-nowrap"
                     >
                       <span>Register Now</span>
-                      <ExternalLink className="w-4 h-4 sm:w-[18px] sm:h-[18px] shrink-0" />
+                      <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                     </a>
                   </div>
                 </div>
