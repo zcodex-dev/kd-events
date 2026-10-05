@@ -18,10 +18,9 @@ export function LandingHero({ featuredEvent }: Props) {
     target: heroRef,
     offset: ['start start', 'end start'],
   });
-  const opacity = useTransform(scrollYProgress, [0, 0.55, 1], [1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.975]);
-  const y = useTransform(scrollYProgress, [0, 1], [0, -24]);
-  const blur = useTransform(scrollYProgress, [0, 0.55, 1], ['blur(0px)', 'blur(0px)', 'blur(5px)']);
+  const opacity = useTransform(scrollYProgress, [0, 0.7, 1], [1, 0.95, 0.35]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.985]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, -20]);
 
   const eventSlug = getEventSlug(featuredEvent) || 'baccarat-masters';
   const mediaSrc = getMediaUrl(
@@ -34,7 +33,7 @@ export function LandingHero({ featuredEvent }: Props) {
   return (
     <motion.section
       ref={heroRef}
-      style={{ opacity, scale, y, filter: blur }}
+      style={{ opacity, scale, y }}
       className="relative w-full select-none bg-[#101010] md:min-h-screen md:flex md:flex-col md:justify-between md:pt-28 md:pb-10 overflow-hidden will-change-transform"
     >
       {/* 

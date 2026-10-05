@@ -102,7 +102,9 @@ export async function fetchPublishedEvents(): Promise<PublicEvent[]> {
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          return json.data.filter((e: PublicEvent) => e.status?.toUpperCase() !== 'HIDDEN');
+          return json.data
+            .filter((e: PublicEvent) => e.status?.toUpperCase() !== 'HIDDEN')
+            .sort((a: PublicEvent, b: PublicEvent) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
         }
       }
     } catch {
