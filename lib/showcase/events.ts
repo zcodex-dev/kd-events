@@ -159,12 +159,45 @@ export function getEventSlug(event?: PublicEvent | { id: string; title: string }
 }
 
 export async function fetchEventByIdOrSlug(identifier: string): Promise<PublicEvent | null> {
+  const cleanId = decodeURIComponent(identifier).trim();
+  const lower = cleanId.toLowerCase();
+
+  // 1. Direct Prisma lookup by ID
+  try {
+    const directEvent = await prisma.event.findFirst({
+      where: {
+        id: cleanId,
+        NOT: {
+          status: {
+            equals: 'HIDDEN',
+            mode: 'insensitive',
+          },
+        },
+      },
+    });
+
+    if (directEvent) {
+      return {
+        ...directEvent,
+        startAt: directEvent.startAt ? directEvent.startAt.toISOString() : null,
+        endAt: directEvent.endAt ? directEvent.endAt.toISOString() : null,
+        createdAt: directEvent.createdAt ? directEvent.createdAt.toISOString() : new Date().toISOString(),
+        updatedAt: directEvent.updatedAt ? directEvent.updatedAt.toISOString() : undefined,
+        images: Array.isArray(directEvent.images) && directEvent.images.length > 0
+          ? directEvent.images
+          : (directEvent.imageUrl ? [directEvent.imageUrl] : []),
+      } as PublicEvent;
+    }
+  } catch {
+    // Proceed to full published list lookup
+  }
+
+  // 2. Lookup across published events (matches by ID, slug, or title)
   const events = await fetchPublishedEvents();
-  const lower = decodeURIComponent(identifier).toLowerCase().trim();
 
   return (
     events.find((e) => {
-      if (e.id === identifier) return true;
+      if (e.id === cleanId || e.id.toLowerCase() === lower) return true;
       if (getEventSlug(e) === lower) return true;
       const fullSlug = e.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
       if (fullSlug === lower) return true;

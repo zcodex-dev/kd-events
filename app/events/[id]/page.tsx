@@ -7,12 +7,29 @@ import { parsePrizePool } from '@/lib/showcase/prize-pool';
 import { PrizePoolShowcase } from '@/components/showcase/prize-pool-showcase';
 import { EventCountdown } from '@/components/showcase/event-countdown';
 import { SetEventLanguage } from '@/components/showcase/set-event-language';
+import { EventLanguagePills } from '@/components/showcase/event-language-pills';
 import { ShowcaseShell } from '@/components/showcase/showcase-shell';
+
+export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ lang?: string }>;
+  searchParams?: Promise<{ lang?: string; embed?: string }>;
 };
+
+export async function generateMetadata({ params }: Props) {
+  const { id } = await params;
+  const event = await fetchEventById(id);
+
+  if (!event) return { title: 'Event Not Found — Kompong Dewa Resort' };
+
+  return {
+    title: `${event.title} — Kompong Dewa Resort`,
+    description: event.description
+      ? event.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160)
+      : undefined,
+  };
+}
 
 function wrapTables(html: string) {
   return html
@@ -23,6 +40,7 @@ function wrapTables(html: string) {
 export default async function EventDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
   const sp = searchParams ? await searchParams : {};
+  const isEmbed = sp?.embed === 'true';
 
   const event = await fetchEventById(id);
   if (!event) notFound();
@@ -68,11 +86,11 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
   const hasVideo = isVideo(mediaSrc);
 
   return (
-    <ShowcaseShell>
-      <div className="pt-20 pb-20">
+    <ShowcaseShell isEmbed={isEmbed}>
+      <div className={isEmbed ? 'pt-6 pb-16' : 'pt-20 pb-20'}>
         <SetEventLanguage defaultLang={event.defaultLang} />
         {/* Top Breadcrumb Bar */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-4 flex items-center justify-between">
           <Link
             href="/events"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
@@ -80,6 +98,9 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
             <ArrowLeft className="w-4 h-4" />
             <span>Back to All Events</span>
           </Link>
+          <div className="md:hidden">
+            <EventLanguagePills />
+          </div>
         </div>
 
         {/* Seamless Hero Media blending directly with body background */}
@@ -141,7 +162,12 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
           {/* Title & Metadata Header with Countdown on the right side */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-white/10 pb-6">
-            <div className="space-y-4 max-w-2xl">
+            <div className="space-y-3 max-w-2xl">
+              {event.tag && (
+                <div className="inline-block px-2.5 py-0.5 bg-[#c3943a]/20 border border-[#c3943a]/40 rounded text-xs font-bold text-[#e5ac53] uppercase tracking-wider">
+                  {event.tag}
+                </div>
+              )}
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight leading-snug">
                 {title}
               </h1>
@@ -162,11 +188,16 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
               </div>
             </div>
 
-            {event.status?.toUpperCase().includes('UPCOMING') && (
-              <div className="shrink-0 md:self-center">
-                <EventCountdown startAt={event.startAt} endAt={event.endAt} dateStr={date} />
+            <div className="flex flex-col items-start md:items-end gap-4 shrink-0">
+              <div className="hidden md:block">
+                <EventLanguagePills />
               </div>
-            )}
+              {event.status?.toUpperCase().includes('UPCOMING') && (
+                <div className="shrink-0 md:self-end">
+                  <EventCountdown startAt={event.startAt} endAt={event.endAt} dateStr={date} />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Concept / Highlight */}
