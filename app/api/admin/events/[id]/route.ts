@@ -37,6 +37,8 @@ export async function PUT(request: Request, { params }: RouteContext) {
 
     const tag = formData.get('tag') as string;
     const date = formData.get('date') as string;
+    const startAtRaw = formData.get('startAt') as string;
+    const endAtRaw = formData.get('endAt') as string;
     const location = formData.get('location') as string;
     const dateZh = formData.get('dateZh') as string;
     const dateId = formData.get('dateId') as string;
@@ -51,6 +53,15 @@ export async function PUT(request: Request, { params }: RouteContext) {
 
     if (!title) {
       return NextResponse.json({ success: false, error: 'Title is required' }, { status: 400 });
+    }
+
+    const startAt = startAtRaw ? new Date(startAtRaw) : null;
+    const endAt = endAtRaw ? new Date(endAtRaw) : null;
+    if (!startAt || !endAt || Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) {
+      return NextResponse.json({ success: false, error: 'Valid event start and end times are required' }, { status: 400 });
+    }
+    if (endAt <= startAt) {
+      return NextResponse.json({ success: false, error: 'Event end must be after the start' }, { status: 400 });
     }
 
     const resolved = await resolveEventImages(formData);
@@ -81,10 +92,12 @@ export async function PUT(request: Request, { params }: RouteContext) {
         conceptId: conceptId || null,
         tag: tag || null,
         date: date || null,
+        startAt,
+        endAt,
         location: location || null,
         status,
         orderIndex,
-        defaultLang: defaultLang === 'id' ? 'id' : 'en',
+        defaultLang: ['en', 'id', 'zh'].includes(defaultLang) ? defaultLang : 'en',
         images: resolved.images,
         imageUrl: resolved.images[0] ?? null,
         telegramImageUrl: resolvedTelegram.url,

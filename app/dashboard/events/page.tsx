@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode, Film, BookOpen, ClipboardList, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode, Film, BookOpen, ClipboardList, ExternalLink, Download, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
@@ -35,6 +35,20 @@ const RichTextEditor = dynamic(() => import('@/components/shared/rich-text-edito
 const stripHtml = (html: string) =>
   html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 
+const toDateTimeLocal = (value?: string | null) => {
+  if (!value) return '';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '';
+  return parsed.toISOString().slice(0, 10);
+};
+
+const formatDateRange = (start: string, end: string) => {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const dateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  return `${dateFormat.format(startDate)} – ${dateFormat.format(endDate)}`;
+};
+
 type Event = {
   id: string;
   title: string;
@@ -49,6 +63,8 @@ type Event = {
   telegramImageUrl?: string | null;
   tag: string | null;
   date: string | null;
+  startAt?: string | null;
+  endAt?: string | null;
   dateZh?: string | null;
   dateId?: string | null;
   location: string | null;
@@ -73,13 +89,13 @@ export default function EventsManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [embedModalEvent, setEmbedModalEvent] = useState<Event | null>(null);
-  const [embedTarget, setEmbedTarget] = useState<'register' | 'detail'>('register');
+  const [embedTarget, setEmbedTarget] = useState<'register' | 'detail' | 'wordpress'>('register');
   const [qrModalEvent, setQrModalEvent] = useState<Event | null>(null);
   const [hasCopiedEmbed, setHasCopiedEmbed] = useState(false);
 
   // Form State
   const [activeLangTab, setActiveLangTab] = useState<'en' | 'id' | 'zh'>('en');
-  const [defaultLang, setDefaultLang] = useState<'en' | 'id'>('en');
+  const [defaultLang, setDefaultLang] = useState<'en' | 'id' | 'zh'>('en');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [titleZh, setTitleZh] = useState('');
@@ -88,6 +104,8 @@ export default function EventsManagementPage() {
   const [descriptionId, setDescriptionId] = useState('');
   const [tag, setTag] = useState('');
   const [date, setDate] = useState('');
+  const [startAt, setStartAt] = useState('');
+  const [endAt, setEndAt] = useState('');
   const [dateZh, setDateZh] = useState('');
   const [dateId, setDateId] = useState('');
   const [location, setLocation] = useState('');
@@ -141,6 +159,8 @@ export default function EventsManagementPage() {
     setDescriptionId('');
     setTag('');
     setDate('');
+    setStartAt('');
+    setEndAt('');
     setDateZh('');
     setDateId('');
     setLocation('');
@@ -159,7 +179,7 @@ export default function EventsManagementPage() {
   const handleOpenEditModal = (event: Event) => {
     setEditingEvent(event);
     setActiveLangTab('en');
-    setDefaultLang((event.defaultLang as 'en' | 'id') || 'en');
+    setDefaultLang((event.defaultLang as 'en' | 'id' | 'zh') || 'en');
     setTitle(event.title);
     setDescription(event.description || '');
     setTitleZh(event.titleZh || '');
@@ -168,6 +188,8 @@ export default function EventsManagementPage() {
     setDescriptionId(event.descriptionId || '');
     setTag(event.tag || '');
     setDate(event.date || '');
+    setStartAt(toDateTimeLocal(event.startAt));
+    setEndAt(toDateTimeLocal(event.endAt));
     setDateZh(event.dateZh || '');
     setDateId(event.dateId || '');
     setLocation(event.location || '');
@@ -245,6 +267,8 @@ export default function EventsManagementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return toast.error('Title is required');
+    if (!startAt || !endAt) return toast.error('Event start and end date/time are required');
+    if (endAt < startAt) return toast.error('Event end cannot be before the start');
 
     const badUrlSlot = imageSlots.findIndex(
       (slot) => !slot.file && slot.url.trim() && !isHttpUrl(slot.url)
@@ -268,7 +292,9 @@ export default function EventsManagementPage() {
       formData.append('descriptionId', stripHtml(descriptionId) ? descriptionId : '');
       formData.append('defaultLang', defaultLang);
       formData.append('tag', tag);
-      formData.append('date', date);
+      formData.append('date', formatDateRange(startAt, endAt));
+      formData.append('startAt', new Date(`${startAt}T00:00:00`).toISOString());
+      formData.append('endAt', new Date(`${endAt}T23:59:59.999`).toISOString());
       formData.append('dateZh', dateZh);
       formData.append('dateId', dateId);
       formData.append('location', location);
@@ -638,7 +664,7 @@ export default function EventsManagementPage() {
                             Visitors opening this event will see this language by default.
                           </p>
                         </div>
-                        <div className="flex bg-neutral-200/80 dark:bg-neutral-800 p-1 rounded-lg shrink-0">
+                        <div className="flex flex-wrap bg-neutral-200/80 dark:bg-neutral-800 p-1 rounded-lg shrink-0 gap-1">
                           <button
                             type="button"
                             onClick={() => setDefaultLang('en')}
@@ -648,7 +674,7 @@ export default function EventsManagementPage() {
                                 : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                             }`}
                           >
-                            <img src="https://flagcdn.com/w20/gb.png" alt="English" className="w-3.5 h-auto rounded-[2px]" />
+                            <img src="https://flagcdn.com/w20/us.png" alt="English" className="w-3.5 h-auto rounded-[2px]" />
                             English (Default)
                           </button>
                           <button
@@ -662,6 +688,18 @@ export default function EventsManagementPage() {
                           >
                             <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-3.5 h-auto rounded-[2px]" />
                             Bahasa (Default)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDefaultLang('zh')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                              defaultLang === 'zh'
+                                ? 'bg-[#c3943a] text-white shadow-sm'
+                                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                            }`}
+                          >
+                            <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-3.5 h-auto rounded-[2px]" />
+                            Chinese (Default)
                           </button>
                         </div>
                       </div>
@@ -742,27 +780,34 @@ export default function EventsManagementPage() {
                       </select>
                     </div>
 
-                    <div>
+                    <div className="sm:col-span-2">
                       <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                        Date & Time ({activeLangTab.toUpperCase()})
+                        Event Dates
                       </label>
-                      <input
-                        type="text"
-                        value={activeLangTab === 'en' ? date : activeLangTab === 'id' ? dateId : dateZh}
-                        onChange={(e) => {
-                          if (activeLangTab === 'en') setDate(e.target.value);
-                          if (activeLangTab === 'id') setDateId(e.target.value);
-                          if (activeLangTab === 'zh') setDateZh(e.target.value);
-                        }}
-                        placeholder={
-                          activeLangTab === 'en'
-                            ? "e.g. 27-29 August 2026 · Game Starts at 5:00 PM"
-                            : activeLangTab === 'id'
-                            ? "e.g. 27-29 Agustus 2026 · Permainan Mulai Pukul 17:00 WIB"
-                            : "e.g. 2026年8月27日至29日 · 下午5:00开始"
-                        }
-                        className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
-                      />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 p-3">
+                          <span className="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">Event starts</span>
+                          <input
+                            type="date"
+                            value={startAt}
+                            onChange={(e) => setStartAt(e.target.value)}
+                            className="w-full bg-transparent text-sm text-neutral-900 dark:text-white outline-none [color-scheme:light] dark:[color-scheme:dark]"
+                            required
+                          />
+                        </div>
+                        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 p-3">
+                          <span className="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">Event ends</span>
+                          <input
+                            type="date"
+                            value={endAt}
+                            min={startAt || undefined}
+                            onChange={(e) => setEndAt(e.target.value)}
+                            className="w-full bg-transparent text-sm text-neutral-900 dark:text-white outline-none [color-scheme:light] dark:[color-scheme:dark]"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <p className="mt-1.5 text-xs text-neutral-500">Select the first and last day of the event.</p>
                     </div>
 
                     <div className="sm:col-span-2">
@@ -963,9 +1008,75 @@ export default function EventsManagementPage() {
                     <BookOpen className="w-4 h-4" />
                     Read Detail Page
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmbedTarget('wordpress');
+                      setHasCopiedEmbed(false);
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
+                      embedTarget === 'wordpress'
+                        ? 'bg-white dark:bg-neutral-900 text-purple-600 dark:text-purple-400 shadow-sm'
+                        : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                    }`}
+                  >
+                    <Globe className="w-4 h-4" />
+                    WordPress Plugin
+                  </button>
                 </div>
 
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                {embedTarget === 'wordpress' ? (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed">
+                      <p className="font-semibold text-purple-900 dark:text-purple-300 mb-1">
+                        Native WordPress Page Integration (No IFrames)
+                      </p>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                        Create a new page in WordPress, check <strong>&quot;Display Event Showcase on this page&quot;</strong> in the sidebar, and select <strong>{embedModalEvent.title}</strong> from the dropdown. Everything will be placed and styled automatically!
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                        Or use Shortcode in Elementor / Gutenberg / Classic Editor:
+                      </label>
+                      <div className="relative group">
+                        <pre className="p-3 bg-neutral-100 dark:bg-neutral-950 rounded-xl text-xs text-neutral-800 dark:text-neutral-300 font-mono border border-neutral-200 dark:border-neutral-800">
+                          {`[kd_event id="${embedModalEvent.id}"]`}
+                        </pre>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(`[kd_event id="${embedModalEvent.id}"]`);
+                            setHasCopiedEmbed(true);
+                            toast.success("Shortcode copied!");
+                            setTimeout(() => setHasCopiedEmbed(false), 2000);
+                          }}
+                          className="absolute top-2 right-2 p-1.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm text-neutral-600 dark:text-neutral-300 rounded-lg transition-opacity hover:bg-neutral-50 dark:hover:bg-neutral-700 cursor-pointer"
+                          title="Copy Shortcode"
+                        >
+                          {hasCopiedEmbed ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800">
+                      <span className="text-xs text-neutral-500">
+                        Plugin zip is ready to upload in WP Plugins &gt; Add New
+                      </span>
+                      <a
+                        href="/kd-events.zip"
+                        download="kd-events.zip"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-sm transition-all"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Download Plugin (.zip)
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
                   {embedTarget === 'register' ? (
                     <>
                       Copy the code below to embed the registration form for <strong>{embedModalEvent.title}</strong> directly into your WordPress site or any other webpage.
@@ -1025,6 +1136,8 @@ export default function EventsManagementPage() {
                     </div>
                   );
                 })()}
+                  </>
+                )}
               </div>
             </motion.div>
           </div>

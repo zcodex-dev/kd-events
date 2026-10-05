@@ -65,6 +65,8 @@ model Event {
   telegramImageUrl String?
   tag         String?
   date        String?
+  startAt     DateTime?
+  endAt       DateTime?
   location    String?
   concept     String?
   status      String   @default("ACTIVE")
