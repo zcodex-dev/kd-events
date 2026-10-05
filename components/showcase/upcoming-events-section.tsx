@@ -31,12 +31,11 @@ export function UpcomingEventsSection({ events, featuredEventId }: Props) {
     };
   }, []);
 
-  // The main hero owns the upcoming event; this section continues with live events only.
+  // Include all published events except the one featured in the main landing hero
   const eventsToShow = events.filter((event) => {
     if (event.id === featuredEventId) return false;
-
     const status = event.status?.toUpperCase() || '';
-    return status === 'ACTIVE' || status.includes('LIVE') || status.includes('OPEN') || status.includes('ONGOING');
+    return status !== 'HIDDEN';
   });
 
   if (eventsToShow.length === 0) return null;
@@ -102,11 +101,23 @@ export function UpcomingEventsSection({ events, featuredEventId }: Props) {
                 <div className="absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-[#101010] to-transparent" />
               </div>
 
-              <div className="absolute z-20 top-5 sm:top-8 left-4 sm:left-6 lg:left-8">
-                <span className="inline-flex items-center gap-2 rounded-full bg-red-600 px-3.5 py-1.5 text-[11px] sm:text-xs font-black uppercase tracking-[0.16em] text-white shadow-lg">
-                  <span className="h-2 w-2 rounded-full bg-white" />
-                  Ongoing
-                </span>
+              <div className="absolute z-20 top-5 sm:top-8 left-4 sm:left-6 lg:left-8 flex items-center gap-2">
+                {event.status?.toUpperCase().includes('UPCOMING') ? (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[#c3943a] px-3.5 py-1.5 text-[11px] sm:text-xs font-black uppercase tracking-[0.16em] text-black shadow-lg">
+                    <span className="h-2 w-2 rounded-full bg-black" />
+                    Upcoming
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-red-600 px-3.5 py-1.5 text-[11px] sm:text-xs font-black uppercase tracking-[0.16em] text-white shadow-lg">
+                    <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                    {event.status || 'Active'}
+                  </span>
+                )}
+                {event.tag && (
+                  <span className="inline-flex items-center rounded-full bg-black/60 backdrop-blur-md border border-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-neutral-200 shadow-md">
+                    {event.tag}
+                  </span>
+                )}
               </div>
 
               <div className="absolute inset-x-0 bottom-5 sm:bottom-8 z-10 px-4 sm:px-8">

@@ -31,12 +31,11 @@ export function UpcomingEventsSection({ events, featuredEventId }: Props) {
     };
   }, []);
 
-  // The main hero owns the upcoming event; this section continues with live events only.
+  // Include all published events except the one featured in the main landing hero
   const eventsToShow = events.filter((event) => {
     if (event.id === featuredEventId) return false;
-
     const status = event.status?.toUpperCase() || '';
-    return status === 'ACTIVE' || status.includes('LIVE') || status.includes('OPEN') || status.includes('ONGOING');
+    return status !== 'HIDDEN';
   });
 
   if (eventsToShow.length === 0) return null;

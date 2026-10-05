@@ -83,13 +83,17 @@ export async function fetchPublishedEvents(): Promise<PublicEvent[]> {
   try {
     const dbEvents = await prisma.event.findMany({
       where: {
-        status: {
-          not: 'HIDDEN',
+        NOT: {
+          status: {
+            equals: 'HIDDEN',
+            mode: 'insensitive',
+          },
         },
       },
-      orderBy: {
-        orderIndex: 'asc',
-      },
+      orderBy: [
+        { orderIndex: 'asc' },
+        { createdAt: 'desc' },
+      ],
     });
 
     if (dbEvents && dbEvents.length > 0) {
