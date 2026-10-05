@@ -40,6 +40,11 @@
   --accent: oklch(0.7 0.12 45);
 }
 
+/* ─── Smooth Scrolling ─────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
 /* ─── Custom Brand Gold Scrollbar ────────────────────────────────────────── */
 * {
   scrollbar-width: thin;

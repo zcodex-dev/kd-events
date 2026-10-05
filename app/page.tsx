@@ -8,11 +8,8 @@ export const dynamic = 'force-dynamic';
 export default async function HomePage() {
   const events = await fetchPublishedEvents();
 
-  // Find the featured flagship tournament (prefer Baccarat Masters)
-  const featuredEvent =
-    events.find((e: any) => e.tag?.toLowerCase() === 'baccarat' && e.status?.toUpperCase().includes('UPCOMING')) ||
-    events.find((e: any) => e.status?.toUpperCase().includes('UPCOMING')) ||
-    events[0];
+  // The top event following the configured admin order is the featured hero
+  const featuredEvent = events[0] || null;
 
   return (
     <ShowcaseShell>

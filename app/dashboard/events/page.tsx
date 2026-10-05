@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode, Film, BookOpen, ClipboardList, ExternalLink, Download, Globe } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode, Film, BookOpen, ClipboardList, ExternalLink, Download, Globe, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
@@ -92,6 +92,11 @@ export default function EventsManagementPage() {
   const [embedTarget, setEmbedTarget] = useState<'register' | 'detail' | 'wordpress'>('register');
   const [qrModalEvent, setQrModalEvent] = useState<Event | null>(null);
   const [hasCopiedEmbed, setHasCopiedEmbed] = useState(false);
+
+  // Drag and Drop Reordering State
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
 
   // Form State
   const [activeLangTab, setActiveLangTab] = useState<'en' | 'id' | 'zh'>('en');
@@ -388,6 +393,74 @@ export default function EventsManagementPage() {
     }
   };
 
+  // Drag and Drop Event Handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', `${index}`);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const reordered = [...events];
+    const [movedItem] = reordered.splice(draggedIndex, 1);
+    reordered.splice(targetIndex, 0, movedItem);
+
+    // Re-assign orderIndex sequentially: 0, 1, 2, ...
+    const updated = reordered.map((ev, idx) => ({
+      ...ev,
+      orderIndex: idx,
+    }));
+
+    setEvents(updated);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+    setIsReordering(true);
+
+    try {
+      const itemsToUpdate = updated.map((ev) => ({
+        id: ev.id,
+        orderIndex: ev.orderIndex,
+      }));
+
+      const res = await fetch('/api/admin/events/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: itemsToUpdate }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        toast.success('Event order saved');
+      } else {
+        toast.error(json.error || 'Failed to save order');
+      }
+    } catch {
+      toast.error('Failed to sync event order');
+    } finally {
+      setIsReordering(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this event?')) return;
     try {
@@ -430,20 +503,28 @@ export default function EventsManagementPage() {
           </Link>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-white">All Events</h2>
             <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              Manage your upcoming events for the registration page.
+              Drag and drop cards to reorder. The top event will automatically be featured on the homepage.
             </p>
           </div>
-          <button
-            onClick={handleOpenModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Add Event
-          </button>
+          <div className="flex items-center gap-3">
+            {isReordering && (
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 animate-pulse">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Saving order...
+              </span>
+            )}
+            <button
+              onClick={handleOpenModal}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              Add Event
+            </button>
+          </div>
         </div>
 
         {isLoading ? (
@@ -460,38 +541,62 @@ export default function EventsManagementPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map(event => (
-              <div key={event.id} className="bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-shadow group flex flex-col">
-                <div className="relative h-48 bg-neutral-200 dark:bg-neutral-800">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400">
-                    <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
-                    <span className="text-xs">{imagesOf(event).length ? 'Image unavailable' : 'No image'}</span>
-                  </div>
-                  {imagesOf(event)[0] && (
-                    isVideoFile(imagesOf(event)[0]) ? (
-                      <video
-                        src={imagesOf(event)[0]}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="relative w-full h-full object-cover"
-                      />
-                    ) : (
-                      <img
-                        src={imagesOf(event)[0]}
-                        alt=""
-                        className="relative w-full h-full object-cover"
-                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                      />
-                    )
-                  )}
-                  {imagesOf(event)[0] && isVideoFile(imagesOf(event)[0]) && (
-                    <span className="absolute top-3 left-3 px-2 py-0.5 text-[10px] font-bold rounded-full bg-black/75 text-[#e5ac53] backdrop-blur-sm flex items-center gap-1 border border-[#c3943a]/30 z-10">
-                      <Film className="w-3 h-3" />
-                      MOTION / MP4
-                    </span>
-                  )}
+            {events.map((event, index) => {
+              const isDragging = draggedIndex === index;
+              const isDragOver = dragOverIndex === index;
+
+              return (
+                <div
+                  key={event.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
+                  onDrop={(e) => handleDrop(e, index)}
+                  className={`bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border shadow-sm hover:shadow-md transition-all group flex flex-col cursor-move select-none relative ${
+                    isDragging
+                      ? 'opacity-40 border-dashed border-blue-500 scale-[0.98]'
+                      : isDragOver
+                      ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-lg scale-[1.01]'
+                      : 'border-neutral-200 dark:border-neutral-800'
+                  }`}
+                >
+                  <div className="relative h-48 bg-neutral-200 dark:bg-neutral-800">
+                    {/* Drag Grip Handle */}
+                    <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5">
+                      <span className="p-1 rounded-md bg-black/75 text-neutral-300 hover:text-white backdrop-blur-sm border border-white/20 shadow-sm cursor-grab active:cursor-grabbing" title="Drag to reorder">
+                        <GripVertical className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400">
+                      <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
+                      <span className="text-xs">{imagesOf(event).length ? 'Image unavailable' : 'No image'}</span>
+                    </div>
+                    {imagesOf(event)[0] && (
+                      isVideoFile(imagesOf(event)[0]) ? (
+                        <video
+                          src={imagesOf(event)[0]}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="relative w-full h-full object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={imagesOf(event)[0]}
+                          alt=""
+                          className="relative w-full h-full object-cover"
+                          onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                        />
+                      )
+                    )}
+                    {imagesOf(event)[0] && isVideoFile(imagesOf(event)[0]) && (
+                      <span className="absolute top-3 left-12 px-2 py-0.5 text-[10px] font-bold rounded-full bg-black/75 text-[#e5ac53] backdrop-blur-sm flex items-center gap-1 border border-[#c3943a]/30 z-10">
+                        <Film className="w-3 h-3" />
+                        MOTION / MP4
+                      </span>
+                    )}
                   {imagesOf(event).length > 1 && (
                     <span className="absolute bottom-3 left-3 px-2 py-0.5 text-[10px] font-bold rounded-full bg-black/70 text-white backdrop-blur-sm z-10">
                       {imagesOf(event).length} media items
@@ -526,7 +631,10 @@ export default function EventsManagementPage() {
                         {event.tag}
                       </span>
                     )}
-                    <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded px-1.5 py-0.5 border border-neutral-200 dark:border-neutral-700">
+                    <div 
+                      onMouseDown={(e) => e.stopPropagation()} 
+                      className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded px-1.5 py-0.5 border border-neutral-200 dark:border-neutral-700"
+                    >
                       <span className="text-[10px] text-neutral-500 font-medium">Order:</span>
                       <input 
                         type="number" 
@@ -563,7 +671,10 @@ export default function EventsManagementPage() {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-end gap-1.5 mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800/50">
+                  <div 
+                    onMouseDown={(e) => e.stopPropagation()} 
+                    className="flex items-center justify-end gap-1.5 mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800/50"
+                  >
                     <button
                       onClick={() => setQrModalEvent(event)}
                       className="p-2 text-neutral-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 rounded-lg transition-colors cursor-pointer"
@@ -603,7 +714,8 @@ export default function EventsManagementPage() {
                   </div>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
         )}
       </main>

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { resolveEventImages, resolveTelegramImage } from '@/lib/events/images';
 
@@ -9,12 +10,21 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     const { id } = await params;
     const data = await request.json();
 
+    const updateData: any = {};
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.orderIndex !== undefined) updateData.orderIndex = Number(data.orderIndex);
+
     const event = await prisma.event.update({
       where: { id },
-      data: {
-        status: data.status,
-      }
+      data: updateData,
     });
+
+    try {
+      revalidatePath('/');
+      revalidatePath('/dashboard/events');
+    } catch (e) {
+      // safe fallback
+    }
 
     return NextResponse.json({ success: true, data: event });
   } catch (error: any) {
