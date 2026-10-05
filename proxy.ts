@@ -60,13 +60,8 @@ export function proxy(request: NextRequest) {
     }
   }
   // 3. Handling for kompongdewa.win (and others like localhost)
-  else {
-    // Redirect root to /dashboard
-    if (pathname === '/') {
-      url.pathname = '/dashboard';
-      return NextResponse.redirect(url);
-    }
-  }
+  // Allow root '/' to serve the EventShowcase homepage (app/page.tsx) directly
+  return NextResponse.next();
 }
 
 export const config = {
