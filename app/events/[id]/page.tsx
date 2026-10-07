@@ -121,36 +121,13 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
               />
             )}
 
-            {/* Mobile: subtle bottom blend */}
+            {/* Subtle bottom blend so hero thumbnail is crisp and blends gently into the body */}
             <div
-              className="absolute inset-0 pointer-events-none sm:hidden"
+              className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  'linear-gradient(to top, #101010 0%, rgba(16, 16, 16, 0.5) 15%, rgba(16, 16, 16, 0.1) 35%, transparent 60%)',
+                  'linear-gradient(to top, #101010 0%, rgba(16, 16, 16, 0.6) 10%, rgba(16, 16, 16, 0.15) 22%, transparent 35%)',
               }}
-            />
-
-            {/* Desktop: gradient blend into body background */}
-            <div
-              className="hidden sm:block absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  'linear-gradient(to top, #101010 0%, #101010 18%, rgba(16, 16, 16, 0.85) 45%, rgba(16, 16, 16, 0.25) 75%, transparent 100%)',
-              }}
-            />
-
-            {/* Side & top edge fades */}
-            <div
-              className="hidden sm:block absolute inset-y-0 left-0 w-28 pointer-events-none"
-              style={{ background: 'linear-gradient(to right, #101010, transparent)' }}
-            />
-            <div
-              className="hidden sm:block absolute inset-y-0 right-0 w-28 pointer-events-none"
-              style={{ background: 'linear-gradient(to left, #101010, transparent)' }}
-            />
-            <div
-              className="hidden sm:block absolute inset-x-0 top-0 h-12 pointer-events-none"
-              style={{ background: 'linear-gradient(to bottom, #101010 0%, transparent 100%)' }}
             />
           </div>
         </div>

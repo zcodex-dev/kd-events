@@ -256,7 +256,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(to top, #101010 0%, rgba(16, 16, 16, 0.5) 15%, rgba(16, 16, 16, 0.1) 35%, transparent 60%);
+    background: linear-gradient(to top, #101010 0%, rgba(16, 16, 16, 0.6) 10%, rgba(16, 16, 16, 0.15) 22%, transparent 35%);
 }
 
 @media (min-width: 640px) {
@@ -270,7 +270,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(to top, #101010 0%, #101010 18%, rgba(16, 16, 16, 0.85) 45%, rgba(16, 16, 16, 0.25) 75%, transparent 100%);
+    background: linear-gradient(to top, #101010 0%, rgba(16, 16, 16, 0.6) 10%, rgba(16, 16, 16, 0.15) 22%, transparent 35%);
 }
 
 @media (min-width: 640px) {
@@ -279,39 +279,10 @@
     }
 }
 
-.kd-hero-fade-left {
-    display: none;
-    position: absolute;
-    top: 0; bottom: 0; left: 0;
-    width: 7rem;
-    pointer-events: none;
-    background: linear-gradient(to right, #101010, transparent);
-}
-
-.kd-hero-fade-right {
-    display: none;
-    position: absolute;
-    top: 0; bottom: 0; right: 0;
-    width: 7rem;
-    pointer-events: none;
-    background: linear-gradient(to left, #101010, transparent);
-}
-
+.kd-hero-fade-left,
+.kd-hero-fade-right,
 .kd-hero-fade-top {
-    display: none;
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3rem;
-    pointer-events: none;
-    background: linear-gradient(to bottom, #101010 0%, transparent 100%);
-}
-
-@media (min-width: 640px) {
-    .kd-hero-fade-left,
-    .kd-hero-fade-right,
-    .kd-hero-fade-top {
-        display: block;
-    }
+    display: none !important;
 }
 
 /* Content Container matching max-w-5xl */
