@@ -22,6 +22,8 @@ type MediaLibraryModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (url: string, file: UploadedFile) => void;
+  onSelectMultiple?: (urls: string[], files: UploadedFile[]) => void;
+  multiple?: boolean;
   title?: string;
   fileType?: 'image' | 'video' | 'all';
 };
@@ -39,6 +41,8 @@ export function MediaLibraryModal({
   isOpen,
   onClose,
   onSelect,
+  onSelectMultiple,
+  multiple = false,
   title = 'Choose from Media Library',
   fileType = 'image',
 }: MediaLibraryModalProps) {
@@ -47,6 +51,7 @@ export function MediaLibraryModal({
   const [search, setSearch] = useState('');
   const [selectedFolder, setSelectedFolder] = useState<string>('all');
   const [selectedFile, setSelectedFile] = useState<UploadedFile | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,6 +107,15 @@ export function MediaLibraryModal({
     });
   }, [files, search, selectedFolder]);
 
+  // Reset selection when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedFile(null);
+      setSelectedFiles([]);
+      setSearch('');
+    }
+  }, [isOpen]);
+
   // Handle direct file upload from inside modal
   const handleQuickUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,7 +127,11 @@ export function MediaLibraryModal({
       if (data && data.file) {
         toast.success('Uploaded to library!');
         setFiles((prev) => [data.file, ...prev]);
-        setSelectedFile(data.file);
+        if (multiple) {
+          setSelectedFiles((prev) => [...prev, data.file]);
+        } else {
+          setSelectedFile(data.file);
+        }
       } else {
         toast.error('Upload failed');
       }
@@ -126,9 +144,22 @@ export function MediaLibraryModal({
   };
 
   const handleConfirmSelect = () => {
-    if (!selectedFile) return;
-    onSelect(selectedFile.imageUrl, selectedFile);
-    onClose();
+    if (multiple) {
+      if (selectedFiles.length === 0) return;
+      if (onSelectMultiple) {
+        onSelectMultiple(
+          selectedFiles.map((f) => f.imageUrl),
+          selectedFiles
+        );
+      } else {
+        selectedFiles.forEach((f) => onSelect(f.imageUrl, f));
+      }
+      onClose();
+    } else {
+      if (!selectedFile) return;
+      onSelect(selectedFile.imageUrl, selectedFile);
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -273,17 +304,36 @@ export function MediaLibraryModal({
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
               {filteredFiles.map((file) => {
-                const isSelected = selectedFile?.id === file.id;
+                const isSelected = multiple
+                  ? selectedFiles.some((f) => f.id === file.id)
+                  : selectedFile?.id === file.id;
+                const selectedOrder = multiple
+                  ? selectedFiles.findIndex((f) => f.id === file.id) + 1
+                  : 0;
                 const isVideo = file.mimeType.startsWith('video/');
 
                 return (
                   <div
                     key={file.id}
-                    onClick={() => setSelectedFile(file)}
+                    onClick={() => {
+                      if (multiple) {
+                        setSelectedFiles((prev) => {
+                          const exists = prev.some((f) => f.id === file.id);
+                          if (exists) {
+                            return prev.filter((f) => f.id !== file.id);
+                          }
+                          return [...prev, file];
+                        });
+                      } else {
+                        setSelectedFile(file);
+                      }
+                    }}
                     onDoubleClick={() => {
-                      setSelectedFile(file);
-                      onSelect(file.imageUrl, file);
-                      onClose();
+                      if (!multiple) {
+                        setSelectedFile(file);
+                        onSelect(file.imageUrl, file);
+                        onClose();
+                      }
                     }}
                     className={`group relative flex flex-col rounded-xl border bg-white dark:bg-neutral-950 overflow-hidden cursor-pointer transition-all duration-150 select-none ${
                       isSelected
@@ -309,8 +359,12 @@ export function MediaLibraryModal({
 
                       {/* Selected Badge */}
                       {isSelected && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#c3943a] text-white flex items-center justify-center shadow-md animate-in zoom-in-50">
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <div className="absolute top-2 right-2 min-w-6 h-6 px-1.5 rounded-full bg-[#c3943a] text-black font-extrabold text-[11px] flex items-center justify-center shadow-lg animate-in zoom-in-50">
+                          {multiple && selectedOrder > 0 ? (
+                            <span>{selectedOrder}</span>
+                          ) : (
+                            <Check className="w-3.5 h-3.5 stroke-[3] text-black" />
+                          )}
                         </div>
                       )}
 
@@ -343,7 +397,20 @@ export function MediaLibraryModal({
         {/* Modal Footer */}
         <div className="px-5 py-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 flex items-center justify-between shrink-0">
           <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate max-w-[260px] sm:max-w-md">
-            {selectedFile ? (
+            {multiple ? (
+              selectedFiles.length > 0 ? (
+                <span className="flex items-center gap-2">
+                  <span className="font-bold text-[#c3943a] dark:text-[#e5ac53]">
+                    {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
+                  </span>
+                  <span className="text-neutral-400 hidden sm:inline">
+                    (in order of selection)
+                  </span>
+                </span>
+              ) : (
+                <span>Click items to select flyer sheets from library.</span>
+              )
+            ) : selectedFile ? (
               <span className="flex items-center gap-1.5">
                 <span className="font-semibold text-neutral-800 dark:text-neutral-200">
                   {selectedFile.originalName}
@@ -365,12 +432,16 @@ export function MediaLibraryModal({
             </button>
             <button
               type="button"
-              disabled={!selectedFile}
+              disabled={multiple ? selectedFiles.length === 0 : !selectedFile}
               onClick={handleConfirmSelect}
               className="px-5 py-2 text-xs font-bold text-white bg-[#c3943a] hover:bg-[#a87b28] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Check className="w-3.5 h-3.5" />
-              <span>Use Selected Image</span>
+              <span>
+                {multiple
+                  ? `Attach Selected (${selectedFiles.length})`
+                  : 'Use Selected Image'}
+              </span>
             </button>
           </div>
         </div>

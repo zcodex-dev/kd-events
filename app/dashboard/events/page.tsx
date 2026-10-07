@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit, Image as ImageIcon, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode, Film, BookOpen, ClipboardList, ExternalLink, Download, Globe, GripVertical, FileText, Upload, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, Images, Loader2, Search, Calendar, MapPin, Tag, Users, Eye, Code, Copy, Check, Sparkles, Wand2, QrCode, Film, BookOpen, ClipboardList, ExternalLink, Download, Globe, GripVertical, FileText, Upload, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/shared/header';
 import { useDashboard } from '@/app/dashboard/layout';
 import { EventQrModal } from '@/components/dashboard/event-qr-modal';
+import { MediaLibraryModal } from '@/components/dashboard/media-library-modal';
+import { directUploadSingleFile } from '@/lib/uploads/client-upload';
 import { isVideoFile } from '@/lib/uploads/file-utils';
 import { TelegramImageSlot } from '@/components/dashboard/telegram-image-slot';
 import {
@@ -130,6 +132,7 @@ export default function EventsManagementPage() {
   const [posterImagesZh, setPosterImagesZh] = useState<string[]>([]);
   const [isUploadingPoster, setIsUploadingPoster] = useState(false);
   const [posterUrlInput, setPosterUrlInput] = useState('');
+  const [isPosterLibraryOpen, setIsPosterLibraryOpen] = useState(false);
 
   const currentDescMode =
     activeLangTab === 'en' ? descModeEn : activeLangTab === 'id' ? descModeId : descModeZh;
@@ -301,28 +304,24 @@ export default function EventsManagementPage() {
       const uploadedUrls: string[] = [];
 
       for (const file of Array.from(files)) {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        const data = await res.json();
-        if (data.success && data.data?.url) {
-          uploadedUrls.push(data.data.url);
-        } else {
-          toast.error(`Failed to upload ${file.name}: ${data.error || 'Upload error'}`);
+        try {
+          const res = await directUploadSingleFile(file);
+          if (res?.imageUrl) {
+            uploadedUrls.push(res.imageUrl);
+          } else if (res?.file?.imageUrl) {
+            uploadedUrls.push(res.file.imageUrl);
+          }
+        } catch (err: any) {
+          toast.error(`Failed to upload ${file.name}: ${err?.message || 'Upload error'}`);
         }
       }
 
       if (uploadedUrls.length > 0) {
         setCurrentPosterImages([...currentPosterImages, ...uploadedUrls]);
-        toast.success(`Uploaded ${uploadedUrls.length} flyer sheet(s)!`);
+        toast.success(`Attached ${uploadedUrls.length} flyer sheet(s)!`);
       }
     } catch {
-      toast.error('Failed to upload poster image');
+      toast.error('Failed to process poster upload');
     } finally {
       setIsUploadingPoster(false);
       toast.dismiss(toastId);
@@ -1105,6 +1104,41 @@ export default function EventsManagementPage() {
                       ) : (
                         /* Mode B: Poster / Flyer Image Mode */
                         <div className="space-y-4 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/40">
+                          {/* Flyer Top Action Bar */}
+                          <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
+                            <div>
+                              <span className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+                                Flyer / Poster Sheets ({currentPosterImages.length})
+                              </span>
+                              <p className="text-[11px] text-neutral-500">
+                                Choose from your Media Library or upload new sheets for player view.
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setIsPosterLibraryOpen(true)}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-neutral-900 bg-[#c3943a] hover:bg-[#d4a84e] rounded-lg shadow-xs transition-all cursor-pointer"
+                              >
+                                <Images className="w-4 h-4" />
+                                <span>Choose from Library</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const input = document.getElementById('poster-file-input');
+                                  if (input) input.click();
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Upload className="w-3.5 h-3.5" />
+                                <span>Upload New</span>
+                              </button>
+                            </div>
+                          </div>
+
                           {/* Upload Dropzone */}
                           <div
                             onDragOver={(e) => e.preventDefault()}
@@ -1114,11 +1148,7 @@ export default function EventsManagementPage() {
                                 handleUploadPosterFiles(e.dataTransfer.files);
                               }
                             }}
-                            className="relative border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-[#c3943a] dark:hover:border-[#c3943a] rounded-xl p-6 flex flex-col items-center justify-center text-center transition-colors bg-white dark:bg-neutral-950 cursor-pointer group"
-                            onClick={() => {
-                              const input = document.getElementById('poster-file-input');
-                              if (input) input.click();
-                            }}
+                            className="relative border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-[#c3943a] dark:hover:border-[#c3943a] rounded-xl p-5 flex flex-col items-center justify-center text-center transition-colors bg-white dark:bg-neutral-950 group"
                           >
                             <input
                               id="poster-file-input"
@@ -1133,20 +1163,36 @@ export default function EventsManagementPage() {
                               }}
                             />
                             {isUploadingPoster ? (
-                              <div className="flex flex-col items-center gap-2 text-neutral-500">
+                              <div className="flex flex-col items-center gap-2 text-neutral-500 py-3">
                                 <Loader2 className="w-8 h-8 animate-spin text-[#c3943a]" />
-                                <span className="text-sm font-semibold">Uploading flyer image...</span>
+                                <span className="text-sm font-semibold">Uploading flyer image to storage...</span>
                               </div>
                             ) : (
-                              <div className="flex flex-col items-center gap-2">
-                                <div className="p-3 bg-[#c3943a]/10 text-[#c3943a] rounded-full group-hover:scale-110 transition-transform">
-                                  <Upload className="w-6 h-6" />
+                              <div className="flex flex-col items-center gap-3">
+                                <div className="flex flex-wrap items-center justify-center gap-2.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsPosterLibraryOpen(true)}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-neutral-900 bg-[#c3943a] hover:bg-[#d4a84e] rounded-lg shadow-sm transition-all cursor-pointer"
+                                  >
+                                    <Images className="w-4 h-4" />
+                                    <span>Choose from Library</span>
+                                  </button>
+                                  <span className="text-xs text-neutral-400">or</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const input = document.getElementById('poster-file-input');
+                                      if (input) input.click();
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+                                  >
+                                    <Upload className="w-3.5 h-3.5" />
+                                    <span>Browse Local Files</span>
+                                  </button>
                                 </div>
-                                <div className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
-                                  Drag & drop flyer/poster images here, or <span className="text-[#c3943a] underline underline-offset-2">browse</span>
-                                </div>
-                                <p className="text-xs text-neutral-500">
-                                  Supports high-resolution PNG, JPG, WebP. Multiple pages/sheets allowed (e.g. Schedule + Blind Structure).
+                                <p className="text-[11px] text-neutral-400">
+                                  Drag & drop flyer files here. Supports high-resolution PNG, JPG, WebP sheets.
                                 </p>
                               </div>
                             )}
@@ -1774,6 +1820,25 @@ export default function EventsManagementPage() {
         event={qrModalEvent}
         isOpen={Boolean(qrModalEvent)}
         onClose={() => setQrModalEvent(null)}
+      />
+
+      {/* Tournament Flyer Sheets Media Library Picker */}
+      <MediaLibraryModal
+        isOpen={isPosterLibraryOpen}
+        onClose={() => setIsPosterLibraryOpen(false)}
+        multiple={true}
+        onSelectMultiple={(urls) => {
+          setCurrentPosterImages([...currentPosterImages, ...urls]);
+          toast.success(`Attached ${urls.length} flyer sheet(s) from library!`);
+          setIsPosterLibraryOpen(false);
+        }}
+        onSelect={(url) => {
+          setCurrentPosterImages([...currentPosterImages, url]);
+          toast.success('Attached flyer sheet from library!');
+          setIsPosterLibraryOpen(false);
+        }}
+        title={`Choose Tournament Flyer Sheets (${activeLangTab.toUpperCase()})`}
+        fileType="image"
       />
     </div>
   );
