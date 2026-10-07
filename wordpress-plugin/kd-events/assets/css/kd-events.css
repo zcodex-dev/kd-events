@@ -321,12 +321,13 @@
     padding: 0 1rem 5rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.25rem;
 }
 
 @media (min-width: 640px) {
     .kd-content-body {
         padding: 0 1.5rem 5rem 1.5rem;
+        gap: 1.5rem;
     }
 }
 
@@ -334,9 +335,9 @@
 .kd-title-bar {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 1.5rem;
+    padding-bottom: 1rem;
 }
 
 @media (min-width: 768px) {
@@ -2263,7 +2264,12 @@ body.kd-body-no-scroll {
     font-size: 0.9375rem;
     line-height: 1.7;
     word-break: break-word;
-    margin: 1.5rem 0;
+    margin: 0 0 1.5rem 0;
+}
+
+.kd-title-bar + .kd-rich-description,
+.kd-content-body > .kd-rich-description:first-child {
+    margin-top: 0 !important;
 }
 
 .kd-rich-description p {
@@ -2318,7 +2324,7 @@ body.kd-body-no-scroll {
     gap: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    margin: 1.5rem 0 !important;
+    margin: 0 0 1.5rem 0 !important;
     padding: 0 !important;
     border-radius: 1rem !important;
     overflow: hidden !important;

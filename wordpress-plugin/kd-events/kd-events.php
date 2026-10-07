@@ -3,7 +3,7 @@
  * Plugin Name: KD Events
  * Plugin URI: https://kompongdewa.win
  * Description: Premium luxury dark-themed event showcase. Place full event reading pages onto any WordPress page with live countdown, multi-language flag dropdown, and prize pool showcase without iframes.
- * Version: 1.4.0
+ * Version: 1.4.1
  * Author: Kompong Dewa Integrated Resort
  * Author URI: https://kompongdewa.win
  * Text Domain: kd-events
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KD_EVENTS_VERSION', '1.4.0');
+define('KD_EVENTS_VERSION', '1.4.1');
 define('KD_EVENTS_DIR', plugin_dir_path(__FILE__));
 define('KD_EVENTS_URL', plugin_dir_url(__FILE__));
 
