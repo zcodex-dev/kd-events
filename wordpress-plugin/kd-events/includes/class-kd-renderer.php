@@ -10,10 +10,37 @@ class KD_Event_Renderer {
         if (preg_match('/^https?:\/\//i', $trimmed)) {
             return $trimmed;
         }
+        $baseHost = class_exists('KD_Event_API') ? KD_Event_API::get_api_host() : 'https://kompongdewa.win';
         if (strpos($trimmed, '/') === 0) {
-            return 'https://kompongdewa.win' . $trimmed;
+            return $baseHost . $trimmed;
         }
         return $trimmed;
+    }
+
+    public static function normalize_html_urls($html) {
+        if (empty($html)) return '';
+        $baseHost = class_exists('KD_Event_API') ? KD_Event_API::get_api_host() : 'https://kompongdewa.win';
+
+        // Convert relative src="..." or href="..." starting with / (excluding protocol-relative //)
+        $html = preg_replace_callback('/\b(src|href)=(["\'])(\/(?!\/)[^"\']*)\2/i', function ($m) use ($baseHost) {
+            return $m[1] . '=' . $m[2] . $baseHost . $m[3] . $m[2];
+        }, $html);
+
+        // Convert relative srcset="..."
+        $html = preg_replace_callback('/\bsrcset=(["\'])(.*?)\1/i', function ($m) use ($baseHost) {
+            $quote = $m[1];
+            $sources = explode(',', $m[2]);
+            $updated = array_map(function ($src) use ($baseHost) {
+                $src = trim($src);
+                if (strpos($src, '/') === 0 && strpos($src, '//') !== 0) {
+                    return $baseHost . $src;
+                }
+                return $src;
+            }, $sources);
+            return 'srcset=' . $quote . implode(', ', $updated) . $quote;
+        }, $html);
+
+        return $html;
     }
 
     public static function is_video($url) {
@@ -151,10 +178,15 @@ class KD_Event_Renderer {
             ? $event['defaultLang']
             : 'en';
 
+        // Normalize relative URLs in HTML descriptions (e.g. /api/raw?key=...) to absolute host URLs
+        $descEn = self::normalize_html_urls($event['description'] ?? '');
+        $descId = self::normalize_html_urls(!empty($event['descriptionId']) ? $event['descriptionId'] : ($event['description'] ?? ''));
+        $descZh = self::normalize_html_urls(!empty($event['descriptionZh']) ? $event['descriptionZh'] : ($event['description'] ?? ''));
+
         // Parse Prize Pool & Remaining HTML per language
-        $parsedEn = self::parse_prize_pool($event['description'] ?? '');
-        $parsedId = self::parse_prize_pool(!empty($event['descriptionId']) ? $event['descriptionId'] : ($event['description'] ?? ''));
-        $parsedZh = self::parse_prize_pool(!empty($event['descriptionZh']) ? $event['descriptionZh'] : ($event['description'] ?? ''));
+        $parsedEn = self::parse_prize_pool($descEn);
+        $parsedId = self::parse_prize_pool($descId);
+        $parsedZh = self::parse_prize_pool($descZh);
 
         // Prepare translation payload for dynamic client-side language switching
         $translations = [

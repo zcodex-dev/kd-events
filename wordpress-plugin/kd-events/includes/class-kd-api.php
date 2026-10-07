@@ -20,6 +20,19 @@ class KD_Event_API {
         return !empty($url) ? esc_url_raw($url) : self::DEFAULT_API_URL;
     }
 
+    public static function get_api_host() {
+        $apiUrl = self::get_api_url();
+        $parts = wp_parse_url($apiUrl);
+        if (!empty($parts['scheme']) && !empty($parts['host'])) {
+            $host = $parts['scheme'] . '://' . $parts['host'];
+            if (!empty($parts['port'])) {
+                $host .= ':' . $parts['port'];
+            }
+            return untrailingslashit($host);
+        }
+        return 'https://kompongdewa.win';
+    }
+
     public static function get_cache_duration() {
         $duration = (int) get_option('kd_events_cache_duration', 300);
         return $duration > 0 ? $duration : 300;

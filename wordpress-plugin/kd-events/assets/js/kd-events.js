@@ -15,6 +15,7 @@
             setupCountdownTimer(container);
             setupPrizePoolAnimations(container);
             setupRegisterModal(container);
+            setupFlyerLightbox(container);
         });
     }
 
@@ -151,6 +152,7 @@
         var descEl = container.querySelector('.kd-rich-description');
         if (descEl && data.description) {
             descEl.innerHTML = data.description;
+            setupFlyerLightbox(container);
         }
 
         var modalTitleEl = container.querySelector('.kd-modal-title');
@@ -650,6 +652,74 @@
 
         tick();
         setInterval(tick, 1000);
+    }
+
+    var activeLightbox = null;
+
+    function setupFlyerLightbox(container) {
+        var posterImages = container.querySelectorAll('.event-detail-posters img, .kd-rich-description img');
+        if (!posterImages.length) return;
+
+        posterImages.forEach(function (img) {
+            img.style.cursor = 'zoom-in';
+            img.onclick = function (e) {
+                e.stopPropagation();
+                openLightbox(img.src, img.alt || 'Event Flyer');
+            };
+        });
+    }
+
+    function openLightbox(src, alt) {
+        if (!src) return;
+
+        var lb = document.getElementById('kd-flyer-lightbox');
+        if (!lb) {
+            lb = document.createElement('div');
+            lb.id = 'kd-flyer-lightbox';
+            lb.className = 'kd-lightbox-backdrop';
+            lb.innerHTML = '<button type="button" class="kd-lightbox-close" aria-label="Close flyer view"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button><div class="kd-lightbox-img-wrap"><img src="" alt="" class="kd-lightbox-img" /></div>';
+            document.body.appendChild(lb);
+
+            var closeBtn = lb.querySelector('.kd-lightbox-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    closeLightbox();
+                });
+            }
+
+            lb.addEventListener('click', function (e) {
+                if (e.target === lb || e.target.classList.contains('kd-lightbox-img-wrap')) {
+                    closeLightbox();
+                }
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if ((e.key === 'Escape' || e.key === 'Esc') && lb.classList.contains('kd-lightbox-open')) {
+                    closeLightbox();
+                }
+            });
+        }
+
+        var lbImg = lb.querySelector('.kd-lightbox-img');
+        if (lbImg) {
+            lbImg.src = src;
+            lbImg.alt = alt || '';
+        }
+
+        activeLightbox = lb;
+        lb.classList.add('kd-lightbox-open');
+        document.body.classList.add('kd-body-no-scroll');
+    }
+
+    function closeLightbox() {
+        if (!activeLightbox) {
+            activeLightbox = document.getElementById('kd-flyer-lightbox');
+        }
+        if (activeLightbox) {
+            activeLightbox.classList.remove('kd-lightbox-open');
+        }
+        document.body.classList.remove('kd-body-no-scroll');
     }
 
     if (document.readyState === 'loading') {
