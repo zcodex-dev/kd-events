@@ -8,6 +8,7 @@ import { parsePrizePool } from '@/lib/prize-pool';
 import { PrizePoolShowcase } from '@/components/prize-pool-showcase';
 import { EventCountdown } from '@/components/event-countdown';
 import { SetEventLanguage } from '@/components/set-event-language';
+import { EventDetailContent } from '@/components/event-detail-content';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -178,28 +179,8 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        {/* Dedicated Prize Pool Showcase (Champion Podium & Ladder) */}
-        {(() => {
-          const { prizeData, remainingHtml } = description
-            ? parsePrizePool(description)
-            : { prizeData: null, remainingHtml: '' };
-
-          return (
-            <>
-              {prizeData && <PrizePoolShowcase data={prizeData} />}
-
-              {remainingHtml && (
-                <div className="prose prose-invert prose-neutral max-w-none prose-headings:font-bold prose-headings:text-white prose-p:text-neutral-300 prose-p:leading-relaxed prose-a:text-[#c3943a] prose-li:text-neutral-300">
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: wrapTables(remainingHtml),
-                    }}
-                  />
-                </div>
-              )}
-            </>
-          );
-        })()}
+        {/* Event Content Details (Image Poster / Rich Text) */}
+        <EventDetailContent description={description} title={title} />
 
         {/* Gallery if event has multiple images */}
         {mediaList.length > 1 && (
