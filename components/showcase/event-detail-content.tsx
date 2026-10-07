@@ -4,13 +4,11 @@ import { useState, useEffect } from 'react';
 import {
   ZoomIn,
   ZoomOut,
-  Maximize2,
   Download,
   X,
   ChevronLeft,
   ChevronRight,
   RotateCcw,
-  Sparkles,
 } from 'lucide-react';
 import { parsePrizePool } from '@/lib/showcase/prize-pool';
 import { PrizePoolShowcase } from '@/components/showcase/prize-pool-showcase';
@@ -115,55 +113,23 @@ export function EventDetailContent({ description, title }: Props) {
   // ── Render 1: Image Mode Post ──────────────────────────────────────────
   if (isImagePost && allImages.length > 0) {
     return (
-      <div className="space-y-6">
-        {/* Poster Header hint */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#c3943a]">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Official Event Poster & Rules Sheet</span>
-          </div>
-          <span className="text-[11px] text-neutral-400 flex items-center gap-1.5">
-            <Maximize2 className="w-3 h-3 text-[#c3943a]" />
-            Click or tap image to zoom & inspect full details
-          </span>
-        </div>
-
-        {/* Poster Gallery / Sheets */}
-        <div className="space-y-6">
+      <div className="w-full">
+        {/* Seamless Continuous Flyer Sheets (0 gap between pages) */}
+        <div className="w-full flex flex-col gap-0 rounded-2xl overflow-hidden shadow-2xl bg-neutral-950">
           {allImages.map((imgUrl, idx) => (
             <div
               key={idx}
               onClick={() => handleOpenLightbox(idx)}
-              className="group relative w-full rounded-2xl overflow-hidden border border-white/10 hover:border-[#c3943a]/60 bg-neutral-950 transition-all duration-300 shadow-xl cursor-pointer"
+              className="relative w-full cursor-pointer"
+              title="Click to zoom flyer"
             >
-              {allImages.length > 1 && (
-                <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-black/80 backdrop-blur-md rounded-full text-xs font-bold text-white border border-white/20 shadow-md">
-                  Page {idx + 1} of {allImages.length}
-                </div>
-              )}
-
-              {/* Hover / Tap Zoom Action Badge */}
-              <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-3 py-1 bg-black/80 hover:bg-[#c3943a] hover:text-black backdrop-blur-md rounded-full text-xs font-bold text-[#e5ac53] border border-[#c3943a]/40 shadow-md transition-all">
-                <ZoomIn className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Tap to Zoom</span>
-              </div>
-
               {/* Main Crisp Flyer Image */}
               <img
                 src={imgUrl}
-                alt={`${title} - Details Page ${idx + 1}`}
-                className="w-full h-auto object-contain block mx-auto transition-transform duration-300 group-hover:scale-[1.008]"
+                alt={`${title} - Page ${idx + 1}`}
+                className="w-full h-auto object-contain block mx-auto select-none"
                 loading={idx === 0 ? 'eager' : 'lazy'}
               />
-
-              {/* Bottom Quick Bar */}
-              <div className="px-5 py-3 bg-neutral-900/90 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
-                <span className="truncate">{title} — Official Sheet</span>
-                <span className="text-[#c3943a] font-medium flex items-center gap-1">
-                  <Maximize2 className="w-3.5 h-3.5" />
-                  View Fullscreen
-                </span>
-              </div>
             </div>
           ))}
         </div>

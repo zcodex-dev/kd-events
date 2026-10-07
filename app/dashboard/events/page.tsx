@@ -433,10 +433,10 @@ export default function EventsManagementPage() {
       if (descModeEn === 'image') {
         finalDescEn =
           posterImagesEn.length > 0
-            ? `<div data-post-type="image" class="event-detail-posters space-y-4">${posterImagesEn
+            ? `<div data-post-type="image" class="event-detail-posters flex flex-col gap-0">${posterImagesEn
                 .map(
                   (url) =>
-                    `<img src="${url}" alt="${title}" class="w-full h-auto rounded-xl shadow-lg my-2" />`
+                    `<img src="${url}" alt="${title}" class="w-full h-auto block m-0 p-0" />`
                 )
                 .join('')}</div>`
             : '';
@@ -446,10 +446,10 @@ export default function EventsManagementPage() {
       if (descModeId === 'image') {
         finalDescId =
           posterImagesId.length > 0
-            ? `<div data-post-type="image" class="event-detail-posters space-y-4">${posterImagesId
+            ? `<div data-post-type="image" class="event-detail-posters flex flex-col gap-0">${posterImagesId
                 .map(
                   (url) =>
-                    `<img src="${url}" alt="${titleId || title}" class="w-full h-auto rounded-xl shadow-lg my-2" />`
+                    `<img src="${url}" alt="${titleId || title}" class="w-full h-auto block m-0 p-0" />`
                 )
                 .join('')}</div>`
             : '';
@@ -459,10 +459,10 @@ export default function EventsManagementPage() {
       if (descModeZh === 'image') {
         finalDescZh =
           posterImagesZh.length > 0
-            ? `<div data-post-type="image" class="event-detail-posters space-y-4">${posterImagesZh
+            ? `<div data-post-type="image" class="event-detail-posters flex flex-col gap-0">${posterImagesZh
                 .map(
                   (url) =>
-                    `<img src="${url}" alt="${titleZh || title}" class="w-full h-auto rounded-xl shadow-lg my-2" />`
+                    `<img src="${url}" alt="${titleZh || title}" class="w-full h-auto block m-0 p-0" />`
                 )
                 .join('')}</div>`
             : '';
