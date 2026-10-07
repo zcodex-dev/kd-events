@@ -69,7 +69,7 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
   const hasVideo = isVideo(mediaSrc);
 
   return (
-    <div className="pt-20 pb-20">
+    <div className="pt-20 pb-6 sm:pb-8">
       <SetEventLanguage defaultLang={event.defaultLang} />
       {/* Top Breadcrumb Bar */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-4">

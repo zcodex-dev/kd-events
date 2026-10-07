@@ -87,7 +87,7 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
 
   return (
     <ShowcaseShell isEmbed={isEmbed}>
-      <div className={isEmbed ? 'pt-6 pb-16' : 'pt-20 pb-20'}>
+      <div className={isEmbed ? 'pt-6 pb-6' : 'pt-20 pb-6 sm:pb-8'}>
         <SetEventLanguage defaultLang={event.defaultLang} />
         {/* Top Breadcrumb Bar */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-4">
