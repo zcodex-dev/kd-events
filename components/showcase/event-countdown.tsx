@@ -80,13 +80,13 @@ export function EventCountdown({ startAt, endAt, dateStr, className = '' }: Prop
   ] as const;
 
   return (
-    <div className={`w-full text-center sm:w-auto sm:text-left text-white drop-shadow-lg ${className}`}>
+    <div className={`w-full text-center md:w-auto md:text-right text-white drop-shadow-lg ${className}`}>
       <p className="mb-3 text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-[#e5ac53]">
         {timeLeft.label}
       </p>
-      <div className="flex items-end justify-center sm:justify-start gap-5 sm:gap-6">
+      <div className="flex items-end justify-center md:justify-end gap-5 sm:gap-6">
         {units.map(([label, value]) => (
-          <div key={label} className="min-w-11 sm:min-w-14">
+          <div key={label} className="min-w-11 sm:min-w-14 text-center">
             <span className="block text-3xl sm:text-4xl font-black tabular-nums leading-none">
               {String(value).padStart(2, '0')}
             </span>

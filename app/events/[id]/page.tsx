@@ -7,7 +7,6 @@ import { parsePrizePool } from '@/lib/showcase/prize-pool';
 import { PrizePoolShowcase } from '@/components/showcase/prize-pool-showcase';
 import { EventCountdown } from '@/components/showcase/event-countdown';
 import { SetEventLanguage } from '@/components/showcase/set-event-language';
-import { EventLanguagePills } from '@/components/showcase/event-language-pills';
 import { EventDetailContent } from '@/components/showcase/event-detail-content';
 import { ShowcaseShell } from '@/components/showcase/showcase-shell';
 
@@ -91,7 +90,7 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
       <div className={isEmbed ? 'pt-6 pb-16' : 'pt-20 pb-20'}>
         <SetEventLanguage defaultLang={event.defaultLang} />
         {/* Top Breadcrumb Bar */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-4">
           <Link
             href="/events"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
@@ -99,9 +98,6 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
             <ArrowLeft className="w-4 h-4" />
             <span>Back to All Events</span>
           </Link>
-          <div className="md:hidden">
-            <EventLanguagePills />
-          </div>
         </div>
 
         {/* Seamless Hero Media blending directly with body background */}
@@ -189,16 +185,11 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
               </div>
             </div>
 
-            <div className="flex flex-col items-start md:items-end gap-4 shrink-0">
-              <div className="hidden md:block">
-                <EventLanguagePills />
+            {event.status?.toUpperCase().includes('UPCOMING') && (
+              <div className="w-full md:w-auto flex justify-center md:justify-end shrink-0 pt-2 md:pt-0">
+                <EventCountdown startAt={event.startAt} endAt={event.endAt} dateStr={date} />
               </div>
-              {event.status?.toUpperCase().includes('UPCOMING') && (
-                <div className="shrink-0 md:self-end">
-                  <EventCountdown startAt={event.startAt} endAt={event.endAt} dateStr={date} />
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Concept / Highlight */}

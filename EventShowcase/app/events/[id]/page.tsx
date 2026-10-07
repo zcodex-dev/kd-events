@@ -163,7 +163,7 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
           </div>
 
           {event.status?.toUpperCase().includes('UPCOMING') && (
-            <div className="shrink-0 md:self-center">
+            <div className="w-full md:w-auto flex justify-center md:justify-end shrink-0 pt-2 md:pt-0">
               <EventCountdown startAt={event.startAt} endAt={event.endAt} dateStr={date} />
             </div>
           )}
