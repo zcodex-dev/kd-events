@@ -23,6 +23,12 @@
 }
 
 :root {
+  --font-roboto: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  --font-playfair: 'Playfair Display', Georgia, serif;
+  --font-bebas: 'Bebas Neue', sans-serif;
+  --font-outfit: 'Outfit', sans-serif;
+  --font-montserrat: 'Montserrat', sans-serif;
+
   --folder-back: oklch(0.75 0.12 45);
   --folder-front: oklch(0.8 0.14 50);
   --folder-tab: oklch(0.7 0.1 40);

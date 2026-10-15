@@ -22,5 +22,6 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             cd /home/kompongdewaadmin/htdocs/kompongdewa.win
             ./deploy.sh
-            pm2 restart admin-app || pm2 reload admin-app
+            pm2 restart admin-app || pm2 reload admin-app || PORT=3005 pm2 start "pnpm start" --name "admin-app"
+            pm2 save
             pm2 status
