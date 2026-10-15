@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -23,17 +23,17 @@ import {
   type ImageSlot,
 } from '@/components/dashboard/event-image-slots';
 
-// Pulls in Quill, which needs `document` — client-side only.
+// Pulls in Quill, which needs `document` � client-side only.
 const RichTextEditor = dynamic(() => import('@/components/shared/rich-text-editor'), {
   ssr: false,
   loading: () => (
     <div className="h-[240px] flex items-center justify-center text-sm text-neutral-400">
-      Loading editor…
+      Loading editor�
     </div>
   ),
 });
 
-// Descriptions are HTML now — cards show a plain-text excerpt.
+// Descriptions are HTML now � cards show a plain-text excerpt.
 const stripHtml = (html: string) =>
   html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -53,16 +53,24 @@ const isImageModeContent = (html?: string | null): boolean => {
 
 const toDateTimeLocal = (value?: string | null) => {
   if (!value) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toISOString().slice(0, 10);
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const formatDateRange = (start: string, end: string) => {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
+  if (!start || !end) return '';
+  const [sY, sM, sD] = start.split('-').map(Number);
+  const [eY, eM, eD] = end.split('-').map(Number);
+  if (!sY || !sM || !sD || !eY || !eM || !eD) return '';
+  const startDate = new Date(sY, sM - 1, sD);
+  const endDate = new Date(eY, eM - 1, eD);
   const dateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  return `${dateFormat.format(startDate)} – ${dateFormat.format(endDate)}`;
+  return `${dateFormat.format(startDate)} � ${dateFormat.format(endDate)}`;
 };
 
 type Event = {
@@ -131,8 +139,22 @@ export default function EventsManagementPage() {
   const [posterImagesId, setPosterImagesId] = useState<string[]>([]);
   const [posterImagesZh, setPosterImagesZh] = useState<string[]>([]);
   const [isUploadingPoster, setIsUploadingPoster] = useState(false);
+  const [uploadingPosterLang, setUploadingPosterLang] = useState<'en' | 'id' | 'zh' | null>(null);
+  const [posterTargetLang, setPosterTargetLang] = useState<'en' | 'id' | 'zh'>('en');
   const [posterUrlInput, setPosterUrlInput] = useState('');
+  const [posterUrlInputEn, setPosterUrlInputEn] = useState('');
+  const [posterUrlInputZh, setPosterUrlInputZh] = useState('');
+  const [posterUrlInputId, setPosterUrlInputId] = useState('');
   const [isPosterLibraryOpen, setIsPosterLibraryOpen] = useState(false);
+
+  const isPosterMode = descModeEn === 'image' || descModeId === 'image' || descModeZh === 'image';
+  const totalPosterSheets = posterImagesEn.length + posterImagesZh.length + posterImagesId.length;
+
+  const setAllDescMode = (mode: DescMode) => {
+    setDescModeEn(mode);
+    setDescModeId(mode);
+    setDescModeZh(mode);
+  };
 
   const currentDescMode =
     activeLangTab === 'en' ? descModeEn : activeLangTab === 'id' ? descModeId : descModeZh;
@@ -232,6 +254,9 @@ export default function EventsManagementPage() {
     setPosterImagesId([]);
     setPosterImagesZh([]);
     setPosterUrlInput('');
+    setPosterUrlInputEn('');
+    setPosterUrlInputZh('');
+    setPosterUrlInputId('');
     setIsModalOpen(true);
   };
 
@@ -247,30 +272,28 @@ export default function EventsManagementPage() {
     setDescriptionId(event.descriptionId || '');
 
     // Initialize description modes & poster images per language
-    if (isImageModeContent(event.description)) {
+    const hasEnImage = isImageModeContent(event.description);
+    const hasIdImage = isImageModeContent(event.descriptionId);
+    const hasZhImage = isImageModeContent(event.descriptionZh);
+    const anyImage = hasEnImage || hasIdImage || hasZhImage;
+
+    if (anyImage) {
       setDescModeEn('image');
-      setPosterImagesEn(extractPosterImages(event.description));
+      setDescModeId('image');
+      setDescModeZh('image');
     } else {
       setDescModeEn('richtext');
-      setPosterImagesEn([]);
-    }
-
-    if (isImageModeContent(event.descriptionId)) {
-      setDescModeId('image');
-      setPosterImagesId(extractPosterImages(event.descriptionId));
-    } else {
       setDescModeId('richtext');
-      setPosterImagesId([]);
+      setDescModeZh('richtext');
     }
 
-    if (isImageModeContent(event.descriptionZh)) {
-      setDescModeZh('image');
-      setPosterImagesZh(extractPosterImages(event.descriptionZh));
-    } else {
-      setDescModeZh('richtext');
-      setPosterImagesZh([]);
-    }
+    setPosterImagesEn(extractPosterImages(event.description));
+    setPosterImagesId(extractPosterImages(event.descriptionId));
+    setPosterImagesZh(extractPosterImages(event.descriptionZh));
     setPosterUrlInput('');
+    setPosterUrlInputEn('');
+    setPosterUrlInputZh('');
+    setPosterUrlInputId('');
 
     setTag(event.tag || '');
     setDate(event.date || '');
@@ -295,10 +318,15 @@ export default function EventsManagementPage() {
     setIsModalOpen(true);
   };
 
-  const handleUploadPosterFiles = async (files: FileList | File[]) => {
+  const handleUploadPosterFiles = async (
+    files: FileList | File[],
+    targetLang: 'en' | 'id' | 'zh' = 'en'
+  ) => {
     if (!files || files.length === 0) return;
     setIsUploadingPoster(true);
-    const toastId = toast.loading('Uploading tournament flyer image(s)...');
+    setUploadingPosterLang(targetLang);
+    const langLabel = targetLang === 'en' ? 'English' : targetLang === 'zh' ? 'Chinese' : 'Bahasa';
+    const toastId = toast.loading(`Uploading flyer image(s) for ${langLabel}...`);
 
     try {
       const uploadedUrls: string[] = [];
@@ -317,41 +345,93 @@ export default function EventsManagementPage() {
       }
 
       if (uploadedUrls.length > 0) {
-        setCurrentPosterImages([...currentPosterImages, ...uploadedUrls]);
-        toast.success(`Attached ${uploadedUrls.length} flyer sheet(s)!`);
+        if (targetLang === 'en') setPosterImagesEn((prev) => [...prev, ...uploadedUrls]);
+        else if (targetLang === 'zh') setPosterImagesZh((prev) => [...prev, ...uploadedUrls]);
+        else setPosterImagesId((prev) => [...prev, ...uploadedUrls]);
+        toast.success(`Attached ${uploadedUrls.length} flyer sheet(s) to ${langLabel}!`);
       }
     } catch {
       toast.error('Failed to process poster upload');
     } finally {
       setIsUploadingPoster(false);
+      setUploadingPosterLang(null);
       toast.dismiss(toastId);
     }
   };
 
-  const handleAddPosterUrl = () => {
-    if (!posterUrlInput.trim()) return;
-    if (!isHttpUrl(posterUrlInput) && !posterUrlInput.startsWith('/api/raw')) {
+  const handleAddPosterUrl = (targetLang: 'en' | 'id' | 'zh' = 'en') => {
+    const rawVal =
+      targetLang === 'en'
+        ? posterUrlInputEn || posterUrlInput
+        : targetLang === 'zh'
+        ? posterUrlInputZh
+        : posterUrlInputId;
+    const trimmed = rawVal.trim();
+    if (!trimmed) return;
+    if (!isHttpUrl(trimmed) && !trimmed.startsWith('/api/raw')) {
       toast.error('Please enter a valid image URL');
       return;
     }
-    setCurrentPosterImages([...currentPosterImages, posterUrlInput.trim()]);
-    setPosterUrlInput('');
-    toast.success('Flyer image URL added');
+    const langLabel = targetLang === 'en' ? 'English' : targetLang === 'zh' ? 'Chinese' : 'Bahasa';
+    if (targetLang === 'en') {
+      setPosterImagesEn((prev) => [...prev, trimmed]);
+      setPosterUrlInputEn('');
+      setPosterUrlInput('');
+    } else if (targetLang === 'zh') {
+      setPosterImagesZh((prev) => [...prev, trimmed]);
+      setPosterUrlInputZh('');
+    } else {
+      setPosterImagesId((prev) => [...prev, trimmed]);
+      setPosterUrlInputId('');
+    }
+    toast.success(`Flyer sheet added to ${langLabel}`);
   };
 
-  const handleRemovePosterImage = (idx: number) => {
-    const next = [...currentPosterImages];
-    next.splice(idx, 1);
-    setCurrentPosterImages(next);
+  const handleRemovePosterImage = (targetLang: 'en' | 'id' | 'zh', idx: number) => {
+    if (targetLang === 'en') {
+      setPosterImagesEn((prev) => prev.filter((_, i) => i !== idx));
+    } else if (targetLang === 'zh') {
+      setPosterImagesZh((prev) => prev.filter((_, i) => i !== idx));
+    } else {
+      setPosterImagesId((prev) => prev.filter((_, i) => i !== idx));
+    }
   };
 
-  const handleMovePosterImage = (idx: number, direction: 'up' | 'down') => {
-    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
-    if (targetIdx < 0 || targetIdx >= currentPosterImages.length) return;
-    const next = [...currentPosterImages];
-    const [moved] = next.splice(idx, 1);
-    next.splice(targetIdx, 0, moved);
-    setCurrentPosterImages(next);
+  const handleMovePosterImage = (
+    targetLang: 'en' | 'id' | 'zh',
+    idx: number,
+    direction: 'up' | 'down'
+  ) => {
+    const moveInArray = (arr: string[]) => {
+      const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (targetIdx < 0 || targetIdx >= arr.length) return arr;
+      const next = [...arr];
+      const [moved] = next.splice(idx, 1);
+      next.splice(targetIdx, 0, moved);
+      return next;
+    };
+    if (targetLang === 'en') setPosterImagesEn(moveInArray);
+    else if (targetLang === 'zh') setPosterImagesZh(moveInArray);
+    else setPosterImagesId(moveInArray);
+  };
+
+  const handleCopyFlyersFromEn = (targetLang: 'zh' | 'id') => {
+    if (posterImagesEn.length === 0) {
+      toast.error('No English flyers to copy');
+      return;
+    }
+    if (targetLang === 'zh') {
+      setPosterImagesZh([...posterImagesEn]);
+      toast.success('Copied English flyers to Chinese');
+    } else {
+      setPosterImagesId([...posterImagesEn]);
+      toast.success('Copied English flyers to Bahasa');
+    }
+  };
+
+  const openPosterLibrary = (targetLang: 'en' | 'id' | 'zh') => {
+    setPosterTargetLang(targetLang);
+    setIsPosterLibraryOpen(true);
   };
 
   const handleAIPolish = async () => {
@@ -480,9 +560,14 @@ export default function EventsManagementPage() {
       formData.append('descriptionId', hasContentId ? finalDescId : '');
       formData.append('defaultLang', defaultLang);
       formData.append('tag', tag);
+      const [sY, sM, sD] = startAt.split('-').map(Number);
+      const [eY, eM, eD] = endAt.split('-').map(Number);
+      const startDate = new Date(sY, sM - 1, sD, 0, 0, 0, 0);
+      const endDate = new Date(eY, eM - 1, eD, 23, 59, 59, 999);
+
       formData.append('date', formatDateRange(startAt, endAt));
-      formData.append('startAt', new Date(`${startAt}T00:00:00`).toISOString());
-      formData.append('endAt', new Date(`${endAt}T23:59:59.999`).toISOString());
+      formData.append('startAt', startDate.toISOString());
+      formData.append('endAt', endDate.toISOString());
       formData.append('dateZh', dateZh);
       formData.append('dateId', dateId);
       formData.append('location', location);
@@ -944,7 +1029,7 @@ export default function EventsManagementPage() {
                           <img src="https://flagcdn.com/w20/id.png" alt="Bahasa" className="w-4 h-auto border border-neutral-200 dark:border-neutral-700 rounded-sm" /> Bahasa
                         </button>
                         <button type="button" onClick={() => setActiveLangTab('zh')} className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-md transition-all ${activeLangTab === 'zh' ? 'bg-white dark:bg-neutral-900 shadow text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}>
-                          <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm" /> 中文
+                          <img src="https://flagcdn.com/w20/cn.png" alt="Chinese" className="w-4 h-auto rounded-sm" /> ??
                         </button>
                       </div>
                     </div>
@@ -1012,7 +1097,7 @@ export default function EventsManagementPage() {
                           if (activeLangTab === 'id') setTitleId(e.target.value);
                           if (activeLangTab === 'zh') setTitleZh(e.target.value);
                         }}
-                        placeholder={activeLangTab === 'en' ? "e.g. Poker Tournament 2026" : activeLangTab === 'id' ? "e.g. Turnamen Poker 2026" : "e.g. 2026年扑克锦标赛"}
+                        placeholder={activeLangTab === 'en' ? "e.g. Poker Tournament 2026" : activeLangTab === 'id' ? "e.g. Turnamen Poker 2026" : "e.g. 2026??????"}
                         className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-white"
                         required={activeLangTab === 'en'}
                       />
@@ -1022,16 +1107,18 @@ export default function EventsManagementPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-3">
                           <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                            Description ({activeLangTab.toUpperCase()})
+                            {isPosterMode
+                              ? 'Event Description & Tournament Flyers'
+                              : `Description (${activeLangTab.toUpperCase()})`}
                           </label>
 
                           {/* Format Switcher: Rich Text vs Image Poster */}
                           <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg">
                             <button
                               type="button"
-                              onClick={() => setCurrentDescMode('richtext')}
+                              onClick={() => setAllDescMode('richtext')}
                               className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                                currentDescMode === 'richtext'
+                                !isPosterMode
                                   ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs'
                                   : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                               }`}
@@ -1041,25 +1128,25 @@ export default function EventsManagementPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => setCurrentDescMode('image')}
+                              onClick={() => setAllDescMode('image')}
                               className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                                currentDescMode === 'image'
+                                isPosterMode
                                   ? 'bg-[#c3943a] text-black shadow-xs font-extrabold'
                                   : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                               }`}
                             >
                               <ImageIcon className="w-3.5 h-3.5" />
                               <span>Flyer / Poster Image</span>
-                              {currentPosterImages.length > 0 && (
+                              {totalPosterSheets > 0 && (
                                 <span className="px-1.5 py-0.2 bg-black/20 rounded-full text-[10px] font-bold">
-                                  {currentPosterImages.length}
+                                  {totalPosterSheets}
                                 </span>
                               )}
                             </button>
                           </div>
                         </div>
 
-                        {currentDescMode === 'richtext' && (
+                        {!isPosterMode && (
                           <button
                             type="button"
                             onClick={handleAIPolish}
@@ -1083,7 +1170,7 @@ export default function EventsManagementPage() {
                       </div>
 
                       {/* Mode A: Rich Text Editor */}
-                      {currentDescMode === 'richtext' ? (
+                      {!isPosterMode ? (
                         <div>
                           <div className="event-description-editor bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg overflow-hidden">
                             <RichTextEditor
@@ -1102,194 +1189,280 @@ export default function EventsManagementPage() {
                           </p>
                         </div>
                       ) : (
-                        /* Mode B: Poster / Flyer Image Mode */
-                        <div className="space-y-4 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/40">
-                          {/* Flyer Top Action Bar */}
-                          <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
+                        /* Mode B: 3-Panel Multilingual Poster / Flyer Image Layout */
+                        <div className="space-y-3.5 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/40">
+                          {/* Flyer Top Header / Intro */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-800">
                             <div>
-                              <span className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                                Flyer / Poster Sheets ({currentPosterImages.length})
-                              </span>
-                              <p className="text-[11px] text-neutral-500">
-                                Choose from your Media Library or upload new sheets for player view.
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                                  Flyer / Poster Language Panels
+                                </span>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#c3943a]/15 text-[#c3943a]">
+                                  {totalPosterSheets} sheet{totalPosterSheets === 1 ? '' : 's'} total
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-neutral-500 mt-0.5">
+                                Manage tournament flyers side-by-side for English, Chinese, and Bahasa.
                               </p>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setIsPosterLibraryOpen(true)}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-neutral-900 bg-[#c3943a] hover:bg-[#d4a84e] rounded-lg shadow-xs transition-all cursor-pointer"
-                              >
-                                <Images className="w-4 h-4" />
-                                <span>Choose from Library</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const input = document.getElementById('poster-file-input');
-                                  if (input) input.click();
-                                }}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
-                              >
-                                <Upload className="w-3.5 h-3.5" />
-                                <span>Upload New</span>
-                              </button>
-                            </div>
+                            <p className="text-[11px] text-[#c3943a] dark:text-[#e5ac53] flex items-center gap-1.5">
+                              <Sparkles className="w-3 h-3 shrink-0" />
+                              <span>Empty languages automatically fall back to English flyer sheets.</span>
+                            </p>
                           </div>
 
-                          {/* Upload Dropzone */}
-                          <div
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              if (e.dataTransfer.files) {
-                                handleUploadPosterFiles(e.dataTransfer.files);
-                              }
-                            }}
-                            className="relative border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-[#c3943a] dark:hover:border-[#c3943a] rounded-xl p-5 flex flex-col items-center justify-center text-center transition-colors bg-white dark:bg-neutral-950 group"
-                          >
-                            <input
-                              id="poster-file-input"
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              className="hidden"
-                              onChange={(e) => {
-                                if (e.target.files) {
-                                  handleUploadPosterFiles(e.target.files);
-                                }
-                              }}
-                            />
-                            {isUploadingPoster ? (
-                              <div className="flex flex-col items-center gap-2 text-neutral-500 py-3">
-                                <Loader2 className="w-8 h-8 animate-spin text-[#c3943a]" />
-                                <span className="text-sm font-semibold">Uploading flyer image to storage...</span>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center gap-3">
-                                <div className="flex flex-wrap items-center justify-center gap-2.5">
-                                  <button
-                                    type="button"
-                                    onClick={() => setIsPosterLibraryOpen(true)}
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-neutral-900 bg-[#c3943a] hover:bg-[#d4a84e] rounded-lg shadow-sm transition-all cursor-pointer"
-                                  >
-                                    <Images className="w-4 h-4" />
-                                    <span>Choose from Library</span>
-                                  </button>
-                                  <span className="text-xs text-neutral-400">or</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const input = document.getElementById('poster-file-input');
-                                      if (input) input.click();
-                                    }}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
-                                  >
-                                    <Upload className="w-3.5 h-3.5" />
-                                    <span>Browse Local Files</span>
-                                  </button>
-                                </div>
-                                <p className="text-[11px] text-neutral-400">
-                                  Drag & drop flyer files here. Supports high-resolution PNG, JPG, WebP sheets.
-                                </p>
-                              </div>
-                            )}
-                          </div>
+                          {/* 3 Layout Panels Side-by-Side Grid */}
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 items-start">
+                            {[
+                              {
+                                code: 'en' as const,
+                                label: 'English',
+                                flag: 'https://flagcdn.com/w20/us.png',
+                                images: posterImagesEn,
+                                urlInput: posterUrlInputEn,
+                                setUrlInput: setPosterUrlInputEn,
+                                fileInputId: 'poster-file-input-en',
+                              },
+                              {
+                                code: 'zh' as const,
+                                label: 'Chinese (中文)',
+                                flag: 'https://flagcdn.com/w20/cn.png',
+                                images: posterImagesZh,
+                                urlInput: posterUrlInputZh,
+                                setUrlInput: setPosterUrlInputZh,
+                                fileInputId: 'poster-file-input-zh',
+                              },
+                              {
+                                code: 'id' as const,
+                                label: 'Bahasa Indonesia',
+                                flag: 'https://flagcdn.com/w20/id.png',
+                                images: posterImagesId,
+                                urlInput: posterUrlInputId,
+                                setUrlInput: setPosterUrlInputId,
+                                fileInputId: 'poster-file-input-id',
+                              },
+                            ].map((panel) => {
+                              const isUploading = uploadingPosterLang === panel.code;
+                              const count = panel.images.length;
 
-                          {/* Quick URL Input */}
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              value={posterUrlInput}
-                              onChange={(e) => setPosterUrlInput(e.target.value)}
-                              placeholder="Or paste an image URL (https://... or /api/raw...)"
-                              className="flex-1 px-3 py-2 text-xs bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800 rounded-lg outline-none focus:ring-2 focus:ring-[#c3943a]/30 focus:border-[#c3943a] dark:text-white"
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  handleAddPosterUrl();
-                                }
-                              }}
-                            />
-                            <button
-                              type="button"
-                              onClick={handleAddPosterUrl}
-                              className="px-3 py-2 bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-bold rounded-lg transition-colors cursor-pointer"
-                            >
-                              Add URL
-                            </button>
-                          </div>
-
-                          {/* List of Uploaded Sheets / Images */}
-                          {currentPosterImages.length > 0 ? (
-                            <div className="space-y-3 pt-2">
-                              <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block">
-                                Attached Flyer Sheets ({currentPosterImages.length})
-                              </span>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                                {currentPosterImages.map((imgUrl, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="relative rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-950 shadow-xs flex flex-col"
-                                  >
-                                    <div className="relative aspect-[3/4] bg-neutral-100 dark:bg-neutral-900 overflow-hidden">
+                              return (
+                                <div
+                                  key={panel.code}
+                                  className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 p-3 flex flex-col gap-2.5 shadow-2xs"
+                                >
+                                  {/* Panel Header */}
+                                  <div className="flex items-center justify-between gap-1.5 pb-2 border-b border-neutral-100 dark:border-neutral-800/80">
+                                    <div className="flex items-center gap-2 min-w-0">
                                       <img
-                                        src={imgUrl}
-                                        alt={`Flyer Page ${idx + 1}`}
-                                        className="w-full h-full object-contain"
+                                        src={panel.flag}
+                                        alt={panel.label}
+                                        className="w-4 h-auto rounded-xs shadow-2xs shrink-0"
                                       />
-                                      <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/80 backdrop-blur-sm rounded text-[10px] font-bold text-white border border-white/20">
-                                        Page {idx + 1}
-                                      </span>
-                                    </div>
-                                    <div className="p-2 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/60 border-t border-neutral-200 dark:border-neutral-800">
-                                      <div className="flex items-center gap-1">
-                                        <button
-                                          type="button"
-                                          disabled={idx === 0}
-                                          onClick={() => handleMovePosterImage(idx, 'up')}
-                                          className="p-1 text-neutral-500 hover:text-neutral-800 dark:hover:text-white disabled:opacity-20 cursor-pointer"
-                                          title="Move Up"
-                                        >
-                                          <ArrowUp className="w-3.5 h-3.5" />
-                                        </button>
-                                        <button
-                                          type="button"
-                                          disabled={idx === currentPosterImages.length - 1}
-                                          onClick={() => handleMovePosterImage(idx, 'down')}
-                                          className="p-1 text-neutral-500 hover:text-neutral-800 dark:hover:text-white disabled:opacity-20 cursor-pointer"
-                                          title="Move Down"
-                                        >
-                                          <ArrowDown className="w-3.5 h-3.5" />
-                                        </button>
+                                      <div className="min-w-0">
+                                        <span className="text-xs font-bold text-neutral-900 dark:text-white truncate block">
+                                          {panel.label}
+                                        </span>
+                                        <span className="text-[10px] text-neutral-400 block leading-tight">
+                                          {count} sheet{count === 1 ? '' : 's'}
+                                        </span>
                                       </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center gap-1 shrink-0">
                                       <button
                                         type="button"
-                                        onClick={() => handleRemovePosterImage(idx)}
-                                        className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded transition-colors cursor-pointer"
-                                        title="Remove Page"
+                                        onClick={() => openPosterLibrary(panel.code)}
+                                        className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-neutral-900 bg-[#c3943a] hover:bg-[#d4a84e] rounded-md shadow-2xs transition-all cursor-pointer"
+                                        title="Choose from media library"
                                       >
-                                        <Trash2 className="w-3.5 h-3.5" />
+                                        <Images className="w-3 h-3" />
+                                        <span>Library</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const input = document.getElementById(panel.fileInputId);
+                                          if (input) input.click();
+                                        }}
+                                        className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-md transition-colors cursor-pointer"
+                                        title="Upload local files"
+                                      >
+                                        <Upload className="w-3 h-3" />
+                                        <span>Browse</span>
                                       </button>
                                     </div>
                                   </div>
-                                ))}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="p-4 text-center rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800 text-xs text-neutral-400">
-                              No flyer images uploaded yet. Drop an image above to attach your tournament rules sheet.
-                            </div>
-                          )}
 
-                          <p className="text-[11px] text-[#c3943a] dark:text-[#e5ac53] flex items-center gap-1.5 pt-1">
-                            <Sparkles className="w-3 h-3 shrink-0" />
-                            <span>
-                              In Flyer/Poster mode, visitors on the reading page will be presented with high-definition posters, zoom, and download controls.
-                            </span>
-                          </p>
+                                  {/* Hidden File Input */}
+                                  <input
+                                    id={panel.fileInputId}
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      if (e.target.files) {
+                                        handleUploadPosterFiles(e.target.files, panel.code);
+                                      }
+                                    }}
+                                  />
+
+                                  {/* Compact Dropzone */}
+                                  <div
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDrop={(e) => {
+                                      e.preventDefault();
+                                      if (e.dataTransfer.files) {
+                                        handleUploadPosterFiles(e.dataTransfer.files, panel.code);
+                                      }
+                                    }}
+                                    onClick={() => {
+                                      const input = document.getElementById(panel.fileInputId);
+                                      if (input) input.click();
+                                    }}
+                                    className="border border-dashed border-neutral-300 dark:border-neutral-700 hover:border-[#c3943a] dark:hover:border-[#c3943a] rounded-lg p-2.5 text-center transition-colors bg-neutral-50/60 dark:bg-neutral-900/40 cursor-pointer group"
+                                  >
+                                    {isUploading ? (
+                                      <div className="flex items-center justify-center gap-2 text-neutral-500 py-1">
+                                        <Loader2 className="w-4 h-4 animate-spin text-[#c3943a]" />
+                                        <span className="text-xs font-semibold">Uploading flyer...</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex flex-col items-center gap-0.5">
+                                        <div className="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-400 group-hover:text-[#c3943a]">
+                                          <Upload className="w-3.5 h-3.5" />
+                                          <span className="font-semibold">Drop image here or click</span>
+                                        </div>
+                                        <span className="text-[10px] text-neutral-400">PNG, JPG, WebP</span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Quick URL Input */}
+                                  <div className="flex items-center gap-1.5">
+                                    <input
+                                      type="text"
+                                      value={panel.urlInput}
+                                      onChange={(e) => panel.setUrlInput(e.target.value)}
+                                      placeholder="Paste flyer image URL"
+                                      className="flex-1 px-2.5 py-1 text-[11px] bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-md outline-none focus:ring-1 focus:ring-[#c3943a] focus:border-[#c3943a] dark:text-white"
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          handleAddPosterUrl(panel.code);
+                                        }
+                                      }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddPosterUrl(panel.code)}
+                                      className="px-2 py-1 bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-[11px] font-bold rounded-md transition-colors cursor-pointer shrink-0"
+                                    >
+                                      Add
+                                    </button>
+                                  </div>
+
+                                  {/* Attached Sheets Preview List (Compact w-11 h-14) */}
+                                  {panel.images.length > 0 ? (
+                                    <div className="space-y-1.5 max-h-[340px] overflow-y-auto pr-1">
+                                      {panel.images.map((imgUrl, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="flex items-center gap-2 p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/60 hover:border-[#c3943a]/50 transition-colors"
+                                        >
+                                          {/* Compact Thumbnail */}
+                                          <div className="relative w-11 h-14 rounded overflow-hidden bg-neutral-200 dark:bg-neutral-800 shrink-0 border border-neutral-200 dark:border-neutral-700">
+                                            <img
+                                              src={imgUrl}
+                                              alt={`Page ${idx + 1}`}
+                                              className="w-full h-full object-cover"
+                                            />
+                                            <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 bg-black/85 rounded text-[8px] font-bold text-white leading-tight">
+                                              P{idx + 1}
+                                            </span>
+                                          </div>
+
+                                          {/* Sheet Controls */}
+                                          <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch py-0.5">
+                                            <div className="flex items-center justify-between gap-1">
+                                              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 truncate">
+                                                Sheet #{idx + 1}
+                                              </span>
+                                              <button
+                                                type="button"
+                                                onClick={() => handleRemovePosterImage(panel.code, idx)}
+                                                className="p-1 text-neutral-400 hover:text-red-500 rounded transition-colors cursor-pointer"
+                                                title="Remove sheet"
+                                              >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                              </button>
+                                            </div>
+
+                                            <p className="text-[10px] text-neutral-400 truncate" title={imgUrl}>
+                                              {imgUrl.split('/').pop() || imgUrl}
+                                            </p>
+
+                                            <div className="flex items-center justify-between gap-1 mt-1">
+                                              <div className="flex items-center gap-0.5">
+                                                <button
+                                                  type="button"
+                                                  disabled={idx === 0}
+                                                  onClick={() => handleMovePosterImage(panel.code, idx, 'up')}
+                                                  className="p-0.5 px-1 text-neutral-500 hover:text-neutral-900 dark:hover:text-white bg-neutral-200/80 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 disabled:opacity-20 rounded text-[10px] font-semibold flex items-center gap-0.5 cursor-pointer"
+                                                  title="Move up"
+                                                >
+                                                  <ArrowUp className="w-3 h-3" />
+                                                  <span>Up</span>
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  disabled={idx === panel.images.length - 1}
+                                                  onClick={() => handleMovePosterImage(panel.code, idx, 'down')}
+                                                  className="p-0.5 px-1 text-neutral-500 hover:text-neutral-900 dark:hover:text-white bg-neutral-200/80 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 disabled:opacity-20 rounded text-[10px] font-semibold flex items-center gap-0.5 cursor-pointer"
+                                                  title="Move down"
+                                                >
+                                                  <ArrowDown className="w-3 h-3" />
+                                                  <span>Down</span>
+                                                </button>
+                                              </div>
+
+                                              <a
+                                                href={imgUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-[10px] text-neutral-400 hover:text-[#c3943a] flex items-center gap-0.5 shrink-0"
+                                                title="Open full image"
+                                              >
+                                                <ExternalLink className="w-2.5 h-2.5" />
+                                                <span>Preview</span>
+                                              </a>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="py-3 px-2 text-center rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800/80 text-[11px] text-neutral-400 flex flex-col items-center justify-center gap-1.5">
+                                      <span>No flyer sheets uploaded yet.</span>
+                                      {panel.code !== 'en' && posterImagesEn.length > 0 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleCopyFlyersFromEn(panel.code as 'zh' | 'id')}
+                                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#c3943a] hover:text-[#d4a84e] bg-[#c3943a]/10 hover:bg-[#c3943a]/20 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+                                        >
+                                          <Copy className="w-3 h-3" />
+                                          <span>Copy from English ({posterImagesEn.length})</span>
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1828,18 +2001,34 @@ export default function EventsManagementPage() {
         onClose={() => setIsPosterLibraryOpen(false)}
         multiple={true}
         onSelectMultiple={(urls) => {
-          setCurrentPosterImages([...currentPosterImages, ...urls]);
-          toast.success(`Attached ${urls.length} flyer sheet(s) from library!`);
+          if (posterTargetLang === 'en') {
+            setPosterImagesEn((prev) => [...prev, ...urls]);
+          } else if (posterTargetLang === 'zh') {
+            setPosterImagesZh((prev) => [...prev, ...urls]);
+          } else {
+            setPosterImagesId((prev) => [...prev, ...urls]);
+          }
+          const label = posterTargetLang === 'en' ? 'English' : posterTargetLang === 'zh' ? 'Chinese' : 'Bahasa';
+          toast.success(`Attached ${urls.length} flyer sheet(s) to ${label}!`);
           setIsPosterLibraryOpen(false);
         }}
         onSelect={(url) => {
-          setCurrentPosterImages([...currentPosterImages, url]);
-          toast.success('Attached flyer sheet from library!');
+          if (!url) return;
+          if (posterTargetLang === 'en') {
+            setPosterImagesEn((prev) => [...prev, url]);
+          } else if (posterTargetLang === 'zh') {
+            setPosterImagesZh((prev) => [...prev, url]);
+          } else {
+            setPosterImagesId((prev) => [...prev, url]);
+          }
+          const label = posterTargetLang === 'en' ? 'English' : posterTargetLang === 'zh' ? 'Chinese' : 'Bahasa';
+          toast.success(`Attached flyer sheet to ${label}!`);
           setIsPosterLibraryOpen(false);
         }}
-        title={`Choose Tournament Flyer Sheets (${activeLangTab.toUpperCase()})`}
+        title={`Choose Tournament Flyer Sheets (${posterTargetLang === 'en' ? 'English' : posterTargetLang === 'zh' ? 'Chinese (中文)' : 'Bahasa'})`}
         fileType="image"
       />
     </div>
   );
 }
+
