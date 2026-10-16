@@ -15,6 +15,7 @@ class KD_Event_Shortcode {
 
     private function __construct() {
         add_shortcode('kd_event', [$this, 'render_shortcode']);
+        add_shortcode('kd_enrollment', [$this, 'render_enrollment_shortcode']);
     }
 
     public function render_shortcode($atts) {
@@ -22,7 +23,13 @@ class KD_Event_Shortcode {
             'id' => '',
             'slug' => '',
             'layout' => 'content',
+            'bg' => '',
+            'lang' => 'en',
         ], $atts, 'kd_event');
+
+        if ($atts['layout'] === 'enrollment') {
+            return KD_Event_Renderer::render_enrollment('content', $atts['bg'], $atts['lang']);
+        }
 
         $identifier = !empty($atts['id']) ? $atts['id'] : $atts['slug'];
 
@@ -39,5 +46,15 @@ class KD_Event_Shortcode {
         }
 
         return KD_Event_Renderer::render($event, $atts['layout']);
+    }
+
+    public function render_enrollment_shortcode($atts) {
+        $atts = shortcode_atts([
+            'layout' => 'content',
+            'bg' => '',
+            'lang' => 'en',
+        ], $atts, 'kd_enrollment');
+
+        return KD_Event_Renderer::render_enrollment($atts['layout'], $atts['bg'], $atts['lang']);
     }
 }

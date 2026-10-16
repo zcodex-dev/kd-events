@@ -8,8 +8,6 @@
 
     function initKDEventShowcase() {
         var containers = document.querySelectorAll('.kd-showcase-container');
-        if (!containers.length) return;
-
         containers.forEach(function (container) {
             setupLanguageDropdown(container);
             setupCountdownTimer(container);
@@ -17,6 +15,8 @@
             setupRegisterModal(container);
             setupFlyerLightbox(container);
         });
+
+        setupEnrollmentForms();
     }
 
     function setupPrizePoolAnimations(container) {
@@ -720,6 +720,725 @@
             activeLightbox.classList.remove('kd-lightbox-open');
         }
         document.body.classList.remove('kd-body-no-scroll');
+    }
+
+    // ── Membership Enrollment Implementation ──────────────────────────
+    function setupEnrollmentForms() {
+        var enrollContainers = document.querySelectorAll('.kd-enrollment-container');
+        if (!enrollContainers.length) return;
+
+        enrollContainers.forEach(function (container) {
+            setupSingleEnrollment(container);
+        });
+    }
+
+    function setupSingleEnrollment(container) {
+        var translations = {};
+        try {
+            var rawT = container.getAttribute('data-translations');
+            if (rawT) translations = JSON.parse(rawT);
+        } catch (e) {
+            console.error('KD Enrollment: Could not parse translations', e);
+        }
+
+        var countries = [];
+        try {
+            var rawC = container.getAttribute('data-countries');
+            if (rawC) countries = JSON.parse(rawC);
+        } catch (e) {}
+
+        var nationalities = [];
+        try {
+            var rawN = container.getAttribute('data-nationalities');
+            if (rawN) nationalities = JSON.parse(rawN);
+        } catch (e) {}
+
+        var apiHost = container.getAttribute('data-api-host') || 'https://kompongdewa.win';
+
+        var form = container.querySelector('.kd-enroll-form');
+        var successView = container.querySelector('.kd-enroll-success');
+        var alertError = container.querySelector('.kd-enroll-alert-error');
+        var scanErrorBox = container.querySelector('.kd-enroll-scan-error');
+        var resetBtn = container.querySelector('.kd-enroll-reset-btn');
+
+        var nameInput = container.querySelector('#kd_enroll_name');
+        var phoneInput = container.querySelector('#kd_enroll_phone');
+        var emailInput = container.querySelector('#kd_enroll_email');
+        var fileInput = container.querySelector('#kd_enroll_file');
+        var uploadBox = container.querySelector('.kd-enroll-upload-box');
+        var uploadIdle = container.querySelector('.kd-enroll-upload-idle');
+        var uploadScanning = container.querySelector('.kd-enroll-upload-scanning');
+        var uploadVerified = container.querySelector('.kd-enroll-upload-verified');
+
+        var submitBtn = container.querySelector('.kd-enroll-submit-btn');
+        var submitText = container.querySelector('.kd-enroll-submit-text');
+        var sendIcon = container.querySelector('.kd-enroll-send-icon');
+        var submitSpinner = container.querySelector('.kd-enroll-spinner');
+
+        var currentLang = 'en';
+        var currentContactMode = 'phone';
+        var selectedCountry = countries[0] || { country: 'Indonesia', code: 'id', dialCode: '+62', nationality: 'Indonesian' };
+        var selectedNationality = 'Indonesian';
+        var selectedPassportFile = null;
+
+        // 1. Language Dropdown Switcher
+        var langTrigger = container.querySelector('.kd-enroll-lang-trigger');
+        var langMenu = container.querySelector('.kd-enroll-lang-menu');
+        var langFlagCurrent = container.querySelector('.kd-enroll-lang-flag-current');
+        var langLabelCurrent = container.querySelector('.kd-enroll-lang-label-current');
+        var langOptions = container.querySelectorAll('.kd-enroll-lang-option');
+
+        if (langTrigger && langMenu) {
+            langTrigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                langMenu.classList.toggle('kd-open');
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!container.contains(e.target)) {
+                    langMenu.classList.remove('kd-open');
+                }
+            });
+
+            langOptions.forEach(function (opt) {
+                opt.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var code = this.getAttribute('data-lang-code');
+                    var flag = this.querySelector('img');
+                    var label = this.querySelector('span');
+
+                    if (flag && langFlagCurrent) {
+                        langFlagCurrent.src = flag.src;
+                        langFlagCurrent.alt = flag.alt;
+                    }
+                    if (label && langLabelCurrent) {
+                        langLabelCurrent.textContent = label.textContent;
+                    }
+
+                    langOptions.forEach(function (o) { o.classList.remove('kd-active'); });
+                    this.classList.add('kd-active');
+                    langMenu.classList.remove('kd-open');
+
+                    currentLang = code;
+                    applyEnrollmentTranslation(container, translations[code]);
+                });
+            });
+        }
+
+        // 2. Contact Mode Switcher (Phone vs Email)
+        var pillBtns = container.querySelectorAll('.kd-enroll-pill-btn');
+        var phoneContainer = container.querySelector('.kd-enroll-phone-container');
+        var emailContainer = container.querySelector('.kd-enroll-email-container');
+        var contactLabelText = container.querySelector('.kd-label-contact-text');
+
+        function setContactMode(mode) {
+            currentContactMode = mode;
+            pillBtns.forEach(function (b) {
+                if (b.getAttribute('data-mode') === mode) {
+                    b.classList.add('kd-active');
+                } else {
+                    b.classList.remove('kd-active');
+                }
+            });
+
+            var t = translations[currentLang] || {};
+            if (mode === 'phone') {
+                if (phoneContainer) phoneContainer.style.display = 'flex';
+                if (emailContainer) emailContainer.style.display = 'none';
+                if (contactLabelText) contactLabelText.textContent = t.phoneNumber || 'Phone Number';
+            } else {
+                if (phoneContainer) phoneContainer.style.display = 'none';
+                if (emailContainer) emailContainer.style.display = 'block';
+                if (contactLabelText) contactLabelText.textContent = t.emailAddress || 'Email Address';
+            }
+        }
+
+        pillBtns.forEach(function (b) {
+            b.addEventListener('click', function () {
+                setContactMode(this.getAttribute('data-mode'));
+            });
+        });
+
+        // 3. Country Picker Popover (Phone Mode)
+        var countryTrigger = container.querySelector('.kd-enroll-country-trigger');
+        var countryPopover = container.querySelector('.kd-enroll-country-popover');
+        var countrySearch = container.querySelector('.kd-enroll-country-search-input');
+        var countryList = container.querySelector('.kd-enroll-country-list');
+        var countryFlagImg = container.querySelector('.kd-enroll-flag-img');
+        var countryDialCode = container.querySelector('.kd-enroll-dial-code');
+
+        function renderCountryList(filter) {
+            if (!countryList) return;
+            var q = (filter || '').toLowerCase().trim();
+            var matches = countries.filter(function (c) {
+                if (!q) return true;
+                return c.country.toLowerCase().includes(q) ||
+                       c.dialCode.toLowerCase().includes(q) ||
+                       (c.nationality && c.nationality.toLowerCase().includes(q));
+            });
+
+            countryList.innerHTML = '';
+            if (!matches.length) {
+                countryList.innerHTML = '<div class="kd-orig-empty-country">No country found</div>';
+                return;
+            }
+
+            matches.forEach(function (c) {
+                var isSel = c.code === selectedCountry.code;
+                var item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'kd-orig-country-item' + (isSel ? ' kd-selected' : '');
+                item.innerHTML =
+                    '<div class="kd-orig-item-left">' +
+                    '<img src="https://flagcdn.com/w40/' + c.code + '.png" alt="" class="kd-orig-item-flag" />' +
+                    '<span class="kd-orig-item-name">' + c.country + '</span>' +
+                    '</div>' +
+                    '<span class="kd-orig-item-code">' + c.dialCode + '</span>';
+
+                item.addEventListener('click', function () {
+                    selectCountry(c);
+                });
+                countryList.appendChild(item);
+            });
+        }
+
+        function selectCountry(c) {
+            selectedCountry = c;
+            if (countryFlagImg) {
+                countryFlagImg.src = 'https://flagcdn.com/w40/' + c.code + '.png';
+                countryFlagImg.alt = c.country;
+            }
+            if (countryDialCode) countryDialCode.textContent = c.dialCode;
+            if (countryPopover) countryPopover.style.display = 'none';
+
+            // Auto-sync nationality if available
+            if (c.nationality) {
+                setNationality(c.nationality, c.code);
+            }
+        }
+
+        if (countryTrigger && countryPopover) {
+            countryTrigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var isOpen = countryPopover.style.display === 'block';
+                countryPopover.style.display = isOpen ? 'none' : 'block';
+                if (!isOpen) {
+                    renderCountryList(countrySearch ? countrySearch.value : '');
+                    if (countrySearch) countrySearch.focus();
+                }
+            });
+
+            if (countrySearch) {
+                countrySearch.addEventListener('input', function () {
+                    renderCountryList(this.value);
+                });
+                countrySearch.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            }
+
+            document.addEventListener('click', function (e) {
+                if (!countryPopover.contains(e.target) && !countryTrigger.contains(e.target)) {
+                    countryPopover.style.display = 'none';
+                }
+            });
+        }
+
+        // 4. Nationality Custom Dropdown Selector
+        var natTrigger = container.querySelector('.kd-enroll-nat-trigger');
+        var natPopover = container.querySelector('.kd-enroll-nat-popover');
+        var natSearch = container.querySelector('.kd-enroll-nat-search-input');
+        var natList = container.querySelector('.kd-enroll-nat-list');
+        var natFlag = container.querySelector('.kd-enroll-nat-flag');
+        var natName = container.querySelector('.kd-enroll-nat-name');
+        var natHiddenVal = container.querySelector('.kd-enroll-nat-val');
+        var natCustomBox = container.querySelector('.kd-enroll-nat-custom-box');
+        var natCustomInput = container.querySelector('.kd-enroll-nat-custom-input');
+        var natBackBtn = container.querySelector('.kd-enroll-nat-back-btn');
+
+        function renderNationalityList(filter) {
+            if (!natList) return;
+            var q = (filter || '').toLowerCase().trim();
+            var matches = nationalities.filter(function (n) {
+                if (!q) return true;
+                return n.label.toLowerCase().includes(q) ||
+                       n.value.toLowerCase().includes(q) ||
+                       n.code.toLowerCase().includes(q);
+            });
+
+            natList.innerHTML = '';
+            if (!matches.length) {
+                natList.innerHTML = '<div class="kd-orig-empty-country">No nationality found</div>';
+                return;
+            }
+
+            matches.forEach(function (n) {
+                var isSel = n.value.toLowerCase() === selectedNationality.toLowerCase();
+                var item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'kd-orig-country-item' + (isSel ? ' kd-selected' : '');
+                
+                var flagMarkup = (n.code && n.code !== 'other')
+                    ? '<img src="https://flagcdn.com/w40/' + n.code + '.png" alt="" class="kd-orig-item-flag" />'
+                    : '<span style="display:inline-block; width:20px; text-align:center;">🌐</span>';
+
+                item.innerHTML =
+                    '<div class="kd-orig-item-left">' +
+                    flagMarkup +
+                    '<span class="kd-orig-item-name">' + n.label + '</span>' +
+                    '</div>';
+
+                item.addEventListener('click', function () {
+                    if (n.code === 'other') {
+                        switchToCustomNationality();
+                    } else {
+                        setNationality(n.value, n.code);
+                    }
+                    if (natPopover) natPopover.style.display = 'none';
+                });
+                natList.appendChild(item);
+            });
+        }
+
+        function setNationality(val, code) {
+            selectedNationality = val;
+            if (natHiddenVal) natHiddenVal.value = val;
+            if (natName) natName.textContent = val;
+            if (natFlag) {
+                if (code && code !== 'other') {
+                    natFlag.src = 'https://flagcdn.com/w40/' + code + '.png';
+                    natFlag.style.display = 'inline-block';
+                } else {
+                    natFlag.style.display = 'none';
+                }
+            }
+            if (natCustomBox) natCustomBox.style.display = 'none';
+            if (natTrigger) natTrigger.style.display = 'flex';
+        }
+
+        function switchToCustomNationality() {
+            if (natTrigger) natTrigger.style.display = 'none';
+            if (natCustomBox) {
+                natCustomBox.style.display = 'flex';
+                if (natCustomInput) {
+                    natCustomInput.value = '';
+                    natCustomInput.focus();
+                }
+            }
+        }
+
+        if (natTrigger && natPopover) {
+            natTrigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var isOpen = natPopover.style.display === 'block';
+                natPopover.style.display = isOpen ? 'none' : 'block';
+                if (!isOpen) {
+                    renderNationalityList(natSearch ? natSearch.value : '');
+                    if (natSearch) natSearch.focus();
+                }
+            });
+
+            if (natSearch) {
+                natSearch.addEventListener('input', function () {
+                    renderNationalityList(this.value);
+                });
+                natSearch.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            }
+
+            document.addEventListener('click', function (e) {
+                if (!natPopover.contains(e.target) && !natTrigger.contains(e.target)) {
+                    natPopover.style.display = 'none';
+                }
+            });
+        }
+
+        if (natBackBtn) {
+            natBackBtn.addEventListener('click', function () {
+                if (natCustomBox) natCustomBox.style.display = 'none';
+                if (natTrigger) natTrigger.style.display = 'flex';
+                setNationality('Indonesian', 'id');
+            });
+        }
+
+        if (natCustomInput) {
+            natCustomInput.addEventListener('input', function () {
+                selectedNationality = this.value.trim() || 'Other';
+                if (natHiddenVal) natHiddenVal.value = selectedNationality;
+            });
+        }
+
+        // 5. Passport Upload & OCR Scanning
+        function setUploadState(state) {
+            if (uploadIdle) uploadIdle.style.display = state === 'idle' ? 'flex' : 'none';
+            if (uploadScanning) uploadScanning.style.display = state === 'scanning' ? 'flex' : 'none';
+            if (uploadVerified) uploadVerified.style.display = state === 'verified' ? 'flex' : 'none';
+
+            if (uploadBox) {
+                uploadBox.classList.remove('kd-scanning', 'kd-verified', 'kd-error');
+                if (state === 'scanning') uploadBox.classList.add('kd-scanning');
+                if (state === 'verified') uploadBox.classList.add('kd-verified');
+                if (state === 'error') uploadBox.classList.add('kd-error');
+            }
+        }
+
+        function showScanError(msg) {
+            if (scanErrorBox) {
+                scanErrorBox.textContent = msg;
+                scanErrorBox.style.display = 'block';
+            }
+            setUploadState('error');
+        }
+
+        function hideScanError() {
+            if (scanErrorBox) {
+                scanErrorBox.textContent = '';
+                scanErrorBox.style.display = 'none';
+            }
+        }
+
+        if (uploadBox && fileInput) {
+            uploadBox.addEventListener('click', function () {
+                fileInput.click();
+            });
+
+            uploadBox.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                uploadBox.classList.add('kd-dragover');
+            });
+
+            uploadBox.addEventListener('dragleave', function () {
+                uploadBox.classList.remove('kd-dragover');
+            });
+
+            uploadBox.addEventListener('drop', function (e) {
+                e.preventDefault();
+                uploadBox.classList.remove('kd-dragover');
+                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    processPassportFile(e.dataTransfer.files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    processPassportFile(this.files[0]);
+                }
+            });
+        }
+
+        function processPassportFile(file) {
+            if (!file.type.match(/^image\//i)) {
+                showScanError('Please select a valid image file (JPG, PNG, WebP).');
+                return;
+            }
+
+            hideScanError();
+            setUploadState('scanning');
+
+            function doOCRScan() {
+                if (!window.Tesseract) {
+                    selectedPassportFile = file;
+                    setUploadState('verified');
+                    return;
+                }
+
+                window.Tesseract.recognize(file, 'eng')
+                    .then(function (result) {
+                        var text = (result && result.data && result.data.text) ? result.data.text : '';
+                        var lines = text.split('\n').map(function (l) { return l.trim().replace(/\s+/g, ''); });
+                        var pLine1 = /^P[A-Z<][A-Z<0-9]{42}$/;
+                        var pLine2 = /^[A-Z0-9<]{44}$/;
+                        var isValid = false;
+
+                        for (var i = 0; i < lines.length; i++) {
+                            if (pLine1.test(lines[i]) || pLine2.test(lines[i])) {
+                                isValid = true;
+                                break;
+                            }
+                        }
+
+                        var low = text.toLowerCase();
+                        if (!isValid && (low.includes('passport') || low.includes('paspor') || low.includes('republic') || low.includes('identity') || low.includes('card') || low.includes('surat') || low.includes('perjalanan') || low.includes('nama'))) {
+                            isValid = true;
+                        }
+
+                        if (isValid) {
+                            selectedPassportFile = file;
+                            setUploadState('verified');
+                            hideScanError();
+                        } else {
+                            selectedPassportFile = null;
+                            if (fileInput) fileInput.value = '';
+                            showScanError('Please upload a valid passport image. Selfies or random images are not allowed.');
+                        }
+                    })
+                    .catch(function (err) {
+                        console.warn('KD Enrollment OCR warning:', err);
+                        // Fallback: accept file if OCR script fails
+                        selectedPassportFile = file;
+                        setUploadState('verified');
+                        hideScanError();
+                    });
+            }
+
+            if (!window.Tesseract) {
+                var s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+                s.onload = doOCRScan;
+                s.onerror = function () {
+                    selectedPassportFile = file;
+                    setUploadState('verified');
+                };
+                document.head.appendChild(s);
+            } else {
+                doOCRScan();
+            }
+        }
+
+        // 6. Form Submission & Anti-Spam Validation
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                hideFormError();
+
+                var nameVal = (nameInput ? nameInput.value : '').trim();
+                if (!nameVal) {
+                    showFormError('Please enter your full name.');
+                    if (nameInput) nameInput.focus();
+                    return;
+                }
+
+                // Name validation
+                if (nameVal.length < 2 || nameVal.length > 70) {
+                    showFormError('Full name must be between 2 and 70 characters.');
+                    if (nameInput) nameInput.focus();
+                    return;
+                }
+
+                var finalContact = '';
+                if (currentContactMode === 'phone') {
+                    var rawPhone = (phoneInput ? phoneInput.value : '').replace(/[^\d\s-]/g, '').trim();
+                    if (!rawPhone) {
+                        showFormError('Please enter your phone number.');
+                        if (phoneInput) phoneInput.focus();
+                        return;
+                    }
+                    var digits = rawPhone.replace(/\D/g, '');
+                    if (digits.length < 7) {
+                        showFormError('Phone number must be at least 7 digits.');
+                        if (phoneInput) phoneInput.focus();
+                        return;
+                    }
+                    var normalized = rawPhone.replace(/^0+/, '');
+                    finalContact = selectedCountry.dialCode + ' ' + normalized;
+                } else {
+                    var emailVal = (emailInput ? emailInput.value : '').trim();
+                    if (!emailVal || !emailVal.includes('@') || !emailVal.includes('.')) {
+                        showFormError('Please enter a valid email address.');
+                        if (emailInput) emailInput.focus();
+                        return;
+                    }
+                    finalContact = emailVal;
+                }
+
+                var natVal = (natCustomBox && natCustomBox.style.display !== 'none' && natCustomInput)
+                    ? natCustomInput.value.trim()
+                    : selectedNationality;
+
+                if (!natVal) {
+                    showFormError('Please select or specify your nationality.');
+                    return;
+                }
+
+                if (!selectedPassportFile) {
+                    showFormError('Please upload your ID/Passport image.');
+                    if (uploadBox) uploadBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    return;
+                }
+
+                setSubmitting(true);
+
+                var formData = new FormData();
+                formData.append('isNonMemberTab', 'true');
+                formData.append('wantsMembership', 'true');
+                formData.append('name', nameVal);
+                formData.append('phoneNumber', finalContact);
+                formData.append('contact', finalContact);
+                formData.append('nationality', natVal);
+                formData.append('passportImage', selectedPassportFile);
+
+                // Direct fetch to backend
+                var directUrl = apiHost.replace(/\/+$/, '') + '/api/register';
+
+                fetch(directUrl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(function (res) {
+                    return res.json();
+                })
+                .then(function (data) {
+                    setSubmitting(false);
+                    if (data && data.success) {
+                        showSuccess(nameVal, finalContact, natVal);
+                    } else {
+                        var errMsg = (data && data.error) ? data.error : 'Registration could not be completed. Please try again.';
+                        showFormError(errMsg);
+                    }
+                })
+                .catch(function (err) {
+                    console.warn('KD Enrollment: Direct fetch failed, trying WordPress AJAX fallback', err);
+                    submitViaAjaxFallback(formData, nameVal, finalContact, natVal);
+                });
+            });
+        }
+
+        function submitViaAjaxFallback(formData, nameVal, finalContact, natVal) {
+            formData.append('action', 'kd_register_enrollment');
+            if (window.kdEventsConfig && window.kdEventsConfig.nonce) {
+                formData.append('nonce', window.kdEventsConfig.nonce);
+            }
+
+            var ajaxUrl = (window.kdEventsConfig && window.kdEventsConfig.ajaxUrl)
+                ? window.kdEventsConfig.ajaxUrl
+                : '/wp-admin/admin-ajax.php';
+
+            fetch(ajaxUrl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                setSubmitting(false);
+                if (data && data.success) {
+                    showSuccess(nameVal, finalContact, natVal);
+                } else {
+                    var msg = (data && data.data && data.data.message) ? data.data.message : 'Registration failed. Please try again.';
+                    showFormError(msg);
+                }
+            })
+            .catch(function () {
+                setSubmitting(false);
+                showFormError('Network connection error while submitting enrollment. Please check your connection and try again.');
+            });
+        }
+
+        function showSuccess(nameVal, contactVal, natVal) {
+            if (form) form.style.display = 'none';
+            if (successView) {
+                var resName = successView.querySelector('.kd-res-name');
+                var resContact = successView.querySelector('.kd-res-contact');
+                var resNat = successView.querySelector('.kd-res-nat');
+
+                if (resName) resName.textContent = nameVal;
+                if (resContact) resContact.textContent = contactVal;
+                if (resNat) resNat.textContent = natVal;
+
+                successView.style.display = 'block';
+                successView.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function showFormError(msg) {
+            if (alertError) {
+                alertError.textContent = msg;
+                alertError.style.display = 'block';
+                alertError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function hideFormError() {
+            if (alertError) {
+                alertError.textContent = '';
+                alertError.style.display = 'none';
+            }
+        }
+
+        function setSubmitting(isSubmitting) {
+            if (submitBtn) submitBtn.disabled = isSubmitting;
+            if (submitText) submitText.style.display = isSubmitting ? 'none' : 'inline';
+            if (sendIcon) sendIcon.style.display = isSubmitting ? 'none' : 'inline-block';
+            if (submitSpinner) submitSpinner.style.display = isSubmitting ? 'inline-block' : 'none';
+        }
+
+        // 7. Reset / Enroll Another Member
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                if (form) {
+                    form.reset();
+                    form.style.display = 'block';
+                }
+                if (successView) successView.style.display = 'none';
+                hideFormError();
+                hideScanError();
+                selectedPassportFile = null;
+                setUploadState('idle');
+                setContactMode('phone');
+                setNationality('Indonesian', 'id');
+            });
+        }
+    }
+
+    function applyEnrollmentTranslation(container, data) {
+        if (!data) return;
+
+        var elHeroTitle = container.querySelector('.kd-enroll-hero-title');
+        if (elHeroTitle && data.resortTitle) elHeroTitle.textContent = data.resortTitle;
+
+        var elHeroLoc = container.querySelector('.kd-enroll-hero-loc-text');
+        if (elHeroLoc && data.resortLocation) elHeroLoc.textContent = data.resortLocation;
+
+        var elHeroDesc = container.querySelector('.kd-enroll-hero-desc');
+        if (elHeroDesc && data.resortDesc) elHeroDesc.textContent = data.resortDesc;
+
+        var elFormTitle = container.querySelector('.kd-enroll-form-title');
+        if (elFormTitle && data.membershipEnrollment) elFormTitle.textContent = data.membershipEnrollment;
+
+        var elNameLabel = container.querySelector('.kd-label-name-text');
+        if (elNameLabel && data.fullName) elNameLabel.textContent = data.fullName;
+
+        var elNameInput = container.querySelector('#kd_enroll_name');
+        if (elNameInput && data.fullNamePlaceholder) elNameInput.placeholder = data.fullNamePlaceholder;
+
+        var elTabPhone = container.querySelector('.kd-tab-phone-text');
+        if (elTabPhone && data.phoneTab) elTabPhone.textContent = data.phoneTab;
+
+        var elTabEmail = container.querySelector('.kd-tab-email-text');
+        if (elTabEmail && data.emailTab) elTabEmail.textContent = data.emailTab;
+
+        var elPhoneInput = container.querySelector('#kd_enroll_phone');
+        if (elPhoneInput && data.phonePlaceholder) elPhoneInput.placeholder = data.phonePlaceholder;
+
+        var elEmailInput = container.querySelector('#kd_enroll_email');
+        if (elEmailInput && data.emailPlaceholder) elEmailInput.placeholder = data.emailPlaceholder;
+
+        var elNatLabel = container.querySelector('.kd-label-nat-text');
+        if (elNatLabel && data.nationality) elNatLabel.textContent = data.nationality;
+
+        var elPassLabel = container.querySelector('.kd-label-passport-text');
+        if (elPassLabel && data.uploadPassport) elPassLabel.textContent = data.uploadPassport;
+
+        var elUploadIdle = container.querySelector('.kd-enroll-upload-label-text');
+        if (elUploadIdle && data.clickToUpload) elUploadIdle.textContent = data.clickToUpload;
+
+        var elScanning = container.querySelector('.kd-enroll-scanning-text');
+        if (elScanning && data.scanningId) elScanning.textContent = data.scanningId;
+
+        var elHelp = container.querySelector('.kd-enroll-help-note');
+        if (elHelp && data.passportHelp) elHelp.textContent = data.passportHelp;
+
+        var elSubmit = container.querySelector('.kd-enroll-submit-text');
+        if (elSubmit && data.submitRegistration) elSubmit.textContent = data.submitRegistration;
+
+        var elSuccessTitle = container.querySelector('.kd-enroll-success-title');
+        if (elSuccessTitle && data.membershipSuccess) elSuccessTitle.textContent = data.membershipSuccess;
+
+        var elSuccessDesc = container.querySelector('.kd-enroll-success-desc');
+        if (elSuccessDesc && data.thankYou) elSuccessDesc.textContent = data.thankYou;
+
+        var elReset = container.querySelector('.kd-enroll-reset-btn span');
+        if (elReset && data.enrollAnother) elReset.textContent = data.enrollAnother;
     }
 
     if (document.readyState === 'loading') {

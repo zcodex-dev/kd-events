@@ -8,6 +8,17 @@ import { sendTelegramAlert } from '@/lib/notifications/telegram';
 import { isEmail, sendConfirmationEmail } from '@/lib/notifications/email';
 import { validateRealName, validateRealContact } from '@/lib/validation/spam-detector';
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();

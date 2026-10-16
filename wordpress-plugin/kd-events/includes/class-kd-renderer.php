@@ -851,4 +851,442 @@ class KD_Event_Renderer {
         <?php
         return ob_get_clean();
     }
+
+    public static function render_enrollment($layout = 'canvas', $customBg = '', $defaultLang = 'en') {
+        ob_start();
+
+        $baseHost = class_exists('KD_Event_API') ? KD_Event_API::get_api_host() : 'https://kompongdewa.win';
+        $bgImage = !empty($customBg) ? trim($customBg) : 'https://i.imgur.com/ETXgnCg.jpeg';
+
+        $translations = [
+            'en' => [
+                'resortTitle' => 'Kompong Dewa Integrated Resort',
+                'resortLocation' => 'Sihanoukville, Cambodia',
+                'resortDesc' => 'A seamless ecosystem of luxury, leisure, and entertainment. Experience Sihanoukville’s new standard of a life well-lived. Kompong Dewa is an integrated luxury destination redefining Sihanoukville’s landscape.',
+                'membershipEnrollment' => 'Membership Enrollment',
+                'fullName' => 'Full Name',
+                'fullNamePlaceholder' => 'Enter your full name',
+                'phoneNumber' => 'Phone Number',
+                'phonePlaceholder' => '812 3456 7890',
+                'emailAddress' => 'Email Address',
+                'emailPlaceholder' => 'e.g. name@example.com',
+                'nationality' => 'Nationality',
+                'selectNationality' => 'Select your nationality',
+                'uploadPassport' => 'Upload ID/Passport',
+                'clickToUpload' => 'Click to upload (Required)',
+                'passportHelp' => 'Clear, unblurred photo of your Passport photo page or National ID card.',
+                'changeImage' => 'Change Image',
+                'phoneTab' => 'Phone',
+                'emailTab' => 'Email',
+                'submitRegistration' => 'Submit Registration',
+                'submitting' => 'Submitting...',
+                'scanningId' => 'Scanning ID...',
+                'enrollAnother' => 'Enroll Another Member',
+                'membershipSuccess' => 'Membership Application Submitted!',
+                'thankYou' => 'Thank you for registering. We look forward to seeing you.',
+                'statusLabel' => 'Status',
+                'statusPending' => 'Pending Review / VIP Desk',
+                'guestName' => 'Guest Name',
+                'contact' => 'Contact',
+            ],
+            'id' => [
+                'resortTitle' => 'Kompong Dewa Integrated Resort',
+                'resortLocation' => 'Sihanoukville, Kamboja',
+                'resortDesc' => 'Ekosistem kemewahan, rekreasi, dan hiburan yang terintegrasi. Rasakan standar baru kehidupan berkelas di Sihanoukville. Kompong Dewa adalah destinasi resor mewah terintegrasi di Kamboja.',
+                'membershipEnrollment' => 'Pendaftaran Keanggotaan',
+                'fullName' => 'Nama Lengkap',
+                'fullNamePlaceholder' => 'Masukkan nama lengkap Anda',
+                'phoneNumber' => 'Nomor Telepon',
+                'phonePlaceholder' => '812 3456 7890',
+                'emailAddress' => 'Alamat Email',
+                'emailPlaceholder' => 'contoh: nama@email.com',
+                'nationality' => 'Kewarganegaraan',
+                'selectNationality' => 'Pilih kewarganegaraan Anda',
+                'uploadPassport' => 'Unggah KTP / Paspor',
+                'clickToUpload' => 'Klik untuk mengunggah (Wajib)',
+                'passportHelp' => 'Foto jelas halaman paspor atau kartu identitas resmi (KTP).',
+                'changeImage' => 'Ganti Gambar',
+                'phoneTab' => 'Telepon',
+                'emailTab' => 'Email',
+                'submitRegistration' => 'Kirim Pendaftaran',
+                'submitting' => 'Mengirim...',
+                'scanningId' => 'Memindai ID...',
+                'enrollAnother' => 'Daftarkan Anggota Baru',
+                'membershipSuccess' => 'Pendaftaran Keanggotaan Terkirim!',
+                'thankYou' => 'Terima kasih telah mendaftar. Kami menantikan kehadiran Anda.',
+                'statusLabel' => 'Status',
+                'statusPending' => 'Menunggu Verifikasi / VIP Desk',
+                'guestName' => 'Nama Tamu',
+                'contact' => 'Kontak',
+            ],
+            'zh' => [
+                'resortTitle' => '贡布德瓦综合度假村',
+                'resortLocation' => '柬埔寨西哈努克港',
+                'resortDesc' => '融合奢华、休闲与顶级娱乐的综合度假胜地。体验西哈努克港精致生活新标准。贡布德瓦打造柬埔寨最具活力的综合休闲地标。',
+                'membershipEnrollment' => '会员注册申请',
+                'fullName' => '姓名',
+                'fullNamePlaceholder' => '请输入您的真实姓名',
+                'phoneNumber' => '联系电话',
+                'phonePlaceholder' => '812 3456 7890',
+                'emailAddress' => '电子邮箱',
+                'emailPlaceholder' => '例如: name@example.com',
+                'nationality' => '国籍',
+                'selectNationality' => '请选择您的国籍',
+                'uploadPassport' => '上传护照 / 身份证',
+                'clickToUpload' => '点击上传证件照 (必填)',
+                'passportHelp' => '请上传清晰、无反光的护照个人信息页或有效身份证件。',
+                'changeImage' => '更换图片',
+                'phoneTab' => '电话',
+                'emailTab' => '邮箱',
+                'submitRegistration' => '提交报名',
+                'submitting' => '正在提交...',
+                'scanningId' => 'AI 正在识别证件...',
+                'enrollAnother' => '提交另一位会员',
+                'membershipSuccess' => '会员注册申请已提交!',
+                'thankYou' => '感谢您的注册申请，我们将竭诚为您服务。',
+                'statusLabel' => '审核状态',
+                'statusPending' => '审核中 / VIP 服务台',
+                'guestName' => '贵宾姓名',
+                'contact' => '联系方式',
+            ]
+        ];
+
+        $lang = in_array($defaultLang, ['en', 'id', 'zh'], true) ? $defaultLang : 'en';
+        $t = $translations[$lang];
+
+        $countries = [
+            ['country' => 'Indonesia', 'code' => 'id', 'dialCode' => '+62', 'nationality' => 'Indonesian'],
+            ['country' => 'China', 'code' => 'cn', 'dialCode' => '+86', 'nationality' => 'Chinese'],
+            ['country' => 'Cambodia', 'code' => 'kh', 'dialCode' => '+855', 'nationality' => 'Cambodian'],
+            ['country' => 'Vietnam', 'code' => 'vn', 'dialCode' => '+84', 'nationality' => 'Vietnamese'],
+            ['country' => 'Thailand', 'code' => 'th', 'dialCode' => '+66', 'nationality' => 'Thai'],
+            ['country' => 'Malaysia', 'code' => 'my', 'dialCode' => '+60', 'nationality' => 'Malaysian'],
+            ['country' => 'Singapore', 'code' => 'sg', 'dialCode' => '+65', 'nationality' => 'Singaporean'],
+            ['country' => 'Philippines', 'code' => 'ph', 'dialCode' => '+63', 'nationality' => 'Filipino'],
+            ['country' => 'Myanmar', 'code' => 'mm', 'dialCode' => '+95', 'nationality' => 'Burmese'],
+            ['country' => 'Laos', 'code' => 'la', 'dialCode' => '+856', 'nationality' => 'Laotian'],
+            ['country' => 'Taiwan', 'code' => 'tw', 'dialCode' => '+886', 'nationality' => 'Taiwanese'],
+            ['country' => 'South Korea', 'code' => 'kr', 'dialCode' => '+82', 'nationality' => 'South Korean'],
+            ['country' => 'Japan', 'code' => 'jp', 'dialCode' => '+81', 'nationality' => 'Japanese'],
+            ['country' => 'India', 'code' => 'in', 'dialCode' => '+91', 'nationality' => 'Indian'],
+            ['country' => 'Hong Kong', 'code' => 'hk', 'dialCode' => '+852', 'nationality' => 'Chinese'],
+            ['country' => 'Macau', 'code' => 'mo', 'dialCode' => '+853', 'nationality' => 'Chinese'],
+            ['country' => 'United States', 'code' => 'us', 'dialCode' => '+1', 'nationality' => 'American'],
+            ['country' => 'Canada', 'code' => 'ca', 'dialCode' => '+1', 'nationality' => 'Canadian'],
+            ['country' => 'United Kingdom', 'code' => 'gb', 'dialCode' => '+44', 'nationality' => 'British'],
+            ['country' => 'Australia', 'code' => 'au', 'dialCode' => '+61', 'nationality' => 'Australian'],
+            ['country' => 'Germany', 'code' => 'de', 'dialCode' => '+49', 'nationality' => 'German'],
+            ['country' => 'France', 'code' => 'fr', 'dialCode' => '+33', 'nationality' => 'French'],
+            ['country' => 'Russia', 'code' => 'ru', 'dialCode' => '+7', 'nationality' => 'Russian']
+        ];
+
+        $nationalities = [
+            ['label' => 'Indonesian', 'value' => 'Indonesian', 'code' => 'id'],
+            ['label' => 'Chinese', 'value' => 'Chinese', 'code' => 'cn'],
+            ['label' => 'Vietnamese', 'value' => 'Vietnamese', 'code' => 'vn'],
+            ['label' => 'Thai', 'value' => 'Thai', 'code' => 'th'],
+            ['label' => 'Malaysian', 'value' => 'Malaysian', 'code' => 'my'],
+            ['label' => 'Singaporean', 'value' => 'Singaporean', 'code' => 'sg'],
+            ['label' => 'Filipino', 'value' => 'Filipino', 'code' => 'ph'],
+            ['label' => 'Burmese (Myanmar)', 'value' => 'Burmese', 'code' => 'mm'],
+            ['label' => 'Laotian', 'value' => 'Laotian', 'code' => 'la'],
+            ['label' => 'Taiwanese', 'value' => 'Taiwanese', 'code' => 'tw'],
+            ['label' => 'South Korean', 'value' => 'South Korean', 'code' => 'kr'],
+            ['label' => 'Japanese', 'value' => 'Japanese', 'code' => 'jp'],
+            ['label' => 'Indian', 'value' => 'Indian', 'code' => 'in'],
+            ['label' => 'American', 'value' => 'American', 'code' => 'us'],
+            ['label' => 'British', 'value' => 'British', 'code' => 'gb'],
+            ['label' => 'Australian', 'value' => 'Australian', 'code' => 'au'],
+            ['label' => 'Canadian', 'value' => 'Canadian', 'code' => 'ca'],
+            ['label' => 'Russian', 'value' => 'Russian', 'code' => 'ru'],
+            ['label' => 'French', 'value' => 'French', 'code' => 'fr'],
+            ['label' => 'German', 'value' => 'German', 'code' => 'de'],
+            ['label' => 'Italian', 'value' => 'Italian', 'code' => 'it'],
+            ['label' => 'Spanish', 'value' => 'Spanish', 'code' => 'es'],
+            ['label' => 'Dutch (Netherlands)', 'value' => 'Dutch', 'code' => 'nl'],
+            ['label' => 'Swiss', 'value' => 'Swiss', 'code' => 'ch'],
+            ['label' => 'Swedish', 'value' => 'Swedish', 'code' => 'se'],
+            ['label' => 'Norwegian', 'value' => 'Norwegian', 'code' => 'no'],
+            ['label' => 'Danish', 'value' => 'Danish', 'code' => 'dk'],
+            ['label' => 'Finnish', 'value' => 'Finnish', 'code' => 'fi'],
+            ['label' => 'Belgian', 'value' => 'Belgian', 'code' => 'be'],
+            ['label' => 'Austrian', 'value' => 'Austrian', 'code' => 'at'],
+            ['label' => 'Polish', 'value' => 'Polish', 'code' => 'pl'],
+            ['label' => 'Portuguese', 'value' => 'Portuguese', 'code' => 'pt'],
+            ['label' => 'Irish', 'value' => 'Irish', 'code' => 'ie'],
+            ['label' => 'New Zealander', 'value' => 'New Zealander', 'code' => 'nz'],
+            ['label' => 'Brazilian', 'value' => 'Brazilian', 'code' => 'br'],
+            ['label' => 'Argentine', 'value' => 'Argentine', 'code' => 'ar'],
+            ['label' => 'Mexican', 'value' => 'Mexican', 'code' => 'mx'],
+            ['label' => 'South African', 'value' => 'South African', 'code' => 'za'],
+            ['label' => 'Turkish', 'value' => 'Turkish', 'code' => 'tr'],
+            ['label' => 'Emirati (UAE)', 'value' => 'Emirati', 'code' => 'ae'],
+            ['label' => 'Saudi', 'value' => 'Saudi', 'code' => 'sa'],
+            ['label' => 'Egyptian', 'value' => 'Egyptian', 'code' => 'eg'],
+            ['label' => 'Pakistani', 'value' => 'Pakistani', 'code' => 'pk'],
+            ['label' => 'Bangladeshi', 'value' => 'Bangladeshi', 'code' => 'bd'],
+            ['label' => 'Sri Lankan', 'value' => 'Sri Lankan', 'code' => 'lk'],
+            ['label' => 'Nepalese', 'value' => 'Nepalese', 'code' => 'np'],
+            ['label' => 'Other Nationality (Type manually)', 'value' => 'Other', 'code' => 'other']
+        ];
+        ?>
+        <div class="kd-enrollment-container kd-enrollment-layout-<?php echo esc_attr($layout); ?>"
+             data-translations="<?php echo esc_attr(json_encode($translations)); ?>"
+             data-countries="<?php echo esc_attr(json_encode($countries)); ?>"
+             data-nationalities="<?php echo esc_attr(json_encode($nationalities)); ?>"
+             data-api-host="<?php echo esc_attr($baseHost); ?>">
+
+            <?php if ($layout === 'canvas'): ?>
+            <header class="kd-enroll-top-header">
+                <div class="kd-enroll-header-inner">
+                    <div class="kd-enroll-logo-wrap">
+                        <img src="<?php echo esc_url($baseHost . '/logo-v2.png'); ?>" alt="Kompong Dewa" class="kd-enroll-logo-img" />
+                    </div>
+                    
+                    <div class="kd-enroll-lang-wrap">
+                        <button type="button" class="kd-enroll-lang-trigger" aria-haspopup="true" aria-expanded="false">
+                            <img src="https://flagcdn.com/w40/us.png" alt="English" class="kd-enroll-lang-flag-current" />
+                            <span class="kd-enroll-lang-label-current">English</span>
+                            <svg class="kd-enroll-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="kd-enroll-lang-menu" role="menu">
+                            <div class="kd-enroll-lang-option kd-active" data-lang-code="en" role="menuitem">
+                                <img src="https://flagcdn.com/w40/us.png" alt="English" class="kd-enroll-lang-opt-flag" />
+                                <span>English</span>
+                            </div>
+                            <div class="kd-enroll-lang-option" data-lang-code="id" role="menuitem">
+                                <img src="https://flagcdn.com/w40/id.png" alt="Bahasa Indonesia" class="kd-enroll-lang-opt-flag" />
+                                <span>Bahasa Indonesia</span>
+                            </div>
+                            <div class="kd-enroll-lang-option" data-lang-code="zh" role="menuitem">
+                                <img src="https://flagcdn.com/w40/cn.png" alt="中文" class="kd-enroll-lang-opt-flag" />
+                                <span>中文</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <?php endif; ?>
+
+            <div class="kd-enroll-main-wrap">
+                <div class="kd-enroll-hero-banner">
+                    <img src="<?php echo esc_url($bgImage); ?>" alt="Kompong Dewa Resort" class="kd-enroll-hero-img" />
+                    <div class="kd-enroll-hero-overlay"></div>
+                    <div class="kd-enroll-hero-content">
+                        <h1 class="kd-enroll-hero-title"><?php echo esc_html($t['resortTitle']); ?></h1>
+                        <div class="kd-enroll-hero-loc">
+                            <span class="kd-enroll-gold-dot"></span>
+                            <span class="kd-enroll-hero-loc-text"><?php echo esc_html($t['resortLocation']); ?></span>
+                        </div>
+                        <p class="kd-enroll-hero-desc"><?php echo esc_html($t['resortDesc']); ?></p>
+                    </div>
+                </div>
+
+                <div class="kd-enroll-card-body">
+                    <div class="kd-enroll-form-inner">
+                        
+                        <form class="kd-enroll-form" novalidate>
+                            <h2 class="kd-enroll-form-title"><?php echo esc_html($t['membershipEnrollment']); ?></h2>
+
+                            <div class="kd-enroll-alert-error" style="display: none;"></div>
+
+                            <div class="kd-enroll-field">
+                                <label class="kd-enroll-label" for="kd_enroll_name">
+                                    <span class="kd-label-name-text"><?php echo esc_html($t['fullName']); ?></span> <span class="kd-req">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="kd_enroll_name"
+                                    name="name"
+                                    class="kd-enroll-input"
+                                    placeholder="<?php echo esc_attr($t['fullNamePlaceholder']); ?>"
+                                    required
+                                />
+                            </div>
+
+                            <div class="kd-enroll-field">
+                                <div class="kd-enroll-contact-header">
+                                    <label class="kd-enroll-label kd-enroll-contact-label">
+                                        <span class="kd-label-contact-text"><?php echo esc_html($t['phoneNumber']); ?></span> <span class="kd-req">*</span>
+                                    </label>
+                                    <div class="kd-enroll-toggle-pill">
+                                        <button type="button" class="kd-enroll-pill-btn kd-active" data-mode="phone">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                            </svg>
+                                            <span class="kd-tab-phone-text"><?php echo esc_html($t['phoneTab']); ?></span>
+                                        </button>
+                                        <button type="button" class="kd-enroll-pill-btn" data-mode="email">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                            </svg>
+                                            <span class="kd-tab-email-text"><?php echo esc_html($t['emailTab']); ?></span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="kd-enroll-phone-container">
+                                    <div class="kd-enroll-country-trigger-wrap">
+                                        <button type="button" class="kd-enroll-country-trigger" aria-label="Select Country Code">
+                                            <img src="https://flagcdn.com/w40/id.png" alt="Indonesia" class="kd-enroll-flag-img" />
+                                            <span class="kd-enroll-dial-code">+62</span>
+                                            <svg class="kd-enroll-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </button>
+                                        <div class="kd-enroll-country-popover" style="display: none;">
+                                            <div class="kd-enroll-popover-search">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="11" cy="11" r="8"></circle>
+                                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                                </svg>
+                                                <input type="text" class="kd-enroll-country-search-input" placeholder="Search country or code..." />
+                                            </div>
+                                            <div class="kd-enroll-country-list"></div>
+                                        </div>
+                                    </div>
+                                    <input
+                                        type="tel"
+                                        id="kd_enroll_phone"
+                                        class="kd-enroll-number-input"
+                                        placeholder="<?php echo esc_attr($t['phonePlaceholder']); ?>"
+                                    />
+                                </div>
+
+                                <div class="kd-enroll-email-container" style="display: none;">
+                                    <input
+                                        type="email"
+                                        id="kd_enroll_email"
+                                        class="kd-enroll-input"
+                                        placeholder="<?php echo esc_attr($t['emailPlaceholder']); ?>"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="kd-enroll-field kd-enroll-nat-field">
+                                <label class="kd-enroll-label">
+                                    <span class="kd-label-nat-text"><?php echo esc_html($t['nationality']); ?></span> <span class="kd-req">*</span>
+                                </label>
+                                <div class="kd-enroll-nat-select-wrap">
+                                    <button type="button" class="kd-enroll-nat-trigger">
+                                        <div class="kd-enroll-nat-current">
+                                            <img src="https://flagcdn.com/w40/id.png" alt="" class="kd-enroll-nat-flag" />
+                                            <span class="kd-enroll-nat-name">Indonesian</span>
+                                        </div>
+                                        <svg class="kd-enroll-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="6 9 12 15 18 9"></polyline>
+                                        </svg>
+                                    </button>
+                                    <input type="hidden" name="nationality" class="kd-enroll-nat-val" value="Indonesian" />
+
+                                    <div class="kd-enroll-nat-custom-box" style="display: none;">
+                                        <input type="text" class="kd-enroll-nat-custom-input kd-enroll-input" placeholder="Type nationality..." />
+                                        <button type="button" class="kd-enroll-nat-back-btn" title="Choose from list">✕</button>
+                                    </div>
+
+                                    <div class="kd-enroll-nat-popover" style="display: none;">
+                                        <div class="kd-enroll-popover-search">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="11" cy="11" r="8"></circle>
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                            </svg>
+                                            <input type="text" class="kd-enroll-nat-search-input" placeholder="Search nationality..." />
+                                        </div>
+                                        <div class="kd-enroll-nat-list"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="kd-enroll-field">
+                                <label class="kd-enroll-label">
+                                    <span class="kd-label-passport-text"><?php echo esc_html($t['uploadPassport']); ?></span> <span class="kd-req">*</span>
+                                </label>
+                                
+                                <div class="kd-enroll-upload-box">
+                                    <input type="file" id="kd_enroll_file" accept="image/*" class="kd-enroll-file-input" style="display: none;" />
+                                    
+                                    <div class="kd-enroll-upload-idle">
+                                        <svg class="kd-enroll-upload-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="17 8 12 3 7 8"></polyline>
+                                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                                        </svg>
+                                        <span class="kd-enroll-upload-label-text"><?php echo esc_html($t['clickToUpload']); ?></span>
+                                    </div>
+
+                                    <div class="kd-enroll-upload-scanning" style="display: none;">
+                                        <div class="kd-enroll-spinner-dark"></div>
+                                        <span class="kd-enroll-scanning-text"><?php echo esc_html($t['scanningId']); ?></span>
+                                    </div>
+
+                                    <div class="kd-enroll-upload-verified" style="display: none;">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                        <span class="kd-enroll-verified-text">Passport verified successfully!</span>
+                                        <span class="kd-enroll-change-hint">(<?php echo esc_html($t['changeImage']); ?>)</span>
+                                    </div>
+                                </div>
+
+                                <div class="kd-enroll-scan-error" style="display: none;"></div>
+
+                                <p class="kd-enroll-help-note"><?php echo esc_html($t['passportHelp']); ?></p>
+                            </div>
+
+                            <div class="kd-enroll-submit-wrap">
+                                <button type="submit" class="kd-enroll-submit-btn">
+                                    <span class="kd-enroll-submit-text"><?php echo esc_html($t['submitRegistration']); ?></span>
+                                    <svg class="kd-enroll-send-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                    </svg>
+                                    <div class="kd-enroll-spinner" style="display: none;"></div>
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="kd-enroll-success" style="display: none;">
+                            <div class="kd-enroll-success-icon-wrap">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <h3 class="kd-enroll-success-title"><?php echo esc_html($t['membershipSuccess']); ?></h3>
+                            <p class="kd-enroll-success-desc"><?php echo esc_html($t['thankYou']); ?></p>
+
+                            <div class="kd-enroll-success-card">
+                                <div class="kd-enroll-summary-row">
+                                    <span class="kd-enroll-summary-key"><?php echo esc_html($t['guestName']); ?></span>
+                                    <span class="kd-enroll-summary-val kd-res-name">-</span>
+                                </div>
+                                <div class="kd-enroll-summary-row">
+                                    <span class="kd-enroll-summary-key"><?php echo esc_html($t['contact']); ?></span>
+                                    <span class="kd-enroll-summary-val kd-res-contact">-</span>
+                                </div>
+                                <div class="kd-enroll-summary-row">
+                                    <span class="kd-enroll-summary-key"><?php echo esc_html($t['nationality']); ?></span>
+                                    <span class="kd-enroll-summary-val kd-res-nat">-</span>
+                                </div>
+                                <div class="kd-enroll-summary-row">
+                                    <span class="kd-enroll-summary-key"><?php echo esc_html($t['statusLabel']); ?></span>
+                                    <span class="kd-enroll-summary-badge"><?php echo esc_html($t['statusPending']); ?></span>
+                                </div>
+                            </div>
+
+                            <button type="button" class="kd-enroll-reset-btn">
+                                <span><?php echo esc_html($t['enrollAnother']); ?></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
 }

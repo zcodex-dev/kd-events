@@ -26,6 +26,11 @@ A native, high-performance WordPress plugin that embeds full luxury dark-themed 
 5. **Shortcode & Block Support**:
    - Use `[kd_event id="<EVENT_ID>"]` or `[kd_event slug="baccarat-masters"]` in any page, post, or builder (Elementor, Divi, Gutenberg).
 
+6. **Authentic Membership Enrollment UI**:
+   - Supports embedding the full Membership Enrollment form with real-time OCR ID/passport validation, flag-based phone input, nationality selector, and multi-language support.
+   - Use shortcode `[kd_enrollment]` or `[kd_enrollment layout="canvas"]`.
+   - In Page Settings, select **Feature to Display &rarr; Membership Enrollment**.
+
 ---
 
 ## How to Install
@@ -41,8 +46,22 @@ A native, high-performance WordPress plugin that embeds full luxury dark-themed 
 
 1. In WordPress Admin, navigate to **Pages -> Add New**.
 2. Give your page a title (e.g. *Baccarat Masters*).
-3. On the right sidebar (or below the editor), look for the **KD Event Showcase Settings** box:
-   - Check **"Display Event Showcase on this page"**.
+3. On the right sidebar, look for the **KD Event Showcase Settings** box:
+   - Check **"Display Kompong Dewa Showcase on this page"**.
+   - Feature to Display: **Event Showcase**.
    - Select the event from the dropdown list.
    - Select **Full Page Canvas** (Recommended for standalone luxury presentation).
 4. Click **Publish**. Everything is placed and styled automatically!
+
+---
+
+## How to Create a Membership Enrollment Page
+
+1. In WordPress Admin, navigate to **Pages -> Add New**.
+2. Give your page a title (e.g. *Membership Enrollment*).
+3. In the **KD Event Showcase Settings** box:
+   - Check **"Display Kompong Dewa Showcase on this page"**.
+   - Feature to Display: **Membership Enrollment**.
+   - Select **Full Page Canvas** (or Within Theme Content).
+   - (Optional) Provide a custom banner image URL.
+4. Click **Publish** (or use shortcode `[kd_enrollment]` on any existing page).

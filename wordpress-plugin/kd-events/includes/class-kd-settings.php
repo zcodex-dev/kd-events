@@ -137,6 +137,40 @@ class KD_Event_Settings {
                     </button>
                 </form>
 
+                <hr style="margin: 25px 0;" />
+
+                <h2>Membership Enrollment Shortcodes</h2>
+                <p>You can embed the authentic resort Membership Enrollment form onto any WordPress page or post:</p>
+                <table class="widefat striped" style="margin-top: 10px;">
+                    <thead>
+                        <tr>
+                            <th>Usage</th>
+                            <th>Shortcode</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Standard Content</strong></td>
+                            <td><code>[kd_enrollment]</code></td>
+                            <td>Embeds the enrollment form within theme content with full passport OCR & multi-language switcher.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Full Page Canvas</strong></td>
+                            <td><code>[kd_enrollment layout="canvas"]</code></td>
+                            <td>Renders the standalone luxury resort experience with top brand bar and hero banner.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Custom Banner Image</strong></td>
+                            <td><code>[kd_enrollment bg="https://..."]</code></td>
+                            <td>Overrides the resort hero banner with your own custom image URL.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="color: #666; font-size: 12px; margin-top: 8px;">
+                    Tip: You can also turn any WordPress page into a full standalone Membership Enrollment canvas by setting <strong>Feature to Display &rarr; Membership Enrollment</strong> in the Page Settings sidebar.
+                </p>
+
                 <?php if (!empty($events)): ?>
                     <h3 style="margin-top: 25px;">Available Events for Selection</h3>
                     <table class="widefat striped" style="margin-top: 10px;">

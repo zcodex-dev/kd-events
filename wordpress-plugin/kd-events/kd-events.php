@@ -2,8 +2,8 @@
 /**
  * Plugin Name: KD Events
  * Plugin URI: https://kompongdewa.win
- * Description: Premium luxury dark-themed event showcase. Place full event reading pages onto any WordPress page with live countdown, multi-language flag dropdown, and prize pool showcase without iframes.
- * Version: 1.4.1
+ * Description: Premium luxury resort showcase and membership enrollment. Place full event reading pages and authentic membership enrollment forms onto any WordPress page with live countdown, multi-language switcher, and ID verification without iframes.
+ * Version: 1.5.0
  * Author: Kompong Dewa Integrated Resort
  * Author URI: https://kompongdewa.win
  * Text Domain: kd-events
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KD_EVENTS_VERSION', '1.4.1');
+define('KD_EVENTS_VERSION', '1.5.0');
 define('KD_EVENTS_DIR', plugin_dir_path(__FILE__));
 define('KD_EVENTS_URL', plugin_dir_url(__FILE__));
 
@@ -39,6 +39,8 @@ final class KD_Event_Showcase {
         add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
         add_action('wp_ajax_kd_register_event', [$this, 'handle_registration']);
         add_action('wp_ajax_nopriv_kd_register_event', [$this, 'handle_registration']);
+        add_action('wp_ajax_kd_register_enrollment', [$this, 'handle_enrollment']);
+        add_action('wp_ajax_nopriv_kd_register_enrollment', [$this, 'handle_enrollment']);
     }
 
     public function init() {
@@ -134,6 +136,48 @@ final class KD_Event_Showcase {
         } else {
             wp_send_json_error([
                 'message' => !empty($result['error']) ? $result['error'] : 'Registration could not be completed. Please try again.',
+            ]);
+        }
+    }
+
+    public function handle_enrollment() {
+        if (!check_ajax_referer('kd_events_nonce', 'nonce', false)) {
+            wp_send_json_error(['message' => 'Security check failed or session expired. Please refresh the page and try again.']);
+        }
+
+        $name = sanitize_text_field($_POST['name'] ?? '');
+        $contact = sanitize_text_field($_POST['contact'] ?? '');
+        $nationality = sanitize_text_field($_POST['nationality'] ?? '');
+
+        if (empty($name)) {
+            wp_send_json_error(['message' => 'Please enter your full name.']);
+        }
+
+        if (empty($contact)) {
+            wp_send_json_error(['message' => 'Please enter your contact information (phone number or email).']);
+        }
+
+        $postData = [
+            'name' => $name,
+            'contact' => $contact,
+            'phoneNumber' => $contact,
+            'nationality' => $nationality,
+            'isNonMemberTab' => 'true',
+            'wantsMembership' => 'true',
+        ];
+
+        $result = KD_Event_API::submit_registration($postData);
+
+        if (!empty($result['success'])) {
+            wp_send_json_success([
+                'message' => !empty($result['message']) ? $result['message'] : 'Membership enrollment recorded successfully!',
+                'name' => $name,
+                'contact' => $contact,
+                'nationality' => $nationality,
+            ]);
+        } else {
+            wp_send_json_error([
+                'message' => !empty($result['error']) ? $result['error'] : 'Enrollment could not be completed. Please try again.',
             ]);
         }
     }
