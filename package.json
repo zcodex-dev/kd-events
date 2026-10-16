@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build --webpack",
+    "build:plugin": "powershell -ExecutionPolicy Bypass -File wordpress-plugin/package.ps1",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"

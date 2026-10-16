@@ -23,6 +23,7 @@ require_once KD_EVENTS_DIR . 'includes/class-kd-renderer.php';
 require_once KD_EVENTS_DIR . 'includes/class-kd-meta-box.php';
 require_once KD_EVENTS_DIR . 'includes/class-kd-shortcode.php';
 require_once KD_EVENTS_DIR . 'includes/class-kd-settings.php';
+require_once KD_EVENTS_DIR . 'includes/class-kd-updater.php';
 
 final class KD_Event_Showcase {
     private static $instance = null;
@@ -35,6 +36,7 @@ final class KD_Event_Showcase {
     }
 
     private function __construct() {
+        KD_Event_Updater::instance();
         add_action('init', [$this, 'init']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
         add_action('wp_ajax_kd_register_event', [$this, 'handle_registration']);
@@ -48,6 +50,7 @@ final class KD_Event_Showcase {
         KD_Event_Meta_Box::instance();
         KD_Event_Shortcode::instance();
         KD_Event_Settings::instance();
+        KD_Event_Updater::instance();
 
         // Automatically remove old stuck or broken kd-event-showcase folder
         if (is_admin() && current_user_can('activate_plugins')) {

@@ -1,0 +1,28 @@
+{
+  "name": "KD Events",
+  "slug": "kd-events",
+  "version": "1.5.0",
+  "author": "Kompong Dewa Integrated Resort",
+  "author_homepage": "https://kompongdewa.win",
+  "requires": "5.6",
+  "tested": "6.7",
+  "requires_php": "7.4",
+  "last_updated": "2026-10-16 15:45:00",
+  "download_url": "https://kompongdewa.win/kd-events.zip",
+  "package_url": "https://kompongdewa.win/kd-events.zip",
+  "github_url": "https://github.com/zcodex-dev/kd-events",
+  "sections": {
+    "description": "Premium luxury resort showcase and membership enrollment for Kompong Dewa Resort. Place full event reading pages and authentic membership enrollment forms onto any WordPress page with live countdown, multi-language switcher, and ID verification without iframes.",
+    "installation": "<ol><li>Upload <code>kd-events.zip</code> to your WordPress site via <strong>Plugins &rarr; Add New &rarr; Upload Plugin</strong>.</li><li>Click <strong>Install Now</strong> and activate the plugin.</li><li>All future updates can be updated with one click directly from the WordPress Plugins screen!</li></ol>",
+    "changelog": "<h4>1.5.0</h4><ul><li>Membership Enrollment UI integration with passport scanning, multi-language switching (EN, ID, ZH), country flag selector, and direct API submission.</li><li>Automatic GitHub and remote update checker with one-click in-place update support.</li><li>Full-screen canvas template support for both Event Showcase and Membership Enrollment.</li><li>Auto-cleanup for legacy stuck plugin directories.</li></ul>"
+  },
+  "banners": {
+    "low": "https://kompongdewa.win/kd-logo.png",
+    "high": "https://kompongdewa.win/kd-logo.png"
+  },
+  "icons": {
+    "1x": "https://kompongdewa.win/kd-logo.png",
+    "2x": "https://kompongdewa.win/kd-logo.png",
+    "default": "https://kompongdewa.win/kd-logo.png"
+  }
+}

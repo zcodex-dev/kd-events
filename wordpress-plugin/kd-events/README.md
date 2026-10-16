@@ -65,3 +65,14 @@ A native, high-performance WordPress plugin that embeds full luxury dark-themed 
    - Select **Full Page Canvas** (or Within Theme Content).
    - (Optional) Provide a custom banner image URL.
 4. Click **Publish** (or use shortcode `[kd_enrollment]` on any existing page).
+
+---
+
+## Automatic Updates via GitHub
+
+This plugin includes native integration with WordPress core update APIs and GitHub:
+- When a new release or update is committed to the GitHub repository (`https://github.com/zcodex-dev/kd-events`), WordPress will automatically display an update notice on **Plugins &rarr; Installed Plugins** (`There is a new version of KD Events available... Update now`).
+- Clicking **Update Now** automatically downloads and upgrades the plugin in-place without manual file re-upload.
+- To check for updates immediately at any time:
+  - Go to **Plugins &rarr; Installed Plugins** and click **Check for updates** under KD Events, OR
+  - Go to **Settings &rarr; KD Events** and click **Check for Updates on GitHub Now**.

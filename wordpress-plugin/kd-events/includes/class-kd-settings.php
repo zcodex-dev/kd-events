@@ -116,6 +116,65 @@ class KD_Event_Settings {
 
                 <hr style="margin: 25px 0;" />
 
+                <h2>GitHub Auto-Update &amp; Release Status</h2>
+                <?php
+                $remote = class_exists('KD_Event_Updater') ? KD_Event_Updater::instance()->get_remote_version_info() : false;
+                $installedVer = defined('KD_EVENTS_VERSION') ? KD_EVENTS_VERSION : '1.5.0';
+                $latestVer = ($remote && !empty($remote->version)) ? $remote->version : '1.5.0';
+                $hasUpdate = version_compare($latestVer, $installedVer, '>');
+                $lastChecked = ($remote && !empty($remote->last_checked_time)) ? $remote->last_checked_time : 'Recently';
+                ?>
+                <table class="form-table" role="presentation" style="margin-top: 5px;">
+                    <tr>
+                        <th scope="row">Installed Version</th>
+                        <td>
+                            <strong style="font-size: 14px;">v<?php echo esc_html($installedVer); ?></strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Latest GitHub Release</th>
+                        <td>
+                            <strong style="font-size: 14px;">v<?php echo esc_html($latestVer); ?></strong>
+                            <?php if ($hasUpdate): ?>
+                                <span style="display: inline-block; margin-left: 8px; padding: 3px 8px; border-radius: 4px; background: #fef3c7; color: #92400e; font-weight: 700;">
+                                    Update Available!
+                                </span>
+                                <p class="description" style="margin-top: 6px;">
+                                    <a href="<?php echo esc_url(admin_url('plugins.php')); ?>" class="button button-primary">
+                                        Go to Plugins Screen &amp; Update Now &rarr;
+                                    </a>
+                                </p>
+                            <?php else: ?>
+                                <span style="display: inline-block; margin-left: 8px; padding: 3px 8px; border-radius: 4px; background: #e7f5ea; color: #166534; font-weight: 600;">
+                                    &check; Up to date
+                                </span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Update Channel</th>
+                        <td>
+                            <code>GitHub: zcodex-dev/kd-events (main)</code> &bull;
+                            <a href="https://github.com/zcodex-dev/kd-events" target="_blank" rel="noopener noreferrer">View Repository</a> &bull;
+                            <a href="https://kompongdewa.win/kd-events.zip" target="_blank">Direct ZIP Download</a>
+                        </td>
+                    </tr>
+                </table>
+
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-top: 10px;">
+                    <input type="hidden" name="action" value="kd_check_update_now" />
+                    <?php wp_nonce_field('kd_check_update_settings_nonce'); ?>
+                    <button type="submit" class="button button-secondary">
+                        <span class="dashicons dashicons-update" style="font-size: 16px; vertical-align: text-bottom; width: 16px; height: 16px;"></span>
+                        Check for Updates on GitHub Now
+                    </button>
+                    <span class="description" style="margin-left: 10px; font-size: 12px; color: #666;">
+                        Last verified: <?php echo esc_html($lastChecked); ?>
+                    </span>
+                </form>
+
+                <hr style="margin: 25px 0;" />
+
                 <h2>Cache Management &amp; Connection Status</h2>
                 <p>Status:
                     <?php if (!empty($events)): ?>
