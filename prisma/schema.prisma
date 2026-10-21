@@ -105,3 +105,29 @@ model DynamicQR {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+model StaffProfile {
+  id           String   @id @default(cuid())
+  personnelId  String   @unique
+  firstName    String
+  lastName     String
+  position     String
+  department   String
+  avatarUrl    String?
+  badgeUrl     String?
+  phone        String?
+  email        String?
+  whatsapp     String?
+  telegram     String?
+  instagram    String?
+  xTwitter     String?
+  linkedin     String?
+  wechat       String?
+  bio          String?  @db.Text
+  location     String?  @default("Kompong Dewa Resort, Sihanoukville, Cambodia")
+  isActive     Boolean  @default(true)
+  isVerified   Boolean  @default(true)
+  orderIndex   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

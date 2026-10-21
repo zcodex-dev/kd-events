@@ -27,6 +27,7 @@ export function proxy(request: NextRequest) {
     !pathname.startsWith('/api/register') &&
     !pathname.startsWith('/api/config') &&
     !pathname.startsWith('/api/plugin-version') &&
+    !pathname.startsWith('/api/staff') &&
     pathname !== '/api/events'
   ) {
     const redirect = requireAuth(request);
