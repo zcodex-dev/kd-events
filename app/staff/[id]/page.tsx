@@ -5,11 +5,10 @@ import { useParams } from 'next/navigation';
 import {
   IconsaxCall,
   IconsaxDocumentDownload,
+  IconsaxGlobal,
   IconsaxSms,
 } from '@/components/icons/iconsax';
 import { getStaffMember } from '@/lib/staff-data';
-
-const socialOrder = ['WhatsApp', 'Telegram', 'Phone', 'Email', 'Instagram', 'LinkedIn', 'X.com'];
 
 export default function StaffProfilePage() {
   const params = useParams();
@@ -27,9 +26,76 @@ export default function StaffProfilePage() {
     );
   }
 
-  const channels = socialOrder
-    .map((platform) => staff.socials.find((channel) => channel.platform === platform))
-    .filter((channel) => Boolean(channel?.url));
+  const actions = [
+    {
+      id: 'whatsapp',
+      label: 'WhatsApp',
+      url: staff.socials.find((s) => s.platform === 'WhatsApp')?.url || `https://wa.me/${staff.whatsappNumber}`,
+      isExternal: true,
+      ariaLabel: `WhatsApp: ${staff.phoneDisplay}`,
+      icon: (
+        <span
+          aria-hidden="true"
+          className="h-6 w-6 bg-[#f5f1e9]"
+          style={{
+            WebkitMask: 'url(https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/whatsapp.svg) center / contain no-repeat',
+            mask: 'url(https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/whatsapp.svg) center / contain no-repeat',
+          }}
+        />
+      ),
+    },
+    {
+      id: 'telegram',
+      label: 'Telegram',
+      url: staff.socials.find((s) => s.platform === 'Telegram')?.url || `https://t.me/${staff.telegramUsername}`,
+      isExternal: true,
+      ariaLabel: `Telegram: @${staff.telegramUsername}`,
+      icon: (
+        <span
+          aria-hidden="true"
+          className="h-6 w-6 bg-[#f5f1e9]"
+          style={{
+            WebkitMask: 'url(https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/telegram.svg) center / contain no-repeat',
+            mask: 'url(https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/telegram.svg) center / contain no-repeat',
+          }}
+        />
+      ),
+    },
+    {
+      id: 'call',
+      label: 'Call',
+      url: `tel:${staff.phone}`,
+      isExternal: false,
+      ariaLabel: `Direct call: ${staff.phoneDisplay}`,
+      icon: <IconsaxCall size={24} color="#f5f1e9" strokeWidth={1.5} />,
+    },
+    {
+      id: 'email',
+      label: 'Email',
+      url: `mailto:${staff.email}`,
+      isExternal: false,
+      ariaLabel: `Email: ${staff.email}`,
+      icon: <IconsaxSms size={24} color="#f5f1e9" strokeWidth={1.5} />,
+    },
+    {
+      id: 'web',
+      label: 'Web',
+      url: staff.website || 'https://kompongdewa.com',
+      isExternal: true,
+      ariaLabel: 'Official Website: kompongdewa.com',
+      icon: <IconsaxGlobal size={24} color="#f5f1e9" strokeWidth={1.5} />,
+    },
+    {
+      id: 'save',
+      label: 'Save',
+      url: `/api/staff/${staff.normalizedId}/vcard`,
+      download: `${staff.firstName}_${staff.lastName}.vcf`,
+      isExternal: false,
+      isSave: true,
+      ariaLabel: `Save ${staff.fullName} to contacts`,
+      icon: <IconsaxDocumentDownload size={24} color="#090a0c" strokeWidth={1.8} />,
+    },
+  ];
 
   return (
     <main
@@ -76,49 +142,35 @@ export default function StaffProfilePage() {
               <span className="h-px flex-1 bg-[#c3943a]/45" />
             </div>
 
-            <nav aria-label="Contact and social links" className="mt-3 grid grid-cols-4 gap-x-2 gap-y-3 sm:mt-4 sm:gap-x-3 sm:gap-y-4">
-              {channels.map((channel) => {
-                if (!channel) return null;
-                const isExternal = channel.url.startsWith('http');
-                const label = channel.platform === 'Phone' ? 'Call' : channel.platform === 'X.com' ? 'X' : channel.platform;
-                const GenericIcon = channel.platform === 'Phone' ? IconsaxCall : channel.platform === 'Email' ? IconsaxSms : null;
-
-                return (
-                  <a
-                    key={channel.platform}
-                    href={channel.url}
-                    target={isExternal ? '_blank' : undefined}
-                    rel={isExternal ? 'noopener noreferrer' : undefined}
-                    aria-label={`${label}: ${channel.handle}`}
-                    className="group flex min-w-0 flex-col items-center gap-1.5 rounded-xl py-0.5 text-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b263]"
+            <nav aria-label="Contact and social links" className="mt-3.5 grid grid-cols-3 gap-x-3 gap-y-3.5 sm:mt-4 sm:gap-x-4 sm:gap-y-4">
+              {actions.map((action) => (
+                <a
+                  key={action.id}
+                  href={action.url}
+                  target={action.isExternal ? '_blank' : undefined}
+                  rel={action.isExternal ? 'noopener noreferrer' : undefined}
+                  download={action.download}
+                  aria-label={action.ariaLabel}
+                  className="group flex min-w-0 flex-col items-center gap-1.5 rounded-xl py-0.5 text-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b263]"
+                >
+                  <span
+                    className={
+                      action.isSave
+                        ? 'grid h-[52px] w-[52px] place-items-center rounded-[13px] border border-[#c3943a] bg-[#c3943a] transition-colors group-hover:bg-[#d8a847]'
+                        : 'grid h-[52px] w-[52px] place-items-center rounded-[13px] border border-white/10 bg-[#1a1b1e] transition-colors group-hover:bg-[#242529]'
+                    }
                   >
-                    <span className="grid h-[52px] w-[52px] place-items-center rounded-[13px] border border-white/10 bg-[#1a1b1e] transition-colors group-hover:bg-[#242529]">
-                      {GenericIcon ? (
-                        <GenericIcon size={24} color="#f5f1e9" strokeWidth={1.5} />
-                      ) : (
-                        <span
-                          aria-hidden="true"
-                          className="h-6 w-6 bg-[#f5f1e9]"
-                          style={{ WebkitMask: `url(${channel.iconCdn}) center / contain no-repeat`, mask: `url(${channel.iconCdn}) center / contain no-repeat` }}
-                        />
-                      )}
-                    </span>
-                    <span className="w-full truncate text-[11px] font-medium leading-4 text-white/72">{label}</span>
-                  </a>
-                );
-              })}
-
-              <a
-                href={`/api/staff/${staff.normalizedId}/vcard`}
-                download={`${staff.firstName}_${staff.lastName}.vcf`}
-                aria-label={`Save ${staff.fullName} to contacts`}
-                className="group flex min-w-0 flex-col items-center gap-1.5 rounded-xl py-0.5 text-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b263]"
-              >
-                <span className="grid h-[52px] w-[52px] place-items-center rounded-[13px] border border-white/10 bg-[#1a1b1e] transition-colors group-hover:bg-[#242529]">
-                  <IconsaxDocumentDownload size={24} color="#f5f1e9" strokeWidth={1.5} />
-                </span>
-                <span className="w-full truncate text-[11px] font-medium leading-4 text-white/72">Save</span>
-              </a>
+                    {action.icon}
+                  </span>
+                  <span
+                    className={`w-full truncate text-[11px] leading-4 ${
+                      action.isSave ? 'font-semibold text-[#c3943a]' : 'font-medium text-white/72'
+                    }`}
+                  >
+                    {action.label}
+                  </span>
+                </a>
+              ))}
             </nav>
 
             <footer className="mt-5 border-t border-white/10 pt-4 text-center text-[11px] leading-[1.55] text-white/50 sm:text-xs">
