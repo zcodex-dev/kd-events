@@ -36,7 +36,7 @@ export default function StaffProfilePage() {
       icon: (
         <span
           aria-hidden="true"
-          className="h-6 w-6 bg-[#f5f1e9]"
+          className="h-5 w-5 bg-[#f5f1e9]"
           style={{
             WebkitMask: 'url(https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/whatsapp.svg) center / contain no-repeat',
             mask: 'url(https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/whatsapp.svg) center / contain no-repeat',
@@ -53,7 +53,7 @@ export default function StaffProfilePage() {
       icon: (
         <span
           aria-hidden="true"
-          className="h-6 w-6 bg-[#f5f1e9]"
+          className="h-5 w-5 bg-[#f5f1e9]"
           style={{
             WebkitMask: 'url(https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/telegram.svg) center / contain no-repeat',
             mask: 'url(https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/telegram.svg) center / contain no-repeat',
@@ -67,7 +67,7 @@ export default function StaffProfilePage() {
       url: `tel:${staff.phone}`,
       isExternal: false,
       ariaLabel: `Direct call: ${staff.phoneDisplay}`,
-      icon: <IconsaxCall size={24} color="#f5f1e9" strokeWidth={1.5} />,
+      icon: <IconsaxCall size={21} color="#f5f1e9" strokeWidth={1.5} />,
     },
     {
       id: 'email',
@@ -75,7 +75,7 @@ export default function StaffProfilePage() {
       url: `mailto:${staff.email}`,
       isExternal: false,
       ariaLabel: `Email: ${staff.email}`,
-      icon: <IconsaxSms size={24} color="#f5f1e9" strokeWidth={1.5} />,
+      icon: <IconsaxSms size={21} color="#f5f1e9" strokeWidth={1.5} />,
     },
     {
       id: 'web',
@@ -83,7 +83,7 @@ export default function StaffProfilePage() {
       url: staff.website || 'https://kompongdewa.com',
       isExternal: true,
       ariaLabel: 'Official Website: kompongdewa.com',
-      icon: <IconsaxGlobal size={24} color="#f5f1e9" strokeWidth={1.5} />,
+      icon: <IconsaxGlobal size={21} color="#f5f1e9" strokeWidth={1.5} />,
     },
     {
       id: 'save',
@@ -93,7 +93,7 @@ export default function StaffProfilePage() {
       isExternal: false,
       isSave: true,
       ariaLabel: `Save ${staff.fullName} to contacts`,
-      icon: <IconsaxDocumentDownload size={24} color="#090a0c" strokeWidth={1.8} />,
+      icon: <IconsaxDocumentDownload size={21} color="#090a0c" strokeWidth={1.8} />,
     },
   ];
 
@@ -136,13 +136,7 @@ export default function StaffProfilePage() {
             <p className="mt-2 text-sm font-medium leading-5 text-white/82 sm:text-base sm:leading-6">{staff.position}</p>
             <p className="mt-0.5 text-xs leading-5 text-white/58 sm:text-sm">{staff.department}</p>
 
-            <div className="mt-4 flex items-center gap-3" aria-hidden="true">
-              <span className="h-px flex-1 bg-[#c3943a]/45" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#c3943a]">Connect with Jetz</span>
-              <span className="h-px flex-1 bg-[#c3943a]/45" />
-            </div>
-
-            <nav aria-label="Contact and social links" className="mt-3.5 grid grid-cols-3 gap-x-3 gap-y-3.5 sm:mt-4 sm:gap-x-4 sm:gap-y-4">
+            <nav aria-label="Contact and social links" className="mt-5 grid grid-cols-6 gap-2 sm:gap-3">
               {actions.map((action) => (
                 <a
                   key={action.id}
@@ -151,19 +145,19 @@ export default function StaffProfilePage() {
                   rel={action.isExternal ? 'noopener noreferrer' : undefined}
                   download={action.download}
                   aria-label={action.ariaLabel}
-                  className="group flex min-w-0 flex-col items-center gap-1.5 rounded-xl py-0.5 text-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b263]"
+                  className="group flex min-w-0 flex-col items-center gap-1.5 py-0.5 text-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b263]"
                 >
                   <span
                     className={
                       action.isSave
-                        ? 'grid h-[52px] w-[52px] place-items-center rounded-[13px] border border-[#c3943a] bg-[#c3943a] transition-colors group-hover:bg-[#d8a847]'
-                        : 'grid h-[52px] w-[52px] place-items-center rounded-[13px] border border-white/10 bg-[#1a1b1e] transition-colors group-hover:bg-[#242529]'
+                        ? 'grid h-[48px] w-[48px] place-items-center rounded-[12px] border border-[#c3943a] bg-[#c3943a] transition-colors group-hover:bg-[#d8a847]'
+                        : 'grid h-[48px] w-[48px] place-items-center rounded-[12px] border border-white/10 bg-[#1a1b1e] transition-colors group-hover:bg-[#242529]'
                     }
                   >
                     {action.icon}
                   </span>
                   <span
-                    className={`w-full truncate text-[11px] leading-4 ${
+                    className={`w-full truncate text-[10px] sm:text-[11px] leading-tight ${
                       action.isSave ? 'font-semibold text-[#c3943a]' : 'font-medium text-white/72'
                     }`}
                   >
