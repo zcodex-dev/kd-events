@@ -18,6 +18,30 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/jetzfernandez',
+        destination: '/staff/MK-C052',
+      },
+      {
+        source: '/jetz-fernandez',
+        destination: '/staff/MK-C052',
+      },
+      {
+        source: '/jetz',
+        destination: '/staff/MK-C052',
+      },
+      {
+        source: '/staff/jetzfernandez',
+        destination: '/staff/MK-C052',
+      },
+      {
+        source: '/staff/jetz-fernandez',
+        destination: '/staff/MK-C052',
+      },
+    ];
+  },
   async headers() {
     return [
       {

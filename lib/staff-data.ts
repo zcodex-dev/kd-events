@@ -25,6 +25,7 @@ export interface StaffMember {
   isVerified: boolean;
   status: 'ACTIVE' | 'ON_LEAVE' | 'SUSPENDED';
   joinedYear: string;
+  vanitySlug?: string;
   socials: Array<{
     platform: string;
     label: string;
@@ -63,6 +64,7 @@ export const STAFF_DIRECTORY: Record<string, StaffMember> = {
     isVerified: true,
     status: 'ACTIVE',
     joinedYear: '2024',
+    vanitySlug: 'jetzfernandez',
     socials: [
       {
         platform: 'WhatsApp',
@@ -138,6 +140,8 @@ export function normalizePersonnelId(id: string): string {
 }
 
 export function getStaffMember(id: string): StaffMember | null {
+  if (!id) return null;
+  const clean = id.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
   const norm = normalizePersonnelId(id);
   
   if (STAFF_DIRECTORY[norm]) {
@@ -148,6 +152,21 @@ export function getStaffMember(id: string): StaffMember | null {
   for (const key of Object.keys(STAFF_DIRECTORY)) {
     if (key.replace(/-/g, '') === norm.replace(/-/g, '')) {
       return STAFF_DIRECTORY[key];
+    }
+  }
+
+  // Check vanity slugs and names (e.g. jetzfernandez, jetz-fernandez, jetz)
+  for (const member of Object.values(STAFF_DIRECTORY)) {
+    const slugName = member.fullName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const slugFirst = member.firstName.toLowerCase();
+    const customSlug = member.vanitySlug?.toLowerCase();
+    if (
+      clean === slugName ||
+      clean === `${member.firstName.toLowerCase()}-${member.lastName.toLowerCase()}` ||
+      clean === slugFirst ||
+      clean === customSlug
+    ) {
+      return member;
     }
   }
 
@@ -174,7 +193,7 @@ export function generateVCard(staff: StaffMember): string {
     `TEL;TYPE=CELL,VOICE:${staff.phone}`,
     `EMAIL;TYPE=WORK,INTERNET:${staff.email}`,
     `URL;TYPE=WORK:${staff.website}`,
-    `URL;TYPE=Digital_ID:https://kompongdewa.win/staff/${staff.normalizedId}`,
+    `URL;TYPE=Digital_ID:https://kompongdewa.win/${staff.vanitySlug || 'staff/' + staff.normalizedId}`,
     `ADR;TYPE=WORK:;;Kompong Dewa Resort;Sihanoukville;;;Cambodia`,
     `NOTE:Official Kompong Dewa Resort Personnel ID: ${staff.personnelId}`,
     'REV:' + new Date().toISOString(),

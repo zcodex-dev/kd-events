@@ -11,6 +11,19 @@ export function proxy(request: NextRequest) {
   
   console.log(`[PROXY] Request received - Host: "${host}", Path: "${pathname}"`);
 
+  // 0. Vanity staff URL rewrites (e.g. /jetzfernandez -> /staff/MK-C052)
+  const cleanPath = pathname.toLowerCase().replace(/^\/+/, '').replace(/\/+$/, '');
+  const staffVanityRoutes: Record<string, string> = {
+    'jetzfernandez': '/staff/MK-C052',
+    'jetz-fernandez': '/staff/MK-C052',
+    'jetz': '/staff/MK-C052',
+  };
+
+  if (staffVanityRoutes[cleanPath]) {
+    url.pathname = staffVanityRoutes[cleanPath];
+    return NextResponse.rewrite(url);
+  }
+
   // Protect dashboard routes
   if (pathname.startsWith('/dashboard')) {
     const redirect = requireAuth(request);
