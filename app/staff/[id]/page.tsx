@@ -141,7 +141,7 @@ export default function StaffProfilePage() {
             className={`p-2 rounded-xl transition-all duration-200 border ${
               isDark
                 ? 'bg-[#16181f] border-[#262933] text-amber-300 hover:bg-[#1e212b]'
-                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
+                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
             }`}
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -154,11 +154,20 @@ export default function StaffProfilePage() {
           animate="visible"
           className="w-full flex flex-col items-center text-center"
         >
-          {/* Portrait Headshot */}
+          {/* Portrait Headshot with Physical Badge Flare */}
           <motion.div variants={itemVariants} className="relative cursor-pointer" onClick={() => setShowBadgeModal(true)}>
+            {/* Flashlight aura behind avatar */}
             <div
-              className={`w-32 h-32 rounded-full p-1 border-2 transition-transform duration-200 hover:scale-[1.03] ${
-                isDark ? 'border-[#c59b27] bg-[#16181f]' : 'border-[#c59b27] bg-white shadow-md'
+              className="absolute -inset-2 rounded-full opacity-60 pointer-events-none"
+              style={{
+                background:
+                  'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(197,155,39,0.25) 45%, transparent 75%)',
+                filter: 'blur(10px)',
+              }}
+            />
+            <div
+              className={`w-32 h-32 rounded-full p-1 border-2 transition-transform duration-200 hover:scale-[1.03] relative ${
+                isDark ? 'border-[#c59b27] bg-[#16181f]' : 'border-[#c59b27] bg-white'
               }`}
             >
               <div className="w-full h-full rounded-full overflow-hidden relative">
@@ -176,7 +185,7 @@ export default function StaffProfilePage() {
 
             {/* Badge pill */}
             <div
-              className={`absolute -bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border flex items-center gap-1 shadow-sm whitespace-nowrap ${
+              className={`absolute -bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border flex items-center gap-1 whitespace-nowrap ${
                 isDark
                   ? 'bg-[#16181f] border-[#c59b27] text-[#f5d77f]'
                   : 'bg-white border-[#c59b27] text-[#92400e]'
@@ -208,7 +217,7 @@ export default function StaffProfilePage() {
               className={`px-3 py-1 rounded-lg font-mono text-xs font-bold tracking-wider border ${
                 isDark
                   ? 'bg-[#16181f] border-[#262933] text-white/90'
-                  : 'bg-white border-slate-200 text-slate-800 shadow-sm'
+                  : 'bg-white border-slate-200 text-slate-800'
               }`}
             >
               ID: {staff.personnelId}
@@ -220,7 +229,7 @@ export default function StaffProfilePage() {
             <a
               href={`/api/staff/${staff.normalizedId}/vcard`}
               download={`${staff.firstName}_${staff.lastName}.vcf`}
-              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#c59b27] hover:bg-[#d4af37] text-black font-bold text-xs uppercase tracking-wider transition-all duration-150 active:scale-[0.98] shadow-sm"
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#c59b27] hover:bg-[#d4af37] text-black font-bold text-xs uppercase tracking-wider transition-all duration-150 active:scale-[0.98]"
             >
               <Download className="w-4 h-4 text-black" />
               <span>Save Contact</span>
@@ -231,7 +240,7 @@ export default function StaffProfilePage() {
               className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider border transition-all duration-150 active:scale-[0.98] ${
                 isDark
                   ? 'bg-[#16181f] hover:bg-[#1e212b] border-[#262933] text-white'
-                  : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-900 shadow-sm'
+                  : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-900'
               }`}
             >
               <FileImage className="w-4 h-4 text-[#c59b27]" />
@@ -251,7 +260,7 @@ export default function StaffProfilePage() {
                 className={`group flex items-center justify-between p-3 rounded-xl border transition-all duration-150 active:scale-[0.99] ${
                   isDark
                     ? 'bg-[#14161c] hover:bg-[#1b1e27] border-[#232630] hover:border-[#c59b27]/80'
-                    : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-[#c59b27]/80 shadow-sm'
+                    : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-[#c59b27]/80'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -320,23 +329,61 @@ export default function StaffProfilePage() {
         </motion.div>
       </div>
 
-      {/* Modal: Physical Badge Preview & PNG / JPEG Save */}
+      {/* Modal: Physical Badge Preview & PNG / JPEG Save with Flashlight Beam Background */}
       <AnimatePresence>
         {showBadgeModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-hidden"
             onClick={() => setShowBadgeModal(false)}
           >
+            {/* Flashlight / Spotlight Beam in Modal Background */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
+              {/* Flashlight Torch Origin Glow */}
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-14 bg-white/60 blur-2xl rounded-full" />
+
+              {/* Volumetric Conical Flashlight Beam */}
+              <div
+                className="absolute -top-8 left-1/2 -translate-x-1/2 w-[90vw] max-w-[560px] h-[820px] opacity-80"
+                style={{
+                  background:
+                    'linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(212,175,55,0.22) 32%, rgba(255,255,255,0.06) 65%, transparent 100%)',
+                  clipPath: 'polygon(45% 0%, 55% 0%, 100% 100%, 0% 100%)',
+                  filter: 'blur(14px)',
+                }}
+              />
+
+              {/* Concentrated Core Flashlight Beam */}
+              <div
+                className="absolute -top-8 left-1/2 -translate-x-1/2 w-[60vw] max-w-[360px] h-[680px] opacity-90"
+                style={{
+                  background:
+                    'linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,238,170,0.3) 38%, transparent 100%)',
+                  clipPath: 'polygon(47% 0%, 53% 0%, 92% 100%, 8% 100%)',
+                  filter: 'blur(7px)',
+                }}
+              />
+
+              {/* Central Flashlight Radial Halo directly illuminating the badge */}
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[440px] h-[440px] rounded-full"
+                style={{
+                  background:
+                    'radial-gradient(circle, rgba(255,255,255,0.32) 0%, rgba(197,155,39,0.24) 35%, transparent 70%)',
+                  filter: 'blur(30px)',
+                }}
+              />
+            </div>
+
             <motion.div
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
               onClick={(e) => e.stopPropagation()}
-              className={`rounded-2xl p-5 max-w-sm w-full relative flex flex-col items-center text-center border shadow-2xl ${
-                isDark ? 'bg-[#14161d] border-[#262933] text-white' : 'bg-white border-slate-200 text-slate-900'
+              className={`rounded-2xl p-5 max-w-sm w-full relative z-10 flex flex-col items-center text-center border ${
+                isDark ? 'bg-[#14161d]/95 border-[#262933] text-white' : 'bg-white/95 border-slate-200 text-slate-900'
               }`}
             >
               {/* Close Button */}
@@ -355,16 +402,26 @@ export default function StaffProfilePage() {
                 <span>Physical ID Badge Replica</span>
               </div>
 
-              {/* Physical Badge Image */}
-              <div className="w-full relative aspect-[639/1017] rounded-xl overflow-hidden border border-[#c59b27]/70 shadow-lg my-1">
-                <Image
-                  src={staff.badgeUrl}
-                  alt={`${staff.fullName} ID Card`}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                  priority
+              {/* Physical Badge Image with Flashlight Aura */}
+              <div className="w-full relative my-1">
+                <div
+                  className="absolute -inset-2 rounded-2xl opacity-75 pointer-events-none"
+                  style={{
+                    background:
+                      'radial-gradient(circle at 50% 30%, rgba(255,255,255,0.45) 0%, rgba(212,175,55,0.22) 45%, transparent 70%)',
+                    filter: 'blur(12px)',
+                  }}
                 />
+                <div className="w-full relative aspect-[639/1017] rounded-xl overflow-hidden border border-[#c59b27]/80">
+                  <Image
+                    src={staff.badgeUrl}
+                    alt={`${staff.fullName} ID Card`}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                    priority
+                  />
+                </div>
               </div>
 
               <p className={`text-xs mt-3 mb-3 ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
