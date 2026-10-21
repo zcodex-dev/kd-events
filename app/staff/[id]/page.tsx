@@ -121,7 +121,7 @@ export default function StaffProfilePage() {
               </a>
             </nav>
 
-            <footer className="mt-5 border-t border-white/10 pt-4 text-left text-[11px] leading-[1.55] text-white/50 sm:text-xs">
+            <footer className="mt-5 border-t border-white/10 pt-4 text-center text-[11px] leading-[1.55] text-white/50 sm:text-xs">
               <address className="not-italic">
                 Otres Marina Road, #833<br />
                 Sangkat 4, 18000, Cambodia
