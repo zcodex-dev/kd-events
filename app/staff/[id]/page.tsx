@@ -1,30 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Download, 
-  ExternalLink, 
-  CheckCircle2, 
-  CreditCard, 
-  FileImage,
-  Sun,
-  Moon,
-  X,
-  Share2,
-  Phone,
-  Mail,
-  Send,
-  MessageSquare,
-  Copy,
-  Check,
-  ShieldCheck,
-  ChevronRight,
-  MapPin,
-  Sparkles
-} from 'lucide-react';
+  IconsaxSun,
+  IconsaxMoon,
+  IconsaxArrowRight,
+  IconsaxArrowUpRight,
+  IconsaxDocumentDownload,
+  IconsaxClose,
+  IconsaxCall,
+  IconsaxSms,
+  IconsaxSend,
+  IconsaxMessage
+} from '@/components/icons/iconsax';
 import { getStaffMember } from '@/lib/staff-data';
 
 export default function StaffProfilePage() {
@@ -33,12 +24,9 @@ export default function StaffProfilePage() {
   const staff = getStaffMember(rawId);
 
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [showBadgeModal, setShowBadgeModal] = useState(false);
-  const [showSocialModal, setShowSocialModal] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [showConnectModal, setShowConnectModal] = useState(false);
 
-  // Sync theme with system or previous choice
+  // Sync theme with system or local preference
   useEffect(() => {
     const saved = localStorage.getItem('kd_staff_theme') as 'dark' | 'light' | null;
     if (saved) {
@@ -54,172 +42,120 @@ export default function StaffProfilePage() {
     localStorage.setItem('kd_staff_theme', next);
   };
 
-  const handleCopy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 2000);
-  };
+  // Lock body scroll when bottom sheet is open
+  useEffect(() => {
+    if (showConnectModal) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showConnectModal]);
+
+  // Keyboard accessibility: Escape closes modal
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showConnectModal) {
+        setShowConnectModal(false);
+      }
+    },
+    [showConnectModal]
+  );
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   if (!staff) {
     return (
-      <div className="min-h-screen bg-[#0a0b0e] text-white flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-xl font-bold mb-2">Staff Record Not Found</h1>
-        <p className="text-white/60 text-sm max-w-sm mb-6">
+      <div className="min-h-screen bg-[#101114] text-[#F5F4F1] flex flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-xl font-medium mb-2">Staff Record Not Found</h1>
+        <p className="text-[#9699A3] text-sm max-w-sm mb-6">
           The requested management credential ({rawId}) does not exist in the official directory.
         </p>
         <a
           href="https://kompongdewa.win"
-          className="px-5 py-2.5 rounded-xl bg-[#c59b27] text-black font-semibold text-xs"
+          className="px-5 py-2.5 rounded-xl bg-[#D3AD59] text-black font-medium text-xs tracking-wide"
         >
-          Return to Homepage
+          Return to Directory
         </a>
       </div>
     );
   }
 
-  // Export Badge Image as PNG or JPEG
-  const handleDownloadImage = (format: 'png' | 'jpeg') => {
-    setIsExporting(true);
-    try {
-      const img = new window.Image();
-      img.crossOrigin = 'anonymous';
-      img.src = staff.badgeUrl;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth || 639;
-        canvas.height = img.naturalHeight || 1017;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          setIsExporting(false);
-          return;
-        }
-
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
-        const extension = format === 'png' ? 'png' : 'jpg';
-        const dataUrl = canvas.toDataURL(mimeType, 0.95);
-
-        const link = document.createElement('a');
-        link.download = `${staff.firstName}_${staff.lastName}_ID_Card.${extension}`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setIsExporting(false);
-      };
-      img.onerror = () => {
-        setIsExporting(false);
-        const link = document.createElement('a');
-        link.href = staff.badgeUrl;
-        link.download = `${staff.firstName}_${staff.lastName}_ID_Card.png`;
-        link.click();
-      };
-    } catch {
-      setIsExporting(false);
-    }
-  };
-
   const isDark = theme === 'dark';
-
-  // Animation variants
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.06,
-      },
-    },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 14 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.4,
-        ease: [0.25, 0.1, 0.25, 1],
-      },
-    },
-  };
 
   return (
     <main
-      className={`min-h-screen w-full relative overflow-x-hidden flex flex-col items-center justify-start pt-5 pb-16 px-4 transition-colors duration-300 ${
-        isDark ? 'bg-[#090a0f] text-[#f4f4f6]' : 'bg-[#f7f8fb] text-[#0f172a]'
+      className={`min-h-screen w-full relative flex flex-col items-center justify-between transition-colors duration-200 select-none ${
+        isDark ? 'bg-[#101114] text-[#F5F4F1]' : 'bg-[#F8F7F4] text-[#17191D]'
       }`}
+      style={{ fontFamily: "'Outfit', var(--font-outfit), var(--font-roboto), -apple-system, sans-serif" }}
     >
-      {/* ── Ambient Flashlight & Gradient Light Leak System ── */}
+      {/* ── Section 3: Sophisticated Ambient Light Leak ── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {/* Flashlight Spotlight Cone - Top Center */}
-        <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[90vw] max-w-[620px] h-[780px] opacity-75"
-          style={{
-            background: isDark
-              ? 'radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.25) 0%, rgba(212, 175, 55, 0.18) 35%, transparent 72%)'
-              : 'radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.95) 0%, rgba(245, 215, 140, 0.40) 40%, transparent 72%)',
-            filter: 'blur(36px)',
-          }}
-        />
-
-        {/* Gradient Light Leak - Top Right (Warm Gold / Champagne Amber) */}
-        <div
-          className="absolute -top-24 -right-16 w-[340px] h-[340px] rounded-full opacity-60"
-          style={{
-            background: isDark
-              ? 'radial-gradient(circle, rgba(212, 175, 55, 0.22) 0%, rgba(245, 158, 11, 0.10) 42%, transparent 70%)'
-              : 'radial-gradient(circle, rgba(251, 191, 36, 0.30) 0%, rgba(245, 158, 11, 0.10) 45%, transparent 70%)',
-            filter: 'blur(48px)',
-          }}
-        />
-
-        {/* Gradient Light Leak - Top Left (Soft Rose / Amethyst) */}
-        <div
-          className="absolute -top-20 -left-16 w-[320px] h-[320px] rounded-full opacity-55"
-          style={{
-            background: isDark
-              ? 'radial-gradient(circle, rgba(168, 85, 247, 0.16) 0%, rgba(217, 119, 6, 0.10) 45%, transparent 70%)'
-              : 'radial-gradient(circle, rgba(244, 114, 182, 0.22) 0%, rgba(251, 146, 60, 0.12) 48%, transparent 70%)',
-            filter: 'blur(50px)',
-          }}
-        />
-
-        {/* Floor Ambient Reflection */}
-        <div
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl h-[260px] opacity-25"
-          style={{
-            background: isDark
-              ? 'radial-gradient(ellipse at 50% 100%, rgba(212, 175, 55, 0.15) 0%, transparent 70%)'
-              : 'radial-gradient(ellipse at 50% 100%, rgba(245, 215, 140, 0.25) 0%, transparent 70%)',
-            filter: 'blur(55px)',
-          }}
-        />
+        {isDark ? (
+          <>
+            {/* Dark: Soft warm champagne light leaking from upper-right */}
+            <div
+              className="absolute -top-16 -right-16 w-[420px] h-[420px] rounded-full opacity-70"
+              style={{
+                background: 'radial-gradient(circle at 75% 25%, rgba(211, 173, 89, 0.08) 0%, transparent 65%)',
+                filter: 'blur(50px)',
+              }}
+            />
+            {/* Dark: Very subtle cool graphite ambient illumination on opposite side */}
+            <div
+              className="absolute -top-12 -left-16 w-[360px] h-[360px] rounded-full opacity-60"
+              style={{
+                background: 'radial-gradient(circle at 25% 25%, rgba(90, 100, 130, 0.05) 0%, transparent 65%)',
+                filter: 'blur(55px)',
+              }}
+            />
+          </>
+        ) : (
+          <>
+            {/* Light: Extremely subtle warm ambient light behind portrait area */}
+            <div
+              className="absolute -top-10 left-1/2 -translate-x-1/2 w-[500px] h-[400px] opacity-80"
+              style={{
+                background: 'radial-gradient(ellipse at 50% 15%, rgba(196, 154, 64, 0.07) 0%, transparent 65%)',
+                filter: 'blur(45px)',
+              }}
+            />
+          </>
+        )}
       </div>
 
-      {/* ── Main Mobile Container ── */}
-      <div className="w-full max-w-[440px] flex flex-col items-center relative z-10">
+      {/* ── Main Mobile Content Container ── */}
+      <div className="w-full max-w-[420px] min-h-screen flex flex-col justify-between px-6 pt-6 pb-8 relative z-10">
         
-        {/* Top Header Bar: Resort Branding + Theme Switcher */}
-        <div className="w-full flex items-center justify-between py-2 mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 relative rounded-lg border border-white/10 dark:border-white/10 flex items-center justify-center p-1 bg-white/5 dark:bg-white/5">
+        {/* Top Header: Brand Wordmark & Theme Switcher */}
+        <header className="w-full flex items-center justify-between pt-1">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-7 h-7 relative rounded-lg border flex items-center justify-center p-1 ${
+              isDark ? 'border-[#303138] bg-[#1A1B20]' : 'border-[#E9E7E2] bg-white'
+            }`}>
               <Image
                 src="/kd-logo.png"
                 alt="Kompong Dewa"
-                width={20}
-                height={20}
+                width={18}
+                height={18}
                 className="object-contain"
                 unoptimized
               />
             </div>
             <div className="flex flex-col text-left">
-              <span className="text-[11px] font-bold tracking-wider uppercase text-[#c59b27]">
+              <span className={`text-[11px] font-semibold tracking-[0.08em] uppercase ${
+                isDark ? 'text-[#D3AD59]' : 'text-[#C49A40]'
+              }`}>
                 Kompong Dewa
               </span>
-              <span className={`text-[9px] tracking-tight ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+              <span className={`text-[9px] tracking-tight ${
+                isDark ? 'text-[#9699A3]' : 'text-[#747782]'
+              }`}>
                 Resort & VIP Management
               </span>
             </div>
@@ -227,269 +163,133 @@ export default function StaffProfilePage() {
 
           <button
             onClick={toggleTheme}
-            aria-label="Toggle Theme"
-            className={`p-2 rounded-xl transition-all duration-200 border ${
+            aria-label="Toggle visual theme"
+            className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#C49A40] ${
               isDark
-                ? 'bg-[#14161f] border-[#252834] text-amber-300 hover:bg-[#1a1d28]'
-                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                ? 'border-[#303138] bg-[#1A1B20] text-[#D3AD59] hover:bg-[#202127]'
+                : 'border-[#E9E7E2] bg-white text-[#747782] hover:text-[#17191D] hover:bg-[#F0EEEA]'
             }`}
           >
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {isDark ? <IconsaxSun size={18} /> : <IconsaxMoon size={18} />}
           </button>
-        </div>
+        </header>
 
-        {/* ── Executive Profile Card ── */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="w-full flex flex-col items-center text-center"
-        >
-          {/* Avatar with luxury micro-ring & flashlight backlight */}
-          <motion.div variants={itemVariants} className="relative cursor-pointer" onClick={() => setShowBadgeModal(true)}>
-            {/* Flashlight aura directly behind headshot */}
-            <div
-              className="absolute -inset-2.5 rounded-full opacity-60 pointer-events-none"
-              style={{
-                background:
-                  'radial-gradient(circle, rgba(255,255,255,0.45) 0%, rgba(212,175,55,0.30) 45%, transparent 75%)',
-                filter: 'blur(12px)',
-              }}
-            />
-
-            {/* Circular Headshot Container */}
-            <div className="w-32 h-32 rounded-full p-[2.5px] bg-gradient-to-tr from-[#997316] via-[#f5d77f] to-[#c59b27] transition-transform duration-200 hover:scale-[1.03]">
-              <div className={`w-full h-full rounded-full overflow-hidden relative border-2 ${isDark ? 'border-[#090a0f] bg-[#12141c]' : 'border-white bg-white'}`}>
-                <Image
-                  src={staff.avatarUrl}
-                  alt={staff.fullName}
-                  fill
-                  className="object-cover"
-                  style={{ objectPosition: '50% 43%', transform: 'scale(1.85)' }}
-                  unoptimized
-                  priority
-                />
-              </div>
+        {/* ── Section 5: Profile Hero (Option A: Confident Minimalist Typography) ── */}
+        <section className="w-full flex flex-col items-center text-center my-auto py-8">
+          {/* Portrait: Clean circular crop, 1px subtle outline, NO heavy gold ring, NO green pip */}
+          <div className="relative mb-6">
+            <div className={`w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden relative border ${
+              isDark ? 'border-[#303138] bg-[#1A1B20]' : 'border-[#E9E7E2] bg-white'
+            }`}>
+              <Image
+                src={staff.avatarUrl}
+                alt={staff.fullName}
+                fill
+                className="object-cover"
+                style={{ objectPosition: '50% 43%', transform: 'scale(1.85)' }}
+                unoptimized
+                priority
+              />
             </div>
+          </div>
 
-            {/* Active Verified Status Pip */}
-            <div
-              className="absolute bottom-1 right-2 w-5 h-5 rounded-full bg-emerald-500 border-2 border-[#090a0f] flex items-center justify-center text-black"
-              title="Active Verified Management"
-            >
-              <Check className="w-3 h-3 text-white stroke-[3]" />
-            </div>
-          </motion.div>
-
-          {/* Clean Executive Name & Position Hierarchy */}
-          <motion.div variants={itemVariants} className="mt-5 w-full flex flex-col items-center">
-            {/* Name */}
-            <div className="flex items-center justify-center gap-2">
-              <h1 
-                style={{ fontFamily: "'Outfit', var(--font-outfit), sans-serif" }}
-                className={`text-2xl sm:text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}
-              >
-                {staff.fullName}
-              </h1>
-              <div className="w-5 h-5 rounded-full bg-[#c59b27]/20 border border-[#c59b27]/40 flex items-center justify-center text-[#c59b27]">
-                <ShieldCheck className="w-3.5 h-3.5" />
-              </div>
-            </div>
-
-            {/* Position */}
-            <p 
-              style={{ fontFamily: "'Outfit', var(--font-outfit), sans-serif" }}
-              className={`text-sm sm:text-base font-medium mt-1 tracking-tight ${isDark ? 'text-white/80' : 'text-slate-600'}`}
-            >
-              {staff.position}
-            </p>
-
-            {/* Department & Resort Subtitle */}
-            <div 
-              style={{ fontFamily: "'Outfit', var(--font-outfit), sans-serif" }}
-              className="flex items-center justify-center gap-1.5 mt-1.5 text-xs font-semibold text-[#c59b27]"
-            >
-              <span>{staff.department}</span>
-              <span className="opacity-40">·</span>
-              <span>Kompong Dewa Resort</span>
-            </div>
-
-            {/* Subtle Credential Chip */}
-            <div
-              className={`mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono tracking-wider border ${
-                isDark
-                  ? 'bg-[#14161f] border-[#252834] text-white/70'
-                  : 'bg-white border-slate-200 text-slate-600'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>ID: {staff.personnelId}</span>
-              <span className="opacity-30">|</span>
-              <span className="text-[10px] tracking-widest uppercase font-semibold text-[#c59b27]">
-                Executive
-              </span>
-            </div>
-          </motion.div>
-
-          {/* Quick Direct Communication Strip (Zero Shadow) */}
-          <motion.div
-            variants={itemVariants}
-            className={`w-full mt-6 rounded-2xl p-4 border flex flex-col gap-3 text-left ${
-              isDark
-                ? 'bg-[#12141c]/90 border-[#232634] text-white'
-                : 'bg-white border-slate-200 text-slate-900'
+          {/* Typography: Option A (Modern Sans-serif, confident hierarchy) */}
+          <h1 
+            style={{ fontFamily: "'Plus Jakarta Sans', 'Outfit', -apple-system, sans-serif" }}
+            className={`text-2xl sm:text-[28px] font-semibold tracking-[-0.015em] leading-tight ${
+              isDark ? 'text-[#F5F4F1]' : 'text-[#17191D]'
             }`}
           >
-            <div className="flex items-center justify-between text-xs pb-2 border-b border-white/5 dark:border-white/5 border-slate-100">
-              <span className={`font-semibold uppercase tracking-wider text-[10px] ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                Direct Contact
-              </span>
-              <span className="text-[10px] text-[#c59b27] font-semibold flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Fast Response
-              </span>
-            </div>
+            {staff.fullName}
+          </h1>
 
-            {/* Phone Row */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-[#25D366]/15 border border-[#25D366]/30 flex items-center justify-center text-[#25D366] shrink-0">
-                  <Phone className="w-4 h-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className={`text-[11px] ${isDark ? 'text-white/50' : 'text-slate-500'}`}>Phone / WhatsApp</p>
-                  <p className="text-xs font-mono font-bold truncate">{staff.phoneDisplay}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => handleCopy(staff.phone, 'phone')}
-                className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 transition-colors ${
-                  copiedKey === 'phone'
-                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
-                    : isDark
-                    ? 'border-white/10 hover:bg-white/10 text-white/70'
-                    : 'border-slate-200 hover:bg-slate-100 text-slate-700'
-                }`}
-                title="Copy Phone"
-              >
-                {copiedKey === 'phone' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
-            </div>
+          <p className={`text-sm sm:text-[15px] font-normal mt-1.5 ${
+            isDark ? 'text-[#9699A3]' : 'text-[#747782]'
+          }`}>
+            {staff.position}
+          </p>
 
-            {/* Email Row */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-[#EA4335]/15 border border-[#EA4335]/30 flex items-center justify-center text-[#EA4335] shrink-0">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className={`text-[11px] ${isDark ? 'text-white/50' : 'text-slate-500'}`}>Corporate Email</p>
-                  <p className="text-xs font-mono font-bold truncate">{staff.email}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => handleCopy(staff.email, 'email')}
-                className={`p-1.5 rounded-lg border text-xs flex items-center gap-1 transition-colors ${
-                  copiedKey === 'email'
-                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
-                    : isDark
-                    ? 'border-white/10 hover:bg-white/10 text-white/70'
-                    : 'border-slate-200 hover:bg-slate-100 text-slate-700'
-                }`}
-                title="Copy Email"
-              >
-                {copiedKey === 'email' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
-            </div>
-          </motion.div>
+          <p className={`text-xs font-normal tracking-wide mt-1 ${
+            isDark ? 'text-[#9699A3]/80' : 'text-[#747782]/90'
+          }`}>
+            {staff.department} · Kompong Dewa Resort
+          </p>
+        </section>
 
-          {/* ── Primary Action Buttons ── */}
-          <motion.div variants={itemVariants} className="w-full flex flex-col gap-2.5 mt-5">
-            {/* Single Button to Open Connect & Social Channels Bottom-to-Top Modal */}
-            <button
-              onClick={() => setShowSocialModal(true)}
-              className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-[#c59b27] hover:bg-[#d4af37] text-black font-bold text-xs uppercase tracking-wider transition-all duration-150 active:scale-[0.98]"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-black/15 flex items-center justify-center">
-                  <Share2 className="w-4 h-4 text-black" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xs font-extrabold uppercase tracking-wider text-black">
-                    Connect & Social Channels
-                  </p>
-                  <p className="text-[10px] font-medium text-black/75 normal-case">
-                    WhatsApp, Telegram, Instagram, X & More
-                  </p>
-                </div>
-              </div>
-              <div className="w-6 h-6 rounded-full bg-black/10 flex items-center justify-center">
-                <ChevronRight className="w-4 h-4 text-black" />
-              </div>
-            </button>
+        {/* ── Section 7: Single Primary Connect Button & Secondary Save Contact ── */}
+        <footer className="w-full flex flex-col gap-3 pb-2">
+          {/* ONE dominant primary action: Connect with Jetz */}
+          <button
+            onClick={() => setShowConnectModal(true)}
+            className={`w-full h-13 rounded-2xl flex items-center justify-between px-5 font-semibold text-sm tracking-wide transition-all duration-150 active:scale-[0.99] cursor-pointer ${
+              isDark
+                ? 'bg-[#D3AD59] text-black hover:bg-[#c59e48]'
+                : 'bg-[#C49A40] text-black hover:bg-[#b58c35]'
+            }`}
+          >
+            <span>Connect with Jetz</span>
+            <IconsaxArrowRight size={18} color="#000000" />
+          </button>
 
-            {/* Split Row: Save Contact (vCard) & View Badge Card */}
-            <div className="grid grid-cols-2 gap-2.5 w-full">
-              <a
-                href={`/api/staff/${staff.normalizedId}/vcard`}
-                download={`${staff.firstName}_${staff.lastName}.vcf`}
-                className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs uppercase tracking-wider border transition-all duration-150 active:scale-[0.98] ${
-                  isDark
-                    ? 'bg-[#14161f] hover:bg-[#1c1f2b] border-[#252834] text-white'
-                    : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800'
-                }`}
-              >
-                <Download className="w-3.5 h-3.5 text-[#c59b27]" />
-                <span>Save Contact</span>
-              </a>
-
-              <button
-                onClick={() => setShowBadgeModal(true)}
-                className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs uppercase tracking-wider border transition-all duration-150 active:scale-[0.98] ${
-                  isDark
-                    ? 'bg-[#14161f] hover:bg-[#1c1f2b] border-[#252834] text-white'
-                    : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800'
-                }`}
-              >
-                <FileImage className="w-3.5 h-3.5 text-[#c59b27]" />
-                <span>View Badge</span>
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
+          {/* Subordinate Secondary Action: Save Contact (vCard) */}
+          <a
+            href={`/api/staff/${staff.normalizedId}/vcard`}
+            download={`${staff.firstName}_${staff.lastName}.vcf`}
+            className={`w-full h-11 rounded-xl border flex items-center justify-center gap-2 font-medium text-xs tracking-wide transition-colors duration-150 active:scale-[0.99] ${
+              isDark
+                ? 'border-[#303138] bg-transparent text-[#9699A3] hover:text-[#F5F4F1] hover:bg-[#1A1B20]'
+                : 'border-[#E9E7E2] bg-transparent text-[#747782] hover:text-[#17191D] hover:bg-[#FFFFFF]'
+            }`}
+          >
+            <IconsaxDocumentDownload size={16} />
+            <span>Save Contact</span>
+          </a>
+        </footer>
       </div>
 
-      {/* ── Bottom-to-Top Smooth Modal: Connect & Social Channels ── */}
+      {/* ── Section 8: Premium Connect Bottom Sheet ── */}
       <AnimatePresence>
-        {showSocialModal && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center">
-            {/* Backdrop with Blur */}
+        {showConnectModal && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+            {/* Backdrop Dimming with Click to Dismiss */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setShowSocialModal(false)}
-              className="fixed inset-0 bg-black/75 backdrop-blur-sm"
+              transition={{ duration: 0.25 }}
+              onClick={() => setShowConnectModal(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-[2px]"
             />
 
-            {/* Bottom Sheet Drawer */}
+            {/* Bottom Sheet Drawer (Mobile) / Centered Dialog (Desktop) */}
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-              className={`relative z-10 w-full max-w-lg max-h-[88vh] flex flex-col rounded-t-[28px] border-t border-x overflow-hidden transition-colors ${
-                isDark ? 'bg-[#0f1118] border-[#262937] text-white' : 'bg-white border-slate-200 text-slate-900'
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="connect-sheet-title"
+              className={`relative z-10 w-full max-w-[440px] max-h-[85vh] flex flex-col rounded-t-[26px] sm:rounded-[24px] border-t sm:border border-x overflow-hidden transition-colors ${
+                isDark
+                  ? 'bg-[#1A1B20] border-[#303138] text-[#F5F4F1]'
+                  : 'bg-white border-[#E9E7E2] text-[#17191D]'
               }`}
             >
-              {/* Grabber Handle */}
-              <div className="w-full flex justify-center pt-3 pb-1 cursor-grab" onClick={() => setShowSocialModal(false)}>
-                <div className={`w-12 h-1.5 rounded-full ${isDark ? 'bg-white/20' : 'bg-slate-300'}`} />
+              {/* Drag Handle Bar (Mobile) */}
+              <div
+                className="w-full flex justify-center pt-3 pb-1 cursor-pointer sm:hidden"
+                onClick={() => setShowConnectModal(false)}
+              >
+                <div className={`w-10 h-1 rounded-full ${isDark ? 'bg-[#303138]' : 'bg-[#E9E7E2]'}`} />
               </div>
 
-              {/* Modal Header */}
-              <div className="px-5 pt-2 pb-3 flex items-center justify-between border-b border-white/5 dark:border-white/5 border-slate-100">
+              {/* Sheet Header */}
+              <div className="px-5 pt-3 pb-4 flex items-center justify-between border-b border-[#E9E7E2]/60 dark:border-[#303138]/60">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden relative border border-[#c59b27]/60 shrink-0">
+                  <div className={`w-10 h-10 rounded-full overflow-hidden relative border shrink-0 ${
+                    isDark ? 'border-[#303138] bg-[#202127]' : 'border-[#E9E7E2] bg-white'
+                  }`}>
                     <Image
                       src={staff.avatarUrl}
                       alt={staff.fullName}
@@ -499,65 +299,70 @@ export default function StaffProfilePage() {
                       unoptimized
                     />
                   </div>
-                  <div>
+                  <div className="text-left">
                     <h2 
-                      style={{ fontFamily: "'Outfit', var(--font-outfit), sans-serif" }}
-                      className="text-base font-bold flex items-center gap-1.5"
+                      id="connect-sheet-title" 
+                      style={{ fontFamily: "'Plus Jakarta Sans', 'Outfit', -apple-system, sans-serif" }}
+                      className="text-sm font-semibold leading-tight"
                     >
-                      <span>Connect with {staff.firstName}</span>
-                      <ShieldCheck className="w-4 h-4 text-[#c59b27]" />
+                      Connect with Jetz
                     </h2>
-                    <p className={`text-xs ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-                      Official Communication & Social Channels
+                    <p className={`text-xs mt-0.5 ${isDark ? 'text-[#9699A3]' : 'text-[#747782]'}`}>
+                      Official contact & social channels
                     </p>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => setShowSocialModal(false)}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                    isDark ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  }`}
+                  onClick={() => setShowConnectModal(false)}
                   aria-label="Close"
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors focus-visible:outline-none ${
+                    isDark
+                      ? 'text-[#9699A3] hover:text-[#F5F4F1] hover:bg-[#202127]'
+                      : 'text-[#747782] hover:text-[#17191D] hover:bg-[#F8F7F4]'
+                  }`}
                 >
-                  <X className="w-4 h-4" />
+                  <IconsaxClose size={18} />
                 </button>
               </div>
 
-              {/* Modal Scrollable Content */}
-              <div className="overflow-y-auto px-5 py-4 flex flex-col gap-4">
-                {/* Fast Action Quick Row */}
+              {/* Sheet Scrollable Body */}
+              <div className="overflow-y-auto px-5 py-4 flex flex-col gap-5">
+                
+                {/* 1. Quick Access Row: WhatsApp · Call · Telegram · Email */}
                 <div>
-                  <p className={`text-[10px] font-bold uppercase tracking-wider mb-2.5 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                    Instant Communication
+                  <p className={`text-[11px] font-semibold tracking-wider uppercase mb-2 text-left ${
+                    isDark ? 'text-[#9699A3]' : 'text-[#747782]'
+                  }`}>
+                    Quick Reach
                   </p>
-                  <div className="grid grid-cols-4 gap-2 text-center">
+                  <div className="grid grid-cols-4 gap-2">
                     {/* WhatsApp */}
                     <a
-                      href={staff.socials.find(s => s.platform === 'WhatsApp')?.url || `https://wa.me/${staff.whatsappNumber}`}
+                      href={`https://wa.me/${staff.whatsappNumber}?text=Hello%20Jetz%2C%20I%20scanned%20your%20Kompong%20Dewa%20management%20card`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-transform active:scale-95 ${
-                        isDark ? 'bg-[#151722] border-[#252837]' : 'bg-slate-50 border-slate-200'
+                      className={`py-3 px-1.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-colors active:scale-95 ${
+                        isDark
+                          ? 'border-[#303138] bg-[#202127] text-[#F5F4F1] hover:border-[#D3AD59]/50'
+                          : 'border-[#E9E7E2] bg-[#F8F7F4] text-[#17191D] hover:border-[#C49A40]/50'
                       }`}
                     >
-                      <div className="w-9 h-9 rounded-full bg-[#25D366]/20 flex items-center justify-center text-[#25D366]">
-                        <MessageSquare className="w-5 h-5" />
-                      </div>
-                      <span className="text-[11px] font-semibold">WhatsApp</span>
+                      <IconsaxMessage size={20} color={isDark ? '#D3AD59' : '#C49A40'} />
+                      <span className="text-[11px] font-medium">WhatsApp</span>
                     </a>
 
-                    {/* Phone Call */}
+                    {/* Direct Call */}
                     <a
                       href={`tel:${staff.phone}`}
-                      className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-transform active:scale-95 ${
-                        isDark ? 'bg-[#151722] border-[#252837]' : 'bg-slate-50 border-slate-200'
+                      className={`py-3 px-1.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-colors active:scale-95 ${
+                        isDark
+                          ? 'border-[#303138] bg-[#202127] text-[#F5F4F1] hover:border-[#D3AD59]/50'
+                          : 'border-[#E9E7E2] bg-[#F8F7F4] text-[#17191D] hover:border-[#C49A40]/50'
                       }`}
                     >
-                      <div className="w-9 h-9 rounded-full bg-[#34A853]/20 flex items-center justify-center text-[#34A853]">
-                        <Phone className="w-5 h-5" />
-                      </div>
-                      <span className="text-[11px] font-semibold">Call Line</span>
+                      <IconsaxCall size={20} color={isDark ? '#D3AD59' : '#C49A40'} />
+                      <span className="text-[11px] font-medium">Call</span>
                     </a>
 
                     {/* Telegram */}
@@ -565,79 +370,69 @@ export default function StaffProfilePage() {
                       href={`https://t.me/${staff.telegramUsername}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-transform active:scale-95 ${
-                        isDark ? 'bg-[#151722] border-[#252837]' : 'bg-slate-50 border-slate-200'
+                      className={`py-3 px-1.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-colors active:scale-95 ${
+                        isDark
+                          ? 'border-[#303138] bg-[#202127] text-[#F5F4F1] hover:border-[#D3AD59]/50'
+                          : 'border-[#E9E7E2] bg-[#F8F7F4] text-[#17191D] hover:border-[#C49A40]/50'
                       }`}
                     >
-                      <div className="w-9 h-9 rounded-full bg-[#26A5E4]/20 flex items-center justify-center text-[#26A5E4]">
-                        <Send className="w-5 h-5" />
-                      </div>
-                      <span className="text-[11px] font-semibold">Telegram</span>
+                      <IconsaxSend size={20} color={isDark ? '#D3AD59' : '#C49A40'} />
+                      <span className="text-[11px] font-medium">Telegram</span>
                     </a>
 
                     {/* Email */}
                     <a
                       href={`mailto:${staff.email}`}
-                      className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-transform active:scale-95 ${
-                        isDark ? 'bg-[#151722] border-[#252837]' : 'bg-slate-50 border-slate-200'
+                      className={`py-3 px-1.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-colors active:scale-95 ${
+                        isDark
+                          ? 'border-[#303138] bg-[#202127] text-[#F5F4F1] hover:border-[#D3AD59]/50'
+                          : 'border-[#E9E7E2] bg-[#F8F7F4] text-[#17191D] hover:border-[#C49A40]/50'
                       }`}
                     >
-                      <div className="w-9 h-9 rounded-full bg-[#EA4335]/20 flex items-center justify-center text-[#EA4335]">
-                        <Mail className="w-5 h-5" />
-                      </div>
-                      <span className="text-[11px] font-semibold">Email</span>
+                      <IconsaxSms size={20} color={isDark ? '#D3AD59' : '#C49A40'} />
+                      <span className="text-[11px] font-medium">Email</span>
                     </a>
                   </div>
                 </div>
 
-                {/* All Verified Social Channels (List) */}
+                {/* 2. All Channels: Clean Vertically Stacked Rows */}
                 <div>
-                  <p className={`text-[10px] font-bold uppercase tracking-wider mb-2.5 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                  <p className={`text-[11px] font-semibold tracking-wider uppercase mb-2 text-left ${
+                    isDark ? 'text-[#9699A3]' : 'text-[#747782]'
+                  }`}>
                     All Verified Channels
                   </p>
-                  <div className="flex flex-col gap-2">
+
+                  <div className={`divide-y rounded-xl border ${
+                    isDark ? 'divide-[#303138]/60 border-[#303138] bg-[#202127]/60' : 'divide-[#E9E7E2] border-[#E9E7E2] bg-[#F8F7F4]/60'
+                  }`}>
                     {staff.socials.map((link) => (
                       <a
                         key={link.platform}
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`group flex items-center justify-between p-3 rounded-xl border transition-all active:scale-[0.99] ${
-                          isDark
-                            ? 'bg-[#141620] hover:bg-[#1a1d28] border-[#232635] hover:border-[#c59b27]/80'
-                            : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-[#c59b27]/80'
+                        className={`flex items-center justify-between py-3.5 px-4 transition-colors duration-150 ${
+                          isDark ? 'hover:bg-[#202127]' : 'hover:bg-white'
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          {/* Official CDN Icon with Authentic Brand Color */}
-                          <div
-                            className="w-10 h-10 rounded-lg flex items-center justify-center p-2 border shrink-0 transition-transform group-hover:scale-105"
-                            style={{
-                              backgroundColor: `${link.brandColor}22`,
-                              borderColor: `${link.brandColor}44`,
-                            }}
-                          >
+                          {/* Official Brand SVG Logo without heavy colorful boxes */}
+                          <div className="w-6 h-6 flex items-center justify-center shrink-0">
                             {link.platform === 'Resort' ? (
-                              <div className="w-6 h-6 relative flex items-center justify-center">
-                                <Image
-                                  src="/kd-logo.png"
-                                  alt="Kompong Dewa"
-                                  width={24}
-                                  height={24}
-                                  className="object-contain"
-                                  unoptimized
-                                />
-                              </div>
+                              <Image
+                                src="/kd-logo.png"
+                                alt="Kompong Dewa"
+                                width={18}
+                                height={18}
+                                className="object-contain"
+                                unoptimized
+                              />
                             ) : (
                               <div
-                                className="w-5 h-5 transition-transform group-hover:scale-110"
+                                className="w-4.5 h-4.5 transition-opacity"
                                 style={{
-                                  backgroundColor:
-                                    link.platform === 'X.com'
-                                      ? isDark
-                                        ? '#ffffff'
-                                        : '#000000'
-                                      : link.brandColor,
+                                  backgroundColor: isDark ? '#F5F4F1' : '#17191D',
                                   WebkitMaskImage: `url(${link.iconCdn})`,
                                   maskImage: `url(${link.iconCdn})`,
                                   WebkitMaskRepeat: 'no-repeat',
@@ -652,167 +447,43 @@ export default function StaffProfilePage() {
                           </div>
 
                           <div className="text-left">
-                            <p className={`text-sm font-bold transition-colors group-hover:text-[#c59b27] ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                            <p className="text-xs font-semibold leading-tight">
                               {link.label}
                             </p>
-                            <p className={`text-xs font-mono mt-0.5 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+                            <p className={`text-[11px] font-mono mt-0.5 ${
+                              isDark ? 'text-[#9699A3]' : 'text-[#747782]'
+                            }`}>
                               {link.handle}
                             </p>
                           </div>
                         </div>
 
-                        <div className={`pr-1 ${isDark ? 'text-white/30 group-hover:text-white/80' : 'text-slate-400 group-hover:text-slate-800'}`}>
-                          <ExternalLink className="w-4 h-4" />
+                        <div className={isDark ? 'text-[#9699A3]' : 'text-[#747782]'}>
+                          <IconsaxArrowUpRight size={16} />
                         </div>
                       </a>
                     ))}
                   </div>
                 </div>
+
               </div>
 
-              {/* Bottom Close Button for Phone Reachability */}
-              <div className="p-4 border-t border-white/5 dark:border-white/5 border-slate-100">
+              {/* Bottom Sheet Footer: Dismiss button for one-hand thumb reachability */}
+              <div className="px-5 py-3.5 border-t border-[#E9E7E2]/60 dark:border-[#303138]/60">
                 <button
-                  onClick={() => setShowSocialModal(false)}
-                  className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider border transition-colors ${
+                  onClick={() => setShowConnectModal(false)}
+                  className={`w-full py-2.5 rounded-xl font-medium text-xs border transition-colors ${
                     isDark
-                      ? 'bg-[#181a24] hover:bg-[#202330] border-[#292c3d] text-white'
-                      : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
+                      ? 'border-[#303138] text-[#9699A3] hover:text-[#F5F4F1] hover:bg-[#202127]'
+                      : 'border-[#E9E7E2] text-[#747782] hover:text-[#17191D] hover:bg-[#F8F7F4]'
                   }`}
                 >
                   Close
                 </button>
               </div>
+
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Physical Badge Modal: Replica Preview & PNG / JPEG Save with Flashlight ── */}
-      <AnimatePresence>
-        {showBadgeModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-hidden"
-            onClick={() => setShowBadgeModal(false)}
-          >
-            {/* Flashlight / Spotlight Beam in Modal Background */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
-              {/* Flashlight Torch Origin Glow */}
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-14 bg-white/60 blur-2xl rounded-full" />
-
-              {/* Volumetric Conical Flashlight Beam */}
-              <div
-                className="absolute -top-8 left-1/2 -translate-x-1/2 w-[90vw] max-w-[560px] h-[820px] opacity-80"
-                style={{
-                  background:
-                    'linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(212,175,55,0.22) 32%, rgba(255,255,255,0.06) 65%, transparent 100%)',
-                  clipPath: 'polygon(45% 0%, 55% 0%, 100% 100%, 0% 100%)',
-                  filter: 'blur(14px)',
-                }}
-              />
-
-              {/* Concentrated Core Flashlight Beam */}
-              <div
-                className="absolute -top-8 left-1/2 -translate-x-1/2 w-[60vw] max-w-[360px] h-[680px] opacity-90"
-                style={{
-                  background:
-                    'linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,238,170,0.3) 38%, transparent 100%)',
-                  clipPath: 'polygon(47% 0%, 53% 0%, 92% 100%, 8% 100%)',
-                  filter: 'blur(7px)',
-                }}
-              />
-
-              {/* Central Flashlight Radial Halo directly illuminating the badge */}
-              <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[440px] h-[440px] rounded-full"
-                style={{
-                  background:
-                    'radial-gradient(circle, rgba(255,255,255,0.32) 0%, rgba(197,155,39,0.24) 35%, transparent 70%)',
-                  filter: 'blur(30px)',
-                }}
-              />
-            </div>
-
-            <motion.div
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              onClick={(e) => e.stopPropagation()}
-              className={`rounded-2xl p-5 max-w-sm w-full relative z-10 flex flex-col items-center text-center border ${
-                isDark ? 'bg-[#14161d]/95 border-[#262933] text-white' : 'bg-white/95 border-slate-200 text-slate-900'
-              }`}
-            >
-              {/* Close Button */}
-              <button
-                onClick={() => setShowBadgeModal(false)}
-                className={`absolute top-3.5 right-3.5 w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                  isDark ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                }`}
-                aria-label="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#c59b27] mb-3">
-                <CreditCard className="w-4 h-4" />
-                <span>Physical ID Badge Replica</span>
-              </div>
-
-              {/* Physical Badge Image with Flashlight Aura */}
-              <div className="w-full relative my-1">
-                <div
-                  className="absolute -inset-2 rounded-2xl opacity-75 pointer-events-none"
-                  style={{
-                    background:
-                      'radial-gradient(circle at 50% 30%, rgba(255,255,255,0.45) 0%, rgba(212,175,55,0.22) 45%, transparent 70%)',
-                    filter: 'blur(12px)',
-                  }}
-                />
-                <div className="w-full relative aspect-[639/1017] rounded-xl overflow-hidden border border-[#c59b27]/80">
-                  <Image
-                    src={staff.badgeUrl}
-                    alt={`${staff.fullName} ID Card`}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                    priority
-                  />
-                </div>
-              </div>
-
-              <p className={`text-xs mt-3 mb-3 ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
-                Save card directly to your device:
-              </p>
-
-              {/* PNG / JPEG Buttons */}
-              <div className="grid grid-cols-2 gap-2.5 w-full">
-                <button
-                  disabled={isExporting}
-                  onClick={() => handleDownloadImage('png')}
-                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg bg-[#c59b27] hover:bg-[#d4af37] text-black font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50"
-                >
-                  <Download className="w-3.5 h-3.5 text-black" />
-                  <span>Save as PNG</span>
-                </button>
-
-                <button
-                  disabled={isExporting}
-                  onClick={() => handleDownloadImage('jpeg')}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-bold text-xs uppercase tracking-wider border transition-all disabled:opacity-50 ${
-                    isDark
-                      ? 'bg-[#1e212b] hover:bg-[#252936] border-[#2e3342] text-white'
-                      : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-900'
-                  }`}
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Save as JPEG</span>
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
         )}
       </AnimatePresence>
     </main>
