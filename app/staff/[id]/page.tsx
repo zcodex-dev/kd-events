@@ -37,15 +37,19 @@ export default function StaffProfilePage() {
       style={{ fontFamily: "var(--font-outfit), var(--font-roboto), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
     >
       <section className="relative isolate mx-auto min-h-[max(100svh,720px)] w-full overflow-x-hidden bg-[#090a0c] lg:max-w-[1600px]">
-        <Image
-          src="/staff/MK-C052-portrait.webp"
-          alt={`Portrait of ${staff.fullName}`}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[50%_26%] sm:object-[50%_22%] lg:object-[64%_25%]"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(9,10,12,0)_0%,rgba(9,10,12,0)_28%,rgba(9,10,12,0.10)_39%,rgba(9,10,12,0.50)_52%,rgba(9,10,12,0.88)_64%,rgba(9,10,12,0.98)_78%,#090a0c_100%)] lg:bg-[linear-gradient(90deg,rgba(9,10,12,0.97)_0%,rgba(9,10,12,0.84)_35%,rgba(9,10,12,0.18)_70%,rgba(9,10,12,0.34)_100%)]" />
+        <div className="absolute top-12 sm:top-14 inset-x-0 mx-auto w-full max-w-[430px] aspect-[4/5] overflow-hidden lg:inset-y-0 lg:top-0 lg:right-0 lg:left-auto lg:w-1/2 lg:max-w-none lg:aspect-auto lg:h-full">
+          <div className="relative h-full w-full">
+            <Image
+              src="/staff/MK-C052-portrait.webp"
+              alt={`Portrait of ${staff.fullName}`}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover object-top lg:object-[50%_24%]"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(9,10,12,0.95)_0%,rgba(9,10,12,0.45)_10%,transparent_22%,transparent_50%,rgba(9,10,12,0.5)_68%,rgba(9,10,12,0.94)_86%,#090a0c_100%)] lg:bg-[linear-gradient(90deg,rgba(9,10,12,0.97)_0%,rgba(9,10,12,0.84)_35%,rgba(9,10,12,0.18)_70%,rgba(9,10,12,0.34)_100%)]" />
+          </div>
+        </div>
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_92%_4%,rgba(215,178,99,0.10),transparent_30%)]" />
 
         <header className="absolute inset-x-0 top-0 z-20 flex items-center px-5 pb-4 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-8 lg:px-12">
@@ -62,7 +66,7 @@ export default function StaffProfilePage() {
 
         <div className="relative z-10 flex min-h-[max(100svh,720px)] items-end px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-28 sm:px-8 lg:items-center lg:px-12 lg:py-32">
           <div className="w-full lg:max-w-[520px]">
-            <h1 className="text-[clamp(2.2rem,10vw,4rem)] font-semibold leading-[0.98] tracking-[-0.04em] text-[#c3943a]" style={{ fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif" }}>{staff.fullName}</h1>
+            <h1 className="text-[clamp(1.85rem,7.5vw,2.85rem)] font-semibold leading-[1.05] tracking-[-0.035em] text-[#c3943a]" style={{ fontFamily: "var(--font-playfair), 'Playfair Display', Georgia, serif" }}>{staff.fullName}</h1>
             <p className="mt-2 text-sm font-medium leading-5 text-white/82 sm:text-base sm:leading-6">{staff.position}</p>
             <p className="mt-0.5 text-xs leading-5 text-white/58 sm:text-sm">{staff.department}</p>
 
