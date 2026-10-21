@@ -255,27 +255,46 @@ export default function StaffProfilePage() {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  {/* Official CDN Icon */}
+                  {/* Official CDN Icon with vibrant brand color */}
                   <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center p-2.5 border"
+                    className="w-10 h-10 rounded-lg flex items-center justify-center p-2 border shrink-0 transition-transform group-hover:scale-105"
                     style={{
-                      backgroundColor: `${link.brandColor}15`,
-                      borderColor: `${link.brandColor}30`,
+                      backgroundColor: `${link.brandColor}22`,
+                      borderColor: `${link.brandColor}44`,
                     }}
                   >
-                    <img
-                      src={link.iconCdn}
-                      alt={link.platform}
-                      className="w-full h-full object-contain"
-                      style={{
-                        filter:
-                          link.platform === 'X.com'
-                            ? isDark
-                              ? 'invert(1)'
-                              : 'none'
-                            : 'none',
-                      }}
-                    />
+                    {link.platform === 'Resort' ? (
+                      <div className="w-6 h-6 relative flex items-center justify-center">
+                        <Image
+                          src="/kd-logo.png"
+                          alt="Kompong Dewa"
+                          width={24}
+                          height={24}
+                          className="object-contain"
+                          unoptimized
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className="w-5 h-5 transition-transform group-hover:scale-110"
+                        style={{
+                          backgroundColor:
+                            link.platform === 'X.com'
+                              ? isDark
+                                ? '#ffffff'
+                                : '#000000'
+                              : link.brandColor,
+                          WebkitMaskImage: `url(${link.iconCdn})`,
+                          maskImage: `url(${link.iconCdn})`,
+                          WebkitMaskRepeat: 'no-repeat',
+                          maskRepeat: 'no-repeat',
+                          WebkitMaskPosition: 'center',
+                          maskPosition: 'center',
+                          WebkitMaskSize: 'contain',
+                          maskSize: 'contain',
+                        }}
+                      />
+                    )}
                   </div>
 
                   <div className="text-left">
